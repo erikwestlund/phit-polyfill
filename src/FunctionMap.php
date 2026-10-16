@@ -8,5 +8,15 @@ namespace PhpStats\Polyfill;
 final class FunctionMap
 {
     public const array MAP = [
+        'stats_cor' => [Descriptive::class, 'cor'],
+        'stats_cov' => [Descriptive::class, 'cov'],
+        'stats_mean' => [Descriptive::class, 'mean'],
+        'stats_median' => [Descriptive::class, 'median'],
+        'stats_quantile' => [Descriptive::class, 'quantile'],
+        'stats_quantile_array' => [Descriptive::class, 'quantileArray'],
+        'stats_sd' => [Descriptive::class, 'sd'],
+        'stats_var' => [Descriptive::class, 'var'],
+        'stats_weighted_mean' => [Descriptive::class, 'weightedMean'],
+        'stats_weighted_var' => [Descriptive::class, 'weightedVar'],
     ];
 }

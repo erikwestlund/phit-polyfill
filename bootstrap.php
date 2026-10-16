@@ -7,3 +7,72 @@ if (extension_loaded('php_stats')) {
     return;
 }
 
+if (! function_exists('stats_cor')) {
+    function stats_cor(array $x, array $y, string $missing = 'raise'): float
+    {
+        return \PhpStats\Polyfill\Descriptive::cor($x, $y, $missing);
+    }
+}
+
+if (! function_exists('stats_cov')) {
+    function stats_cov(array $x, array $y, string $type = 'sample', string $missing = 'raise'): float
+    {
+        return \PhpStats\Polyfill\Descriptive::cov($x, $y, $type, $missing);
+    }
+}
+
+if (! function_exists('stats_mean')) {
+    function stats_mean(array $values, string $missing = 'raise'): float
+    {
+        return \PhpStats\Polyfill\Descriptive::mean($values, $missing);
+    }
+}
+
+if (! function_exists('stats_median')) {
+    function stats_median(array $values, string $missing = 'raise'): float
+    {
+        return \PhpStats\Polyfill\Descriptive::median($values, $missing);
+    }
+}
+
+if (! function_exists('stats_quantile')) {
+    function stats_quantile(array $values, float $p, string $missing = 'raise'): float
+    {
+        return \PhpStats\Polyfill\Descriptive::quantile($values, $p, $missing);
+    }
+}
+
+if (! function_exists('stats_quantile_array')) {
+    function stats_quantile_array(array $values, array $probabilities, string $missing = 'raise'): array
+    {
+        return \PhpStats\Polyfill\Descriptive::quantileArray($values, $probabilities, $missing);
+    }
+}
+
+if (! function_exists('stats_sd')) {
+    function stats_sd(array $values, string $type = 'sample', string $missing = 'raise'): float
+    {
+        return \PhpStats\Polyfill\Descriptive::sd($values, $type, $missing);
+    }
+}
+
+if (! function_exists('stats_var')) {
+    function stats_var(array $values, string $type = 'sample', string $missing = 'raise'): float
+    {
+        return \PhpStats\Polyfill\Descriptive::var($values, $type, $missing);
+    }
+}
+
+if (! function_exists('stats_weighted_mean')) {
+    function stats_weighted_mean(array $values, array $weights, string $missing = 'raise'): float
+    {
+        return \PhpStats\Polyfill\Descriptive::weightedMean($values, $weights, $missing);
+    }
+}
+
+if (! function_exists('stats_weighted_var')) {
+    function stats_weighted_var(array $values, array $weights, string $type = 'frequency', string $missing = 'raise'): float
+    {
+        return \PhpStats\Polyfill\Descriptive::weightedVar($values, $weights, $type, $missing);
+    }
+}
