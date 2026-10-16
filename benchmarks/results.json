@@ -1,5 +1,5 @@
 {
-    "recorded_at": "2026-10-16T07:50:53Z",
+    "recorded_at": "2026-10-16T10:48:08Z",
     "cpu": "Apple M5 Ultra",
     "platform": "Darwin 27.0.0 arm64",
     "php_version": "8.5.10",
@@ -9,8 +9,8 @@
         "jit_mode": "tracing",
         "jit_buffer_size": "64M"
     },
-    "polyfill_commit": "bd9d24a",
-    "extension_reference_commit": "4ba33e489c39cfeddeab0b32903f9c81ff7f8157",
+    "polyfill_commit": "60daf83",
+    "extension_reference_commit": "91ee538253e3ecf7b3f086441305c3f7237200fc",
     "extension_loaded": true,
     "design": "10 standard normal predictors plus an intercept; seed 5",
     "repeat": 5,
@@ -23,21 +23,21 @@
             "p": 10,
             "implementations": {
                 "polyfill": {
-                    "median_seconds": 0.00665075,
-                    "min_seconds": 0.006462333
+                    "median_seconds": 0.007217875,
+                    "min_seconds": 0.007110625
                 },
                 "extension": {
-                    "median_seconds": 0.0027825,
-                    "min_seconds": 0.002745542
+                    "median_seconds": 0.002595375,
+                    "min_seconds": 0.002562917
                 },
                 "plain_php_normal_equations": {
-                    "median_seconds": 0.002035208,
-                    "min_seconds": 0.002028625,
+                    "median_seconds": 0.001962416,
+                    "min_seconds": 0.001939,
                     "note": "coefficients only, by Cholesky on X'X; no inference or rank checks"
                 }
             },
             "agreement": {
-                "max_coefficient_difference_in_standard_errors": 1.07708933277985e-13,
+                "max_coefficient_difference_in_standard_errors": 0.0,
                 "same_result_keys": true,
                 "agrees": true
             }
@@ -49,16 +49,16 @@
             "p": 10,
             "implementations": {
                 "polyfill": {
-                    "median_seconds": 0.0378475,
-                    "min_seconds": 0.037356084
+                    "median_seconds": 0.043435583,
+                    "min_seconds": 0.042723416
                 },
                 "extension": {
-                    "median_seconds": 0.006931584,
-                    "min_seconds": 0.006908125
+                    "median_seconds": 0.006712833,
+                    "min_seconds": 0.006522833
                 }
             },
             "agreement": {
-                "max_coefficient_difference_in_standard_errors": 3.533921075723016e-15,
+                "max_coefficient_difference_in_standard_errors": 0.0,
                 "same_result_keys": true,
                 "agrees": true
             }
@@ -70,21 +70,21 @@
             "p": 10,
             "implementations": {
                 "polyfill": {
-                    "median_seconds": 0.07243025,
-                    "min_seconds": 0.07102475
+                    "median_seconds": 0.081392458,
+                    "min_seconds": 0.077971167
                 },
                 "extension": {
-                    "median_seconds": 0.027915375,
-                    "min_seconds": 0.027566042
+                    "median_seconds": 0.028365291,
+                    "min_seconds": 0.028261542
                 },
                 "plain_php_normal_equations": {
-                    "median_seconds": 0.020413625,
-                    "min_seconds": 0.020251542,
+                    "median_seconds": 0.019886125,
+                    "min_seconds": 0.0198555,
                     "note": "coefficients only, by Cholesky on X'X; no inference or rank checks"
                 }
             },
             "agreement": {
-                "max_coefficient_difference_in_standard_errors": 1.669256421239438e-12,
+                "max_coefficient_difference_in_standard_errors": 0.0,
                 "same_result_keys": true,
                 "agrees": true
             }
@@ -96,16 +96,16 @@
             "p": 10,
             "implementations": {
                 "polyfill": {
-                    "median_seconds": 0.391616667,
-                    "min_seconds": 0.379536375
+                    "median_seconds": 0.445644083,
+                    "min_seconds": 0.439792875
                 },
                 "extension": {
-                    "median_seconds": 0.069930667,
-                    "min_seconds": 0.069290292
+                    "median_seconds": 0.069320375,
+                    "min_seconds": 0.068895875
                 }
             },
             "agreement": {
-                "max_coefficient_difference_in_standard_errors": 1.1894722242642468e-14,
+                "max_coefficient_difference_in_standard_errors": 0.0,
                 "same_result_keys": true,
                 "agrees": true
             }
