@@ -210,6 +210,10 @@ In summary:
 - Scalar arguments of the wrong type follow PHP's userland rules (coercion in
   non-strict files, otherwise `TypeError`). The extension raises an
   `\Exception` instead.
+- With PHP 8.5.11's function JIT (`opcache.jit=1235`), CI has seen a hang
+  while the JIT compiles one of the large optimizer routines used by the mixed
+  models. The optimizer without the JIT and the tracing JIT are not affected.
+  See [docs/notes/opcache-nan.md](docs/notes/opcache-nan.md).
 - Matrix products above 5×5 follow the extension's aarch64 build, which uses
   fused multiply-adds. On an x86-64 CPU without FMA the extension's products
   can differ in the last bit.
