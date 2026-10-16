@@ -10,8 +10,12 @@ final class FunctionMap
     public const array MAP = [
         'stats_cor' => [Descriptive::class, 'cor'],
         'stats_cov' => [Descriptive::class, 'cov'],
+        'stats_logistic' => [Logistic::class, 'fit'],
         'stats_mean' => [Descriptive::class, 'mean'],
         'stats_median' => [Descriptive::class, 'median'],
+        'stats_ols' => [Ols::class, 'fit'],
+        'stats_poisson' => [Poisson::class, 'fit'],
+        'stats_probit' => [Probit::class, 'fit'],
         'stats_quantile' => [Descriptive::class, 'quantile'],
         'stats_quantile_array' => [Descriptive::class, 'quantileArray'],
         'stats_sd' => [Descriptive::class, 'sd'],

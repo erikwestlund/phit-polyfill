@@ -21,6 +21,13 @@ if (! function_exists('stats_cov')) {
     }
 }
 
+if (! function_exists('stats_logistic')) {
+    function stats_logistic(array $x, array $y, string $missing = 'drop', ?array $weights = null, ?array $offset = null, bool $intercept = true): array
+    {
+        return \PhpStats\Polyfill\Logistic::fit($x, $y, $missing, $weights, $offset, $intercept);
+    }
+}
+
 if (! function_exists('stats_mean')) {
     function stats_mean(array $values, string $missing = 'raise'): float
     {
@@ -32,6 +39,27 @@ if (! function_exists('stats_median')) {
     function stats_median(array $values, string $missing = 'raise'): float
     {
         return \PhpStats\Polyfill\Descriptive::median($values, $missing);
+    }
+}
+
+if (! function_exists('stats_ols')) {
+    function stats_ols(array $x, array $y, string $missing = 'drop', ?array $weights = null, ?array $offset = null, bool $intercept = true): array
+    {
+        return \PhpStats\Polyfill\Ols::fit($x, $y, $missing, $weights, $offset, $intercept);
+    }
+}
+
+if (! function_exists('stats_poisson')) {
+    function stats_poisson(array $x, array $y, string $missing = 'drop', ?array $weights = null, ?array $offset = null, bool $intercept = true): array
+    {
+        return \PhpStats\Polyfill\Poisson::fit($x, $y, $missing, $weights, $offset, $intercept);
+    }
+}
+
+if (! function_exists('stats_probit')) {
+    function stats_probit(array $x, array $y, string $missing = 'drop', ?array $weights = null, ?array $offset = null, bool $intercept = true): array
+    {
+        return \PhpStats\Polyfill\Probit::fit($x, $y, $missing, $weights, $offset, $intercept);
     }
 }
 
