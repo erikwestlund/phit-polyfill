@@ -369,14 +369,8 @@ describe('rounding near the optimum', function () {
                 }
                 $result = pf($fn, array_fill(0, $n, []), $y);
                 $mean = array_sum($y) / $n;
-                $expected = match ($fn) {
-                    'stats_logistic' => log($mean / (1 - $mean)),
-                    'stats_poisson' => log($mean),
-                    default => null,
-                };
-                if ($expected !== null) {
-                    expect(abs($result['coefficients'][0] - $expected))->toBeLessThan(1e-9);
-                }
+                // The intercept-only MLE reproduces the sample mean on the response scale.
+                expect(abs($result['fitted'][0] - $mean))->toBeLessThan(1e-9);
             }
         }
     })->with(['stats_logistic', 'stats_probit', 'stats_poisson']);
