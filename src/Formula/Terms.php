@@ -216,13 +216,21 @@ final class Terms
                 if ($r[0] !== 'num' || is_nan($r[1]) || $r[1] < 1.0 || fmod($r[1], 1.0) != 0.0) {
                     throw Parser::error('invalid power in formula: use a positive integer, e.g. (a + b)^2');
                 }
-                $power = (int) $r[1];
                 $base = $this->encode($l, $negate);
                 $result = $base;
                 $acc = $base;
-                for ($k = 1; $k < $power; $k++) {
-                    $acc = self::interact($acc, $base);
-                    $result = self::trim([...$result, ...$acc]);
+                // The extension repeats the interaction power - 1 times. Once neither
+                // the accumulated interaction nor the result changes, further rounds
+                // are identical, so stop there. This gives the same terms for any
+                // power without casting a huge power to int (which PHP turns into 0).
+                for ($k = 1.0; $k < $r[1]; $k += 1.0) {
+                    $nextAcc = self::interact($acc, $base);
+                    $nextResult = self::trim([...$result, ...$nextAcc]);
+                    if ($nextAcc === $acc && $nextResult === $result) {
+                        break;
+                    }
+                    $acc = $nextAcc;
+                    $result = $nextResult;
                 }
 
                 return $result;

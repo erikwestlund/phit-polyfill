@@ -374,3 +374,20 @@ it('raises the same exception codes on invalid input', function (string $fn) {
         assertModelParity($fn, $arguments, 1e-9, 'errors');
     }
 })->with(MODEL_FUNCTIONS);
+
+it('agrees with the extension on huge weights and counts', function (string $fn) {
+    // Review finding: column norms above about 1e77 overflowed the Jacobi rotation test.
+    $x = [[1.0], [2.0], [3.0], [4.5], [5.0], [6.0]];
+    $y = $fn === 'stats_poisson' ? [1, 2, 1, 4, 3, 6] : [0, 1, 0, 1, 1, 0];
+    foreach ([1e100, 1e160, 1e200] as $w) {
+        assertModelParity($fn, [$x, $y, 'drop', array_fill(0, 6, $w)], 1e-9, 'scaling');
+        assertModelParity($fn, [$x, $y, 'drop', [$w, 1, 1, 1, 1, 1]], 1e-9, 'scaling');
+    }
+    if ($fn === 'stats_poisson') {
+        foreach ([1e100, 1e160] as $scale) {
+            // Likelihoods near 1e160 are flat to rounding at the optimum, so the
+            // stopping iteration is noise; the 'counts' group checks estimates only.
+            assertModelParity($fn, [$x, array_map(fn ($v) => $v * $scale, $y)], 1e-9, 'counts');
+        }
+    }
+})->with(['stats_ols', 'stats_poisson']);

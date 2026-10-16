@@ -304,3 +304,14 @@ it('deparses formulas and numbers as R does', function () {
         ->and(pf('stats_model_matrix', 'y ~ `a b` + -1', $data)['columns'])->toBe(['`a b`'])
         ->and(pf('stats_model_matrix', 'y ~ factor(x)', $data)['columns'])->toBe(['(Intercept)', 'factor(x)2', 'factor(x)3', 'factor(x)4.5']);
 });
+
+// Review finding: a power beyond PHP_INT_MAX was cast to int (0, with a PHP
+// warning) and dropped the interactions. The expansion now stops once it no
+// longer changes, which matches the extension's terms for any power.
+it('expands very large interaction powers to the full interaction', function () {
+    $data = ['y' => [1, 2, 3, 4, 5, 6], 'x' => [1, 3, 2, 5, 4, 6], 'z' => [2, 1, 4, 3, 6, 5]];
+    $warnings = warnings(fn () => pf('stats_model_matrix', 'y ~ (x + z)^1e300', $data), $result);
+    expect($warnings)->toBe([])
+        ->and($result['columns'])->toBe(['(Intercept)', 'x', 'z', 'x:z'])
+        ->and(pf('stats_model_matrix', 'y ~ (x + z)^5', $data)['columns'])->toBe($result['columns']);
+});

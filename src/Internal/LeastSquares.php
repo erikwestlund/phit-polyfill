@@ -112,7 +112,10 @@ final class LeastSquares
                         $beta += $aj[$k] * $aj[$k];
                         $gamma += $ai[$k] * $aj[$k];
                     }
-                    if ($gamma == 0.0 || abs($gamma) <= PHP_FLOAT_EPSILON * sqrt($alpha * $beta)) {
+                    // sqrt(alpha) * sqrt(beta): the product alpha * beta overflows once the
+                    // column norms pass about 1e77, and an infinite threshold would stop
+                    // every rotation (heavily weighted IRLS steps reach that range).
+                    if ($gamma == 0.0 || abs($gamma) <= PHP_FLOAT_EPSILON * sqrt($alpha) * sqrt($beta)) {
                         continue;
                     }
                     $rotated = true;

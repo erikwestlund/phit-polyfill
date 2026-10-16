@@ -375,3 +375,30 @@ describe('rounding near the optimum', function () {
         }
     })->with(['stats_logistic', 'stats_probit', 'stats_poisson']);
 });
+
+describe('extreme magnitudes', function () {
+    // Review finding: the Jacobi SVD's rotation test multiplied two squared
+    // column norms, which overflowed for heavily weighted IRLS steps and stopped
+    // every rotation, giving wrong fits or spurious 1006 errors.
+    $x = [[1.0], [2.0], [3.0], [4.5], [5.0], [6.0]];
+    $y = [1, 2, 1, 4, 3, 6];
+
+    it('gives the unweighted Poisson fit for equal huge weights', function () use ($x, $y) {
+        $plain = pf('stats_poisson', $x, $y);
+        $weighted = pf('stats_poisson', $x, $y, weights: array_fill(0, 6, 1e160));
+        expect($weighted['coefficients'])->toBeClose($plain['coefficients'], 1e-9, 1e-9);
+    });
+
+    it('shifts only the Poisson intercept when counts are scaled by 1e160', function () use ($x, $y) {
+        $plain = pf('stats_poisson', $x, $y);
+        $scaled = pf('stats_poisson', $x, array_map(fn ($v) => $v * 1e160, $y));
+        // The log-likelihood is about 1e162 here, so the fit converges only to about
+        // 1e-8 relative (as in the extension); compare at the extension's R tolerance.
+        expect($scaled['coefficients'][1])->toBeClose($plain['coefficients'][1], 1e-9, 1e-7)
+            ->and($scaled['coefficients'][0])->toBeClose($plain['coefficients'][0] + log(1e160), 1e-9, 1e-7);
+    });
+
+    it('rejects a single dominating weight as the extension does', function () use ($x, $y) {
+        expect(thrownCode(fn () => pf('stats_poisson', $x, $y, weights: [1e160, 1, 1, 1, 1, 1])))->toBe(1006);
+    });
+});

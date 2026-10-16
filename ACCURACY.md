@@ -101,7 +101,8 @@ rounding.
 | scaling | predictors and outcomes scaled by 10⁻⁸ to 10⁸ | 1.4e-13 | 2.3e-13 | 3.5e-14 | 1.8e-14 |
 | collinear | condition numbers about 10⁶ to 10¹⁰ | 1.2e-5 | 8.8e-9 | (rejected identically) | 3.1e-9 |
 | separation | complete, quasi-complete, rare events (1 in 2000), grouped near-boundary proportions | | 9.7e-9 | 2.5e-14 | |
-| offsets / counts | binary offsets −50 to 40; Poisson counts up to 10¹², offsets −700 to 300, sparse counts | | 5.4e-14 | 7.5e-14 | 1.2e-8 |
+| offsets / counts | binary offsets −50 to 40 shifted together; Poisson counts up to 10¹², common offsets −700 to 300, sparse counts | | 5.4e-14 | 7.5e-14 | 1.2e-8 |
+| huge weights | prior weights 10¹⁰⁰ to 10²⁰⁰ (equal, or one dominating row); Poisson counts scaled by 10¹⁰⁰ and 10¹⁶⁰ | <1e-13 | | | 1.2e-8 |
 | errors | invalid shapes, types, domains, weights, policies, rank deficiency | 1.3e-13 | same codes | same codes | 6.7e-8 |
 
 Every invalid input in the error group raises the same exception code in both.
@@ -112,9 +113,36 @@ implementations with the same code.
 
 The stopping iteration can differ between the two. On the fixtures and random
 data it differs by at most one. In the stress groups the likelihood can be flat
-to rounding near the optimum (for example, Poisson offsets near 300 make the
-linear predictor a difference of numbers near 300). There the stopping
-iteration differed by up to two while the estimates still agreed to 10⁻⁸.
+to rounding near the optimum. For example, Poisson offsets near 300 make the
+linear predictor a difference of numbers near 300, and counts scaled by 10¹⁶⁰
+give a log-likelihood near 10¹⁶². There the stopping iteration differed by up
+to three while the estimates still agreed to 10⁻⁸.
+
+### Where agreement is not guaranteed
+
+Both implementations solve each IRLS step from the working residual
+score/√w. When the offsets of individual rows are spread over a wide range
+(for example −50 to 55, so the fitted means differ by a factor of about
+e¹⁰⁰), or one count dwarfs the others by a factor of 10¹² or more, that
+residual is dominated by a few rows. The step is then computed with an
+absolute error larger than the 10⁻⁸ convergence threshold. In this regime the
+two implementations reach the same log-likelihood to about 10⁻¹⁴, but they can
+stop at points that differ by up to about 10⁻⁷ relative (more where the
+likelihood is nearly flat in a coefficient), and one may report
+non-convergence (1006) where the other converges. An independent review found
+such cases with randomly spread offsets in Poisson and logistic fits. The
+behavior comes from the algorithm the polyfill shares with the extension, not
+from the port, and has been reported upstream.
+
+### Where the polyfill deliberately differs
+
+With one prior weight far larger than the rest (10¹⁸ or above, for example
+`PHP_INT_MAX`) on an otherwise ordinary OLS design, the extension's
+coefficients are wrong. For y = (1, 2, 2.5, 4, 4.5, 6) on x = 1, …, 6 with
+weights (1, 2, 3, 4, 5, 10¹⁸), the exact weighted least-squares solution is
+(−0.4, 1.0667). The polyfill returns (−0.4000001, 1.0666667) and the extension
+returns (319.6, −52.27). This has been reported upstream. The polyfill keeps
+the correct result, so it does not match the extension in this case.
 
 ## Distributions
 
