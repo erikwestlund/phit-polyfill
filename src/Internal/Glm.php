@@ -53,6 +53,12 @@ abstract class Glm
     /** sqrt working weights at the final estimate. */
     abstract protected function finalRootWeights(array $eta): array;
 
+    /** A scaled design entry times its final root weight, in the family's operation order. */
+    protected function finalWeighted(float $value, float $root, float $eta): float
+    {
+        return $value * $root;
+    }
+
     abstract protected function fittedValues(array $eta): array;
 
     /** Model-specific likelihood statistics: log_likelihood, deviance, null_deviance, aic. */
@@ -252,7 +258,7 @@ abstract class Glm
         for ($j = 0; $j < $p; $j++) {
             $column = $columns[$j];
             for ($i = 0; $i < $n; $i++) {
-                $column[$i] = $column[$i] * $root[$i] * $rootPrior[$i];
+                $column[$i] = $this->finalWeighted($column[$i], $root[$i], $eta[$i]) * $rootPrior[$i];
             }
             $weighted[$j] = $column;
         }

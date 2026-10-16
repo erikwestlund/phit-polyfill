@@ -22,13 +22,33 @@ if (! function_exists('randomParityOutcome')) {
         }
     }
 
+    /** Path and values of the first difference between two outcomes, or null. */
+    function randomParityFirstDifference(mixed $a, mixed $b, string $path = ''): ?string
+    {
+        if (is_array($a) && is_array($b)) {
+            if (array_keys($a) !== array_keys($b)) {
+                return "$path keys ".json_encode(array_keys($a)).' vs '.json_encode(array_keys($b));
+            }
+            foreach ($a as $k => $v) {
+                $d = randomParityFirstDifference($v, $b[$k], "$path/$k");
+                if ($d !== null) {
+                    return $d;
+                }
+            }
+
+            return null;
+        }
+
+        return serialize($a) === serialize($b) ? null : sprintf('%s: %s vs %s', $path, var_export($a, true), var_export($b, true));
+    }
+
     function randomParityCompare(string $fn, array $arguments): void
     {
         $native = randomParityOutcome(fn () => $fn(...$arguments));
         $polyfill = randomParityOutcome(fn () => Polyfill::implementation($fn)(...$arguments));
         if (serialize($native) !== serialize($polyfill)) {
             $show = fn (mixed $v) => substr(json_encode($v, JSON_PARTIAL_OUTPUT_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION), 0, 400);
-            throw new \RuntimeException("$fn differs for ".$show($arguments)."\nnative:   ".$show($native)."\npolyfill: ".$show($polyfill));
+            throw new \RuntimeException("$fn differs at ".randomParityFirstDifference($native, $polyfill)."\nfor ".$show($arguments));
         }
     }
 
@@ -157,5 +177,96 @@ it('computes draw kernels exactly like the extension', function () {
         randomParityCompare('stats_draw_affine', [$input, $matrix, $shift]);
     }
     randomParityCompare('stats_hello', []);
+    expect(true)->toBeTrue();
+});
+
+if (! function_exists('randomDesign')) {
+    /** @return array{0: list<list<float|int|null>>, 1: list<float>, 2: list<int>, 3: list<int>, 4: list<string|int|null>} */
+    function randomDesign(int $n, int $p, int $groups): array
+    {
+        $x = $y = $binary = $counts = $labels = [];
+        $effects = array_map(fn () => randomUniform(-1, 1), range(0, $groups - 1));
+        $scale = 10 ** mt_rand(-2, 3);
+        for ($i = 0; $i < $n; $i++) {
+            $row = [];
+            for ($j = 0; $j < $p; $j++) {
+                $row[] = mt_rand(0, 9) === 0 ? mt_rand(-3, 3) : $scale * randomUniform(-1, 1) * ($j + 1);
+            }
+            $g = mt_rand(0, $groups - 1);
+            $signal = 0.0;
+            foreach ($row as $j => $v) {
+                $signal += $v / ($scale * ($j + 1)) * (($j % 3) - 1) * 0.7;
+            }
+            $signal = max(-6.0, min(6.0, $signal + $effects[$g]));
+            $x[] = $row;
+            $y[] = 2.0 + $signal + randomUniform(-1, 1);
+            $binary[] = randomUniform(0, 1) < 1 / (1 + exp(-$signal)) ? 1 : 0;
+            $counts[] = (int) floor(exp(0.3 * $signal) * randomUniform(0, 4));
+            $labels[] = mt_rand(0, 1) === 1 ? "g$g" : $g;
+        }
+        if (mt_rand(0, 4) === 0) {
+            $x[mt_rand(0, $n - 1)][0] = null; // listwise deletion
+        }
+
+        return [$x, $y, $binary, $counts, $labels];
+    }
+}
+
+it('fits regressions exactly like the extension', function () {
+    randomParitySeed('models');
+    for ($round = 0; $round < randomParityIterations(); $round++) {
+        $n = mt_rand(8, 120);
+        $p = mt_rand(1, 9);
+        [$x, $y, $binary, $counts] = randomDesign($n, $p, 4);
+        $weights = mt_rand(0, 3) === 0 ? array_map(fn () => (float) mt_rand(1, 4), range(1, $n)) : null;
+        $offset = mt_rand(0, 3) === 0 ? array_map(fn () => randomUniform(-0.5, 0.5), range(1, $n)) : null;
+        $intercept = mt_rand(0, 5) > 0;
+        set_error_handler(fn () => true);
+        try {
+            randomParityCompare('stats_ols', [$x, $y, 'drop', $weights, $offset, $intercept]);
+            randomParityCompare('stats_logistic', [$x, $binary, 'drop', $weights, $offset, $intercept]);
+            randomParityCompare('stats_probit', [$x, $binary, 'drop', $weights, $offset, $intercept]);
+            randomParityCompare('stats_poisson', [$x, $counts, 'drop', $weights, $offset, $intercept]);
+            $values = array_map(fn () => randomUniform(-5, 5) * 10 ** mt_rand(-3, 6), range(1, $n));
+            randomParityCompare('stats_mean', [$values]);
+            randomParityCompare('stats_var', [$values]);
+            randomParityCompare('stats_quantile', [$values, randomUniform(0, 1)]);
+            randomParityCompare('stats_cor', [$values, $y]);
+        } finally {
+            restore_error_handler();
+        }
+    }
+    expect(true)->toBeTrue();
+});
+
+it('fits mixed models exactly like the extension', function () {
+    randomParitySeed('mixed');
+    for ($round = 0; $round < max(1, intdiv(randomParityIterations(), 3)); $round++) {
+        $groups = mt_rand(2, 8);
+        $n = mt_rand(3 * $groups, 12 * $groups);
+        $p = mt_rand(1, 3);
+        [$x, $y, $binary, , $labels] = randomDesign($n, $p, $groups);
+        set_error_handler(fn () => true);
+        try {
+            randomParityCompare('stats_lmm', [$x, $y, $labels]);
+            $intercepts = array_fill(0, $n, [1.0]);
+            $slopes = array_map(fn ($row) => [1.0, $row[0] ?? 0.0], $x);
+            randomParityCompare('stats_lmm_fit', [$x, $y, [['z' => $intercepts, 'groups' => $labels]], 'reml' => mt_rand(0, 1) === 1]);
+            randomParityCompare('stats_lmm_fit', [$x, $y, [['z' => $slopes, 'groups' => $labels, 'correlated' => mt_rand(0, 1) === 1]],
+                'optimizer' => mt_rand(0, 2) === 0 ? 'nelder_mead' : 'bobyqa']);
+            randomParityCompare('stats_logistic_mixed', [$x, $binary, $labels, 'quadrature_points' => [1, 1, 3, 9][mt_rand(0, 3)]]);
+            $data = ['y' => $y, 'b' => $binary, 'g' => array_map('strval', $labels)];
+            foreach ($x as $i => $row) {
+                foreach ($row as $j => $v) {
+                    $data["x$j"][$i] = $v;
+                }
+            }
+            $rhs = implode(' + ', array_map(fn ($j) => "x$j", range(0, $p - 1)));
+            randomParityCompare('stats_lmer', ["y ~ $rhs + (1 | g)", $data]);
+            randomParityCompare('stats_glmer', ["b ~ $rhs + (1 | g)", $data]);
+        } finally {
+            restore_error_handler();
+        }
+    }
     expect(true)->toBeTrue();
 });

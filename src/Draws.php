@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhpStats\Polyfill;
 
-use PhpStats\Polyfill\Internal\Fma;
+use PhpStats\Polyfill\Internal\Dense;
 use PhpStats\Polyfill\Internal\LeastSquares;
 
 /**
@@ -167,7 +167,7 @@ final class Draws
                         $acc = 0.0;
                         $end = min($p, $start + 256);
                         for ($k = $start; $k < $end; $k++) {
-                            $acc = Fma::fma($row[$k], $aj[$k], $acc);
+                            $acc = Dense::fma($row[$k], $aj[$k], $acc);
                         }
                         $total = $start === 0 ? $acc : $acc + $total;
                     }

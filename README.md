@@ -50,7 +50,7 @@ use `PhpStats\Polyfill\Polyfill`:
 use PhpStats\Polyfill\Polyfill;
 
 Polyfill::supports('stats_logistic');  // true
-Polyfill::supports('stats_lmm');       // false: needs the extension
+Polyfill::supports('stats_read_csv');  // false: needs the extension
 Polyfill::nativeLoaded();              // whether php_stats is loaded
 ```
 
@@ -62,7 +62,7 @@ Polyfill::nativeLoaded();              // whether php_stats is loaded
 | Regression | `stats_ols`, `stats_logistic`, `stats_probit`, `stats_poisson`, with weights, offsets, the automatic intercept, and both missing-value policies | Provided |
 | Formula interface | `stats_model_matrix`, `stats_lm`, `stats_glm` | Provided |
 | Distributions | 13 families × 14 functions; see [Distributions](#distributions) | Provided |
-| Mixed models | `stats_lmm`, `stats_lmm_fit`, `stats_logistic_mixed`, `stats_lmer`, `stats_glmer` | Extension only |
+| Mixed models | `stats_lmm`, `stats_lmm_fit`, `stats_logistic_mixed`, `stats_lmer`, `stats_glmer` | Provided (slower than the extension; see [ACCURACY.md](ACCURACY.md#speed)) |
 | Random numbers | 13 seeded `*_rng` functions, one per distribution family | Provided |
 | Posterior draws | `stats_draw_moments`, `stats_draw_covariance_map`, `stats_draw_affine` | Provided |
 | CSV reading | `stats_read_csv` (phibble's PHP reader is the fallback) | Extension only |
@@ -188,15 +188,15 @@ In summary:
 
 - Descriptive statistics agree with the extension exactly on every input
   tested, including values offset by 10¹².
-- OLS agrees with the extension to about 10⁻¹⁴, including designs with
-  condition numbers up to 10¹⁰ and extreme prior weights.
-- Logistic, probit, and Poisson regression take the same iteration path as the
-  extension and agree with it to about 10⁻¹³ on every tested input, including
-  near-collinear designs, separation, and extreme offsets.
+- OLS, logistic, probit, and Poisson regression return the same bits as the
+  extension on every tested input, including designs with condition numbers
+  up to 10¹⁰, extreme prior weights, separation, and extreme offsets.
 - Distribution functions are bit-identical to the extension on every input
   tested, and within 10⁻¹² of mpmath down to probabilities near 10⁻³⁰⁰.
 - The formula functions produce identical design matrices, column names, and
-  terms, and their fits agree with the extension to about 10⁻¹².
+  terms, and identical fits.
+- Seeded samplers, posterior-draw kernels, and the five mixed-model functions
+  are bit-identical to the extension in the randomized parity suite.
 
 ### Known differences
 
@@ -205,9 +205,9 @@ In summary:
 - Scalar arguments of the wrong type follow PHP's userland rules (coercion in
   non-strict files, otherwise `TypeError`). The extension raises an
   `\Exception` instead.
-- The `iterations` reported by an iterative fit matched the extension on every
-  tested input, but the suite allows a difference of one at the edge of
-  floating-point range.
+- Matrix products above 5×5 follow the extension's aarch64 build, which uses
+  fused multiply-adds. On an x86-64 CPU without FMA the extension's products
+  can differ in the last bit.
 
 ## Performance
 

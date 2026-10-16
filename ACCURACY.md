@@ -92,35 +92,33 @@ are compared relative to |b| + 10⁻³·max |b|.
 
 The least-squares steps reproduce the extension's arithmetic: Householder QR
 with nalgebra's operation order (including its eight-way blocked dot products
-and sign handling), solves and (R'R)⁻¹ by back-substitution on R, and weighted
-OLS rows factored in decreasing-weight order (php-stats 91ee538). Only the
-final R⁻¹R⁻ᵀ product, which nalgebra computes with a blocked matrix multiply,
-is summed in a different order. As a result the two implementations take the
-same path through every iterative fit tested. The `iterations` they report
-were identical in every case below.
+and sign handling), solves and (R'R)⁻¹ by back-substitution on R, weighted OLS
+rows factored in decreasing-weight order (php-stats 91ee538), the R⁻¹R⁻ᵀ
+product as matrixmultiply's fused kernel computes it once p exceeds 5, and the
+extension's order of multiplication in every derived statistic. The two
+implementations therefore take the same path through every iterative fit and
+return the same bits.
 
 | Group | Inputs | OLS | Logistic | Probit | Poisson |
 |---|---|---:|---:|---:|---:|
-| fixtures | all R fixtures, with and without the automatic intercept, plus the r-compatibility and stress fixtures | 6.7e-16 | 1.0e-13 | 0 | 0 |
-| random | 40 seeded designs per model: n 12–400, 1–5 predictors, weights, offsets, missing rows | 9.9e-15 | 5.1e-14 | 3.5e-16 | 1.1e-15 |
-| scaling | predictors and outcomes scaled by 10⁻⁸ to 10⁸; prior weights 10¹⁰⁰ to 10²⁰⁰ | 1.6e-14 | 3.1e-15 | 0 | 0 |
-| collinear | condition numbers about 10⁶ to 10¹⁰ | 8.6e-16 | 1.2e-9 | (rejected identically) | 0 |
-| separation | complete, quasi-complete, rare events (1 in 2000), grouped near-boundary proportions | | 2.5e-15 | 0 | |
-| offsets | binary offsets −50 to 40; per-row offsets spread over −50 to 55 (40 seeded fits each) | | 1.0e-14 | 0 | 0 |
+| fixtures | all R fixtures, with and without the automatic intercept, plus the r-compatibility and stress fixtures | 0 | 0 | 0 | 0 |
+| random | 40 seeded designs per model: n 12–400, 1–5 predictors, weights, offsets, missing rows | 0 | 0 | 0 | 0 |
+| scaling | predictors and outcomes scaled by 10⁻⁸ to 10⁸; prior weights 10¹⁰⁰ to 10²⁰⁰ | 0 | 0 | 0 | 0 |
+| collinear | condition numbers about 10⁶ to 10¹⁰ | 0 | 0 | (rejected identically) | 0 |
+| separation | complete, quasi-complete, rare events (1 in 2000), grouped near-boundary proportions | | 0 | 0 | |
+| offsets | binary offsets −50 to 40; per-row offsets spread over −50 to 55 (40 seeded fits each) | | 0 | 0 | 0 |
 | counts | Poisson counts up to 10¹² and scaled by 10¹⁶⁰, common offsets −700 to 300, sparse counts | | | | 0 |
 | errors | invalid shapes, types, domains, weights, policies, rank deficiency | 0 | same codes | same codes | 0 |
 
-Every invalid input in the error group raises the same exception code in both,
-and every fit that fails in one implementation fails with the same code in the
-other. Probit fits on the collinear designs are rejected by both with the same
-code.
+The `iterations` reported were identical in every case. Every invalid input in
+the error group raises the same exception code in both, and every fit that
+fails in one implementation fails with the same code in the other.
 
-Inputs at the edge of floating-point range can still be computed slightly
-differently by the two, for example when the R⁻¹R⁻ᵀ product rounds
-differently. The parity suite therefore keeps tolerances (10⁻¹⁰ for OLS on
-the fixtures, 10⁻⁹ on random data, and 10⁻⁷ for the iterative models, whose
-stopping rule is a 10⁻⁸ relative step) and allows the reported `iterations` to
-differ by one.
+The randomized parity suite (`tests/Parity/RandomizedParityTest.php`) adds
+seeded designs with 1 to 9 predictors, integer and zero entries, weights,
+offsets, missing rows, and fits without an intercept, and requires every
+result to be identical, including the sign of zero. Four seeds of 150 designs
+per model passed.
 
 ### Inputs where the results are sensitive to rounding
 
@@ -255,8 +253,8 @@ level and collation edge cases, both missing-value policies, about 28 weight
 shapes, 20 family and link combinations, about 50 data shapes, and 30 random
 designs. Design matrices, column names, terms, `assign`, row accounting, key
 order, and warning text are identical, and every invalid input raises the same
-exception code with the same message. The largest scale-aware difference in
-the fits is 4.4e-13 on the fixtures and 7.9e-13 across the other cases.
+exception code with the same message. The fits are identical to the bit in
+every group.
 
 ## Random numbers
 
@@ -293,13 +291,77 @@ nalgebra's bidiagonal SVD, so a matrix whose smallest singular value lies
 within rounding of the threshold could be classified differently. Against the
 NumPy references in `draws-python.json`, all cases agree within 1e-11.
 
+## Mixed models
+
+`stats_lmm`, `stats_lmm_fit`, `stats_logistic_mixed`, `stats_lmer`, and
+`stats_glmer` port the extension's stats-core code (mixed.rs, lmm.rs,
+logistic_mixed.rs, and the formula front end) together with the numerical
+libraries it relies on, each reproduced to the bit and checked against the
+compiled Rust library on randomized problems:
+
+- BOBYQA from the `bobyqa` 0.3.2 crate (2,224 problems, every evaluated point
+  identical).
+- Nelder–Mead and the executor loop from argmin 0.11.0 (3,276 problems).
+- nalgebra 0.35.0's SVD, symmetric eigendecomposition (for the Gauss–Hermite
+  nodes), Householder QR, Cholesky, triangular solves, norms, and matrix
+  products, including matrixmultiply's fused kernel (about 30,000
+  decompositions and products).
+
+### Against the extension
+
+Every result key is identical to the extension's, bit for bit, including
+theta, the variance components, conditional modes and variances, evaluation
+counts, and the diagnostics. This holds for the extension's R fixtures and for
+the randomized parity suite, which fits seeded designs with 2 to 8 groups,
+string and integer group labels, missing rows, random intercepts and slopes
+(correlated and uncorrelated), ML and REML, both optimizers, Laplace and
+adaptive quadrature, and the formula interfaces. Four seeds of 50 designs
+each passed.
+
+### Against R
+
+The extension's own integration scripts (`lmm.php`, `lmm-expanded.php`,
+`logistic-mixed.php`, and `formula-mixed.php`) pass unchanged against the
+polyfill, apart from the warning level noted below. They compare with lme4
+and nlme at the extension's tolerances. The largest differences from lme4 on
+the main quantities:
+
+| Function | Reference | Coefficients | Std. errors | Variance components | Log-likelihood |
+|---|---|---:|---:|---:|---:|
+| `stats_lmm` | lmm-r.json (6 fits) | 5.4e-9 | 2.8e-8 | 7.8e-8 | 2.4e-16 |
+| `stats_lmm` | lmm-public-r.json (4 public datasets) | 1.7e-9 | 4.5e-8 | 1.2e-7 | 4.0e-16 |
+| `stats_logistic_mixed` | logistic-mixed-r.json (28 fits) | 1.7e-6 | 2.2e-5 | 1.2e-6 | 3.1e-9 |
+
+The binomial standard errors differ from lme4 by up to 2·10⁻⁵ relative because
+both programs differentiate the approximate likelihood numerically, with
+different step rules. `lmm-expanded.php` covers 15 general models against four
+lme4 optimizers, and `formula-mixed.php` makes 782 comparisons over 7 `lmer`
+and 3 `glmer` fits.
+
+### Speed
+
+The mixed models are the slowest part of the polyfill. Measured on an Apple M5
+Ultra with PHP 8.5.10, in the same process as the extension:
+
+| Fit | Extension | Polyfill | Polyfill, tracing JIT |
+|---|---:|---:|---:|
+| `stats_lmm`, sleepstudy (n = 180) | 0.2 ms | 2.6 ms | 8.4 ms |
+| `stats_logistic_mixed`, n = 185, Laplace | 1.3 ms | 26 ms | 36 ms |
+| `stats_logistic_mixed`, n = 185, 9 quadrature points | 2.1 ms | 41 ms | 42 ms |
+| `stats_lmm_fit`, random slopes, q = 24 | 0.7 ms | 37 ms | 163 ms |
+| `stats_lmm_fit`, nested, q = 84 | 7.8 ms | 604 ms | 130 ms |
+| `stats_lmm_fit`, four nested levels, q = 120 | 103 ms | 8.0 s | 1.4 s |
+
+Here q is the number of random coefficients. `stats_lmm_fit` and `stats_lmer`
+repeat a dense QR of a matrix with about n + q rows and q + p columns at every
+optimizer step, so their cost grows roughly with q³. The JIT helps large fits
+and costs compilation time on small ones.
+
 ## Not provided
 
-The following functions need the native extension and are left undefined:
-`stats_lmm`, `stats_lmm_fit`, `stats_logistic_mixed`, `stats_lmer`,
-`stats_glmer`, and `stats_read_csv`.
-`PhpStats\Polyfill\Polyfill::supports()` reports which functions are
-available.
+`stats_read_csv` needs the native extension and is left undefined; phibble's
+PHP reader is the fallback. `PhpStats\Polyfill\Polyfill::supports()` reports
+which functions are available.
 
 ## Known differences from the extension
 
@@ -310,4 +372,7 @@ available.
   function. In files without `strict_types`, numeric strings and booleans are
   coerced, and other values raise `TypeError`. The extension raises an
   `\Exception` with the message "Invalid value given for argument" instead.
-- The reported `iterations` of an iterative fit can differ, as described above.
+- The parity suites ran on aarch64 (Apple silicon), where matrixmultiply
+  accumulates with fused multiply-adds, as the polyfill does. On an x86-64 CPU
+  without FMA the extension's products of matrices larger than 5×5 can differ
+  from the polyfill's in the last bit.

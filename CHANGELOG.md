@@ -27,6 +27,7 @@ php-stats has no tagged release yet.
 - Regression: `stats_ols`, `stats_logistic`, `stats_probit`, and
   `stats_poisson`, with weights, offsets, the automatic intercept, listwise
   deletion, and the extension's result keys, diagnostics, and exception codes.
+  Results are identical to the extension's to the bit.
 - Distributions: 13 families (normal, t, chi-square, F, exponential, logistic,
   log-normal, gamma, beta, binomial, Poisson, negative binomial, and negative
   binomial by mean). Each has the density or mass function, cdf, survival
@@ -38,6 +39,10 @@ php-stats has no tagged release yet.
 - Posterior-draw kernels: `stats_draw_moments`, `stats_draw_covariance_map`,
   and `stats_draw_affine`, including the fused multiply-add accumulation of
   the extension's matrix product.
+- Mixed models: `stats_lmm`, `stats_lmm_fit`, `stats_logistic_mixed`,
+  `stats_lmer`, and `stats_glmer`, with exact PHP ports of the extension's
+  BOBYQA (bobyqa 0.3.2), Nelder–Mead (argmin 0.11.0), and nalgebra SVD,
+  symmetric eigendecomposition, and matrix products.
 - `stats_hello`.
 - A randomized differential parity suite that compares the polyfill with the
   loaded extension on seeded random inputs.
@@ -50,9 +55,7 @@ php-stats has no tagged release yet.
 
 ### Extension-only
 
-These functions are left undefined and need the native extension:
-`stats_lmm`, `stats_lmm_fit`, `stats_logistic_mixed`, `stats_lmer`,
-`stats_glmer`, and `stats_read_csv`.
+`stats_read_csv` is left undefined and needs the native extension.
 
 ### Known differences from the extension
 
@@ -60,7 +63,5 @@ These functions are left undefined and need the native extension:
   raise `E_WARNING`. The text is identical.
 - Scalar arguments of the wrong type follow PHP's rules for userland
   functions.
-- The `iterations` of an iterative fit can differ slightly where the
-  likelihood is flat to rounding. The estimates still agree.
 
 [0.1.0]: https://github.com/erikwestlund/php-stats-polyfill/releases/tag/v0.1.0

@@ -1,0 +1,9 @@
+[package]
+name = "nalgebra-ref"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# The extension's versions (Cargo.lock pins matrixmultiply 0.3.11 and simba 0.10.2).
+[dependencies]
+nalgebra = "=0.35.0"

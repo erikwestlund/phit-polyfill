@@ -72,6 +72,14 @@ final class LogisticFamily extends Binary
         return $this->rootWeights($eta);
     }
 
+    /** logistic.rs computes scaled * sqrt(e) / (1 + e) left to right, e = exp(-|eta|). */
+    protected function finalWeighted(float $value, float $root, float $eta): float
+    {
+        $exponential = exp(-abs($eta));
+
+        return $value * sqrt($exponential) / (1.0 + $exponential);
+    }
+
     protected function scores(array $eta, array $y): array
     {
         $out = [];

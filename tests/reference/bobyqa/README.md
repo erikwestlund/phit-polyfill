@@ -1,0 +1,1 @@
+Regenerate the fixture with `cargo run --release --offline --manifest-path tests/reference/bobyqa/Cargo.toml -- fixture > tests/fixtures/bobyqa-reference.json` (or `-- sweep <count> <seed>` for a randomized comparison set with full evaluation traces).

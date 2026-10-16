@@ -21,6 +21,7 @@ final class ModelData
      * @param  list<float>  $offset
      * @param  list<int>  $retained
      * @param  list<int>  $dropped
+     * @param  list<int|string>  $groups  group labels of the complete rows, when groups were given
      */
     private function __construct(
         public array $x,
@@ -30,6 +31,7 @@ final class ModelData
         public int $nInput,
         public array $retained,
         public array $dropped,
+        public array $groups = [],
     ) {}
 
     /** Sample accounting only, for results whose rows were prepared elsewhere (formulas). */
@@ -77,6 +79,49 @@ final class ModelData
         return $out;
     }
 
+    /**
+     * Group identifiers: integers or strings, with null marking a missing label.
+     *
+     * @return list<int|string|null>
+     */
+    public static function labels(array $values): array
+    {
+        $out = [];
+        foreach ($values as $value) {
+            if ($value === null || is_int($value) || is_string($value)) {
+                $out[] = $value;
+            } else {
+                throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'group IDs must be integers, strings, or null');
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Dense indices of group labels in order of first appearance. Integer 5 and
+     * string "5" are different groups, as in the extension.
+     *
+     * @param  list<int|string>  $labels
+     * @return array{0: list<int>, 1: list<int|string>} indices and distinct labels
+     */
+    public static function groupIndices(array $labels): array
+    {
+        $seen = [];
+        $distinct = [];
+        $indices = [];
+        foreach ($labels as $label) {
+            $key = (is_int($label) ? 'i:' : 's:').$label;
+            if (! isset($seen[$key])) {
+                $seen[$key] = count($distinct);
+                $distinct[] = $label;
+            }
+            $indices[] = $seen[$key];
+        }
+
+        return [$indices, $distinct];
+    }
+
     /** @param 'continuous'|'binary'|'count' $outcome */
     public static function prepare(
         array $x,
@@ -86,6 +131,7 @@ final class ModelData
         ?array $weights,
         ?array $offset,
         bool $intercept,
+        ?array $groups = null,
     ): self {
         if ($missing !== 'drop' && $missing !== 'raise') {
             throw ErrorCode::exception(ErrorCode::INVALID_INPUT, "missing must be 'drop' or 'raise'");
@@ -123,9 +169,13 @@ final class ModelData
             }
             $outcomes[] = $value;
         }
+        $labels = $groups === null ? null : self::labels($groups);
         $n = count($rows);
         if ($n === 0 || (! $intercept && count($rows[0]) === 0)) {
             throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'x must have at least one row; without an intercept, at least one column is required');
+        }
+        if ($labels !== null && count($labels) !== $n) {
+            throw ErrorCode::exception(ErrorCode::DIMENSION_MISMATCH, 'groups must have one identifier per observation');
         }
         if (count($outcomes) !== $n) {
             throw ErrorCode::exception(ErrorCode::DIMENSION_MISMATCH, 'x and y must have the same number of observations');
@@ -159,12 +209,15 @@ final class ModelData
                 }
             }
         }
-        $cx = $cy = $cw = $co = $retained = $dropped = [];
+        $cx = $cy = $cw = $co = $cg = $retained = $dropped = [];
         foreach ($rows as $i => $row) {
-            if (! $complete[$i] || $outcomes[$i] === null || $w[$i] === null || $o[$i] === null) {
+            if (! $complete[$i] || $outcomes[$i] === null || ($labels !== null && $labels[$i] === null) || $w[$i] === null || $o[$i] === null) {
                 $dropped[] = $i;
 
                 continue;
+            }
+            if ($labels !== null) {
+                $cg[] = $labels[$i];
             }
             $cx[] = $row;
             $cy[] = $outcomes[$i];
@@ -176,7 +229,7 @@ final class ModelData
             throw ErrorCode::exception(ErrorCode::INVALID_INPUT, "missing values found with missing='raise'");
         }
 
-        return new self($cx, $cy, $cw, $co, $n, $retained, $dropped);
+        return new self($cx, $cy, $cw, $co, $n, $retained, $dropped, $cg);
     }
 
     /**
@@ -197,6 +250,12 @@ final class ModelData
         $dropped = count($this->dropped);
         if ($dropped > 0) {
             $warnings[] = "listwise deletion removed $dropped of {$this->nInput} original rows";
+        }
+        if (($output['singular'] ?? null) === true) {
+            $warnings[] = 'random-effect covariance is singular or near singular';
+        }
+        if (in_array($function, ['stats_logistic_mixed', 'stats_glmer'], true) && ($output['quadrature_points'] ?? null) === 1) {
+            $warnings[] = 'Laplace integration is approximate; assess quadrature sensitivity for rare events or small groups';
         }
         $diagnostics['warnings'] = $warnings;
         $output['diagnostics'] = $diagnostics;

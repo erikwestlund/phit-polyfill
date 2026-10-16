@@ -34,18 +34,37 @@ final class LeastSquares
      */
     public function __construct(array $columns, int $n, private readonly int $p, ?array $rhs = null)
     {
-        // Householder QR exactly as nalgebra's QR::new / q_tr_mul compute it (same
-        // operation order, 8-way dot products, reflections applied "with sign"),
-        // so R matches the extension's to the last bit where possible: near the
-        // convergence threshold of an ill-conditioned fit, rounding decides.
+        [$r, $qtb] = self::householder($columns, $n, $p, $rhs);
+        $this->r = $r;
+        $this->qtb = $qtb === null ? null : array_slice($qtb, 0, $p);
+        $this->singular = self::singularValues($r, $p);
+        $this->tolerance = PHP_FLOAT_EPSILON * max($n, $p) * $this->singular[0];
+    }
+
+    /**
+     * Householder QR exactly as nalgebra's QR::new / q_tr_mul compute it (same
+     * operation order, 8-way dot products, reflections applied "with sign"),
+     * so R matches the extension's to the last bit where possible: near the
+     * convergence threshold of an ill-conditioned fit, rounding decides.
+     *
+     * Returns R as m columns of min(n, m) rows (nalgebra's r(): the upper
+     * trapezoid with |diagonal|) and Q'b for the optional right-hand side.
+     *
+     * @param  list<list<float>>  $columns  n×m, column-major
+     * @param  list<float>|null  $rhs
+     * @return array{0: list<list<float>>, 1: list<float>|null}
+     */
+    public static function householder(array $columns, int $n, int $m, ?array $rhs = null): array
+    {
         $qtb = $rhs;
-        $diagonal = array_fill(0, $p, 0.0);
-        for ($k = 0; $k < $p; $k++) {
+        $steps = min($n, $m);
+        $diagonal = array_fill(0, $steps, 0.0);
+        for ($k = 0; $k < $steps; $k++) {
             $ck = &$columns[$k];
             $sq = self::dot($ck, $ck, $k, $n);
             $norm = sqrt($sq);
             $x0 = $ck[$k];
-            $sign = ($x0 < 0.0 || ($x0 == 0.0 && fdiv(1.0, $x0) < 0.0)) ? -1.0 : 1.0;
+            $sign = $x0 < 0.0 ? -1.0 : 1.0; // nalgebra: a -0.0 head counts as positive
             $signedNorm = $sign * $norm;
             $factor = ($sq + abs($x0) * $norm) * 2.0;
             $ck[$k] += $signedNorm;
@@ -67,7 +86,7 @@ final class LeastSquares
             $diagonal[$k] = $reflectionNorm;
             $reflectSign = $reflectionNorm < 0.0 || ($reflectionNorm == 0.0 && fdiv(1.0, $reflectionNorm) < 0.0) ? -1.0 : 1.0;
             $scale = $reflectSign * -2.0;
-            for ($j = $k + 1; $j < $p; $j++) {
+            for ($j = $k + 1; $j < $m; $j++) {
                 $cj = &$columns[$j];
                 $f = (self::dot($ck, $cj, $k, $n) - 0.0) * $scale;
                 for ($i = $k; $i < $n; $i++) {
@@ -84,20 +103,19 @@ final class LeastSquares
             unset($ck);
         }
 
-        // R: the upper triangle, with |diagonal| on the diagonal (nalgebra's r()).
         $r = [];
-        for ($j = 0; $j < $p; $j++) {
-            $column = array_fill(0, $p, 0.0);
-            for ($i = 0; $i < $j; $i++) {
+        for ($j = 0; $j < $m; $j++) {
+            $column = array_fill(0, $steps, 0.0);
+            for ($i = 0; $i < min($j, $steps); $i++) {
                 $column[$i] = $columns[$j][$i];
             }
-            $column[$j] = abs($diagonal[$j]);
+            if ($j < $steps) {
+                $column[$j] = abs($diagonal[$j]);
+            }
             $r[$j] = $column;
         }
-        $this->r = $r;
-        $this->qtb = $qtb === null ? null : array_slice($qtb, 0, $p);
-        $this->singular = self::singularValues($r, $p);
-        $this->tolerance = PHP_FLOAT_EPSILON * max($n, $p) * $this->singular[0];
+
+        return [$r, $qtb];
     }
 
     /**
@@ -267,16 +285,14 @@ final class LeastSquares
             }
             $inverse[$j] = $column;
         }
+        // nalgebra's &inverse * inverse.transpose(): matrixmultiply's fused
+        // kernel once p exceeds 5, column updates otherwise.
+        $product = Dense::multiply($inverse, Dense::transpose($inverse));
         $out = [];
         for ($i = 0; $i < $p; $i++) {
             $row = [];
             for ($j = 0; $j < $p; $j++) {
-                // (R^-1 R^-T)(i, j) = sum_k R^-1(i, k) R^-1(j, k)
-                $sum = 0.0;
-                for ($k = 0; $k < $p; $k++) {
-                    $sum += $inverse[$k][$i] * $inverse[$k][$j];
-                }
-                $row[$j] = $sum / $scales[$i] / $scales[$j] * $factor;
+                $row[$j] = $product[$j][$i] / $scales[$i] / $scales[$j] * $factor;
             }
             $out[$i] = $row;
         }

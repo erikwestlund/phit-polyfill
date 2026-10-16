@@ -1,0 +1,1 @@
+Regenerate the fixture with `cargo run --release --offline --manifest-path tests/reference/nalgebra/Cargo.toml --target-dir "${TMPDIR:-/tmp}/nalgebra-ref" -- fixture > tests/fixtures/nalgebra-reference.json` on aarch64 (or `-- sweep <seed>` for the large randomized comparison set).

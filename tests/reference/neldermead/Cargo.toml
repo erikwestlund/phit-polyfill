@@ -1,0 +1,9 @@
+[package]
+name = "neldermead-ref"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+argmin = { version = "=0.11.0", default-features = false }
+argmin-math = { version = "=0.5.1", default-features = false, features = ["vec"] }

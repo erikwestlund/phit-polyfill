@@ -100,7 +100,7 @@ final class Ols
         $fitted = [];
         $residuals = [];
         foreach ($x as $i => $row) {
-            $sum = 0.0;
+            $sum = -0.0; // Rust's f64 sum starts from -0.0
             foreach ($row as $j => $value) {
                 $sum += $value * $result['coefficients'][$j];
             }
@@ -121,7 +121,7 @@ final class Ols
         $mss = 0.0;
         foreach ($fitted as $i => $f) {
             $d = $f - $offset[$i] - $mean;
-            $mss += $weights[$i] * $d * $d;
+            $mss += $weights[$i] * ($d * $d);
         }
         if (! is_finite($mss)) {
             throw self::error(ErrorCode::NONFINITE, 'weighted fitted variation exceeds floating-point range; rescale the outcome');
@@ -218,19 +218,20 @@ final class Ols
         }
         $fitted = [];
         $residuals = [];
-        $rss = 0.0;
         $nonzeroResidual = false;
         foreach ($x as $i => $row) {
-            $f = 0.0;
-            foreach ($row as $j => $value) {
-                $f += $value * $beta[$j];
+            // design * beta as nalgebra's gemv: the first product starts the sum.
+            $f = $row[0] * $beta[0];
+            for ($j = 1; $j < $p; $j++) {
+                $f = $row[$j] * $beta[$j] + $f;
             }
             $fitted[$i] = $f;
             $residual = $y[$i] - $f;
             $residuals[$i] = $residual;
-            $rss += $residual * $residual;
             $nonzeroResidual = $nonzeroResidual || $residual != 0.0;
         }
+        // nalgebra's norm_squared: the 8-accumulator dot product.
+        $rss = LeastSquares::dot($residuals, $residuals, 0, $n);
         $df = $n - $p;
         $variance = $rss / $df;
         if (($rss == 0.0 && $nonzeroResidual) || ($rss > 0.0 && $variance == 0.0)) {

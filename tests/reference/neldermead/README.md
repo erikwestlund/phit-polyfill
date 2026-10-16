@@ -1,0 +1,1 @@
+Regenerate the fixture with `cargo run --release --offline --manifest-path tests/reference/neldermead/Cargo.toml -- fixture > tests/fixtures/neldermead-reference.json` (or `-- sweep <count> <seed>` for a randomized comparison set).

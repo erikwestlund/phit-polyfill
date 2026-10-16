@@ -107,7 +107,8 @@ final class Glm
      * @param  list<float>  $weights
      * @return list<float>
      */
-    private static function binomialResponse(Design $design, array &$weights): array
+    /** @internal shared with stats_glmer */
+    public static function binomialResponse(Design $design, array &$weights): array
     {
         $response = $design->response;
         if ($response === null) {

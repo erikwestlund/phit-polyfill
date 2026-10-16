@@ -24,7 +24,9 @@ $models = ['ols' => 'Ols', 'logistic' => 'Logistic', 'probit' => 'Probit', 'pois
 // Other entry points: stats_* name => [class, method].
 $formulas = ['model_matrix' => ['ModelMatrix', 'build'], 'lm' => ['Lm', 'fit'], 'glm' => ['Glm', 'fit'],
     'draw_moments' => ['Draws', 'moments'], 'draw_covariance_map' => ['Draws', 'covarianceMap'],
-    'draw_affine' => ['Draws', 'affine'], 'hello' => ['Hello', 'hello']];
+    'draw_affine' => ['Draws', 'affine'], 'hello' => ['Hello', 'hello'],
+    'lmm' => ['MixedModels', 'lmm'], 'lmm_fit' => ['MixedModels', 'lmmFit'], 'logistic_mixed' => ['MixedModels', 'logisticMixed'],
+    'lmer' => ['MixedFormula', 'lmer'], 'glmer' => ['MixedFormula', 'glmer']];
 
 function camel(string $name): string
 {

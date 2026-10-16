@@ -679,6 +679,13 @@ if (! function_exists('stats_glm')) {
     }
 }
 
+if (! function_exists('stats_glmer')) {
+    function stats_glmer(string $formula, mixed $data, string $family = 'binomial', string $link = '', string $missing = 'drop', mixed $weights = null, int $quadrature_points = 1, int $max_evaluations = 20000, float $tolerance = 1.0E-7): array
+    {
+        return \PhpStats\Polyfill\MixedFormula::glmer($formula, $data, $family, $link, $missing, $weights, $quadrature_points, $max_evaluations, $tolerance);
+    }
+}
+
 if (! function_exists('stats_hello')) {
     function stats_hello(): string
     {
@@ -690,6 +697,27 @@ if (! function_exists('stats_lm')) {
     function stats_lm(string $formula, mixed $data, string $missing = 'drop', mixed $weights = null): array
     {
         return \PhpStats\Polyfill\Lm::fit($formula, $data, $missing, $weights);
+    }
+}
+
+if (! function_exists('stats_lmer')) {
+    function stats_lmer(string $formula, mixed $data, bool $reml = true, string $missing = 'drop', mixed $weights = null, ?array $start = null, int $max_evaluations = 20000, float $tolerance = 1.0E-7, string $optimizer = 'bobyqa', float $objective_tolerance = 1.0E-12): array
+    {
+        return \PhpStats\Polyfill\MixedFormula::lmer($formula, $data, $reml, $missing, $weights, $start, $max_evaluations, $tolerance, $optimizer, $objective_tolerance);
+    }
+}
+
+if (! function_exists('stats_lmm')) {
+    function stats_lmm(array $x, array $y, array $groups, string $missing = 'drop', bool $intercept = true): array
+    {
+        return \PhpStats\Polyfill\MixedModels::lmm($x, $y, $groups, $missing, $intercept);
+    }
+}
+
+if (! function_exists('stats_lmm_fit')) {
+    function stats_lmm_fit(array $x, array $y, array $random, string $missing = 'drop', bool $reml = false, ?array $weights = null, ?array $offset = null, ?array $start = null, int $max_evaluations = 20000, float $tolerance = 1.0E-7, string $optimizer = 'bobyqa', float $objective_tolerance = 1.0E-12, bool $intercept = true): array
+    {
+        return \PhpStats\Polyfill\MixedModels::lmmFit($x, $y, $random, $missing, $reml, $weights, $offset, $start, $max_evaluations, $tolerance, $optimizer, $objective_tolerance, $intercept);
     }
 }
 
@@ -753,6 +781,13 @@ if (! function_exists('stats_logistic_logsf_array')) {
     function stats_logistic_logsf_array(array $values, float $location = 0.0, float $scale = 1.0): array
     {
         return \PhpStats\Polyfill\Distribution\Logistic::logsfArray($values, $location, $scale);
+    }
+}
+
+if (! function_exists('stats_logistic_mixed')) {
+    function stats_logistic_mixed(array $x, array $y, array $groups, string $missing = 'drop', ?array $weights = null, ?array $offset = null, int $quadrature_points = 1, int $max_evaluations = 20000, float $tolerance = 1.0E-7, bool $intercept = true): array
+    {
+        return \PhpStats\Polyfill\MixedModels::logisticMixed($x, $y, $groups, $missing, $weights, $offset, $quadrature_points, $max_evaluations, $tolerance, $intercept);
     }
 }
 
