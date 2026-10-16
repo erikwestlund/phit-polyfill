@@ -1,0 +1,114 @@
+{
+    "recorded_at": "2026-10-16T07:50:53Z",
+    "cpu": "Apple M5 Ultra",
+    "platform": "Darwin 27.0.0 arm64",
+    "php_version": "8.5.10",
+    "opcache": {
+        "enabled": true,
+        "jit": true,
+        "jit_mode": "tracing",
+        "jit_buffer_size": "64M"
+    },
+    "polyfill_commit": "bd9d24a",
+    "extension_reference_commit": "4ba33e489c39cfeddeab0b32903f9c81ff7f8157",
+    "extension_loaded": true,
+    "design": "10 standard normal predictors plus an intercept; seed 5",
+    "repeat": 5,
+    "warmup_calls": 1,
+    "cases": [
+        {
+            "model": "ols",
+            "function": "stats_ols",
+            "n": 10000,
+            "p": 10,
+            "implementations": {
+                "polyfill": {
+                    "median_seconds": 0.00665075,
+                    "min_seconds": 0.006462333
+                },
+                "extension": {
+                    "median_seconds": 0.0027825,
+                    "min_seconds": 0.002745542
+                },
+                "plain_php_normal_equations": {
+                    "median_seconds": 0.002035208,
+                    "min_seconds": 0.002028625,
+                    "note": "coefficients only, by Cholesky on X'X; no inference or rank checks"
+                }
+            },
+            "agreement": {
+                "max_coefficient_difference_in_standard_errors": 1.07708933277985e-13,
+                "same_result_keys": true,
+                "agrees": true
+            }
+        },
+        {
+            "model": "logistic",
+            "function": "stats_logistic",
+            "n": 10000,
+            "p": 10,
+            "implementations": {
+                "polyfill": {
+                    "median_seconds": 0.0378475,
+                    "min_seconds": 0.037356084
+                },
+                "extension": {
+                    "median_seconds": 0.006931584,
+                    "min_seconds": 0.006908125
+                }
+            },
+            "agreement": {
+                "max_coefficient_difference_in_standard_errors": 3.533921075723016e-15,
+                "same_result_keys": true,
+                "agrees": true
+            }
+        },
+        {
+            "model": "ols",
+            "function": "stats_ols",
+            "n": 100000,
+            "p": 10,
+            "implementations": {
+                "polyfill": {
+                    "median_seconds": 0.07243025,
+                    "min_seconds": 0.07102475
+                },
+                "extension": {
+                    "median_seconds": 0.027915375,
+                    "min_seconds": 0.027566042
+                },
+                "plain_php_normal_equations": {
+                    "median_seconds": 0.020413625,
+                    "min_seconds": 0.020251542,
+                    "note": "coefficients only, by Cholesky on X'X; no inference or rank checks"
+                }
+            },
+            "agreement": {
+                "max_coefficient_difference_in_standard_errors": 1.669256421239438e-12,
+                "same_result_keys": true,
+                "agrees": true
+            }
+        },
+        {
+            "model": "logistic",
+            "function": "stats_logistic",
+            "n": 100000,
+            "p": 10,
+            "implementations": {
+                "polyfill": {
+                    "median_seconds": 0.391616667,
+                    "min_seconds": 0.379536375
+                },
+                "extension": {
+                    "median_seconds": 0.069930667,
+                    "min_seconds": 0.069290292
+                }
+            },
+            "agreement": {
+                "max_coefficient_difference_in_standard_errors": 1.1894722242642468e-14,
+                "same_result_keys": true,
+                "agrees": true
+            }
+        }
+    ]
+}

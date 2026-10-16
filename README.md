@@ -134,20 +134,29 @@ plus an intercept. Times are the median of five runs with the tracing JIT on
 
 | Model | n | Polyfill | Extension | Ratio |
 |---|---:|---:|---:|---:|
-| `stats_ols` | 10,000 | 6.6 ms | 2.8 ms | 2.3× |
-| `stats_ols` | 100,000 | 73 ms | 31 ms | 2.4× |
-| `stats_logistic` | 10,000 | 40 ms | 7.0 ms | 5.7× |
-| `stats_logistic` | 100,000 | 391 ms | 75 ms | 5.2× |
+| `stats_ols` | 10,000 | 6.7 ms | 2.8 ms | 2.4× |
+| `stats_ols` | 100,000 | 72 ms | 28 ms | 2.6× |
+| `stats_logistic` | 10,000 | 38 ms | 6.9 ms | 5.5× |
+| `stats_logistic` | 100,000 | 392 ms | 70 ms | 5.6× |
 
 The logistic fit includes the null model that every intercept model fits for
 `null_deviance`. Without the JIT the polyfill is about three times slower
 (226 ms for OLS and 1.25 s for logistic regression at n = 100,000).
-Reproduce the table with:
+For comparison, solving the normal equations (X'X)b = X'y in plain PHP took
+20 ms at n = 100,000. That baseline returns coefficients only, without
+standard errors, rank detection, or the other results. Forming X'X also
+squares the condition number, so it loses accuracy on ill-conditioned designs.
+The polyfill's coefficients agreed with the extension's to within 2·10⁻¹² standard
+errors in every case. The recorded run, with its full context (CPU, platform,
+PHP and JIT settings, median and minimum times, a plain-PHP normal-equations
+baseline for OLS, and the agreement check), is in
+[benchmarks/results.json](benchmarks/results.json). Reproduce it with:
 
 ```bash
 php -d extension=/path/to/libphp_stats.so -d opcache.enable_cli=1 \
     -d opcache.jit=tracing -d opcache.jit_buffer_size=64M \
-    benchmarks/run.php --sizes=10000,100000 --repeat=5 --seed=5
+    benchmarks/run.php --sizes=10000,100000 --repeat=5 --seed=5 \
+    --json=benchmarks/results.json
 ```
 
 ## Development
