@@ -218,14 +218,14 @@ plus an intercept. Times are the median of five runs with the tracing JIT on
 
 | Model | n | Polyfill | Extension | Ratio |
 |---|---:|---:|---:|---:|
-| `stats_ols` | 10,000 | 7.2 ms | 2.6 ms | 2.8× |
-| `stats_ols` | 100,000 | 81 ms | 28 ms | 2.9× |
-| `stats_logistic` | 10,000 | 43 ms | 6.7 ms | 6.5× |
-| `stats_logistic` | 100,000 | 446 ms | 69 ms | 6.4× |
+| `stats_ols` | 10,000 | 7.3 ms | 2.6 ms | 2.8× |
+| `stats_ols` | 100,000 | 78 ms | 27 ms | 2.9× |
+| `stats_logistic` | 10,000 | 46 ms | 6.6 ms | 6.9× |
+| `stats_logistic` | 100,000 | 456 ms | 69 ms | 6.7× |
 
 The logistic fit includes the null model that every intercept model fits for
 `null_deviance`. Without the JIT the polyfill is about three times slower:
-247 ms for OLS and 1.46 s for logistic regression at n = 100,000.
+273 ms for OLS and 1.65 s for logistic regression at n = 100,000.
 
 For comparison, solving the normal equations (X'X)b = X'y in plain PHP took
 20 ms at n = 100,000. That baseline returns coefficients only, without
