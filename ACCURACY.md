@@ -236,7 +236,7 @@ the fits is 4.4e-13 on the fixtures and 7.9e-13 across the other cases.
 
 The following functions need the native extension and are left undefined:
 `stats_lmm`, `stats_lmm_fit`, `stats_logistic_mixed`, `stats_lmer`,
-`stats_glmer`, every `*_rng` function,
+`stats_glmer`, `stats_read_csv`, every `*_rng` function,
 the `stats_draw_*` functions, and `stats_hello`.
 `PhpStats\Polyfill\Polyfill::supports()` reports which functions are
 available.

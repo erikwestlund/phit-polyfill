@@ -12,6 +12,17 @@ The package is part of the [phpstats](https://phpstats.org) family, alongside
 phibble, phplyr, phpolars, and cmdstanphp. It follows the pattern of
 `symfony/polyfill-mbstring`.
 
+## Versions
+
+Each polyfill release reproduces one php-stats commit, which is pinned in
+`tests/fixtures/REFERENCE`. The reference fixtures are copied from it.
+
+| Polyfill | php-stats | Notes |
+|---|---|---|
+| 0.1.0 | [`dc44c54`](https://github.com/erikwestlund/php-stats/commit/dc44c549f81bd1068e0fecd86a22118c62d4e438) | php-stats has no tagged release yet |
+
+See [CHANGELOG.md](CHANGELOG.md) for what each release contains.
+
 ## Installation
 
 ```bash
@@ -53,6 +64,7 @@ Polyfill::nativeLoaded();              // whether php_stats is loaded
 | Distributions | 13 families × 14 functions; see [Distributions](#distributions) | Provided |
 | Mixed models | `stats_lmm`, `stats_lmm_fit`, `stats_logistic_mixed`, `stats_lmer`, `stats_glmer` | Extension only |
 | Random numbers and draws | every `*_rng` function, `stats_draw_affine`, `stats_draw_covariance_map`, `stats_draw_moments` | Extension only |
+| CSV reading | `stats_read_csv` (phibble's PHP reader is the fallback) | Extension only |
 | Other | `stats_hello` | Extension only |
 
 Functions marked "Extension only" stay undefined without the extension, so

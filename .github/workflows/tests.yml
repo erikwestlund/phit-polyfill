@@ -1,0 +1,44 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pest:
+    name: PHP ${{ matrix.php }}, ${{ matrix.mode }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        php: ['8.5']
+        mode: [no-opcache, opcache, jit]
+        include:
+          - os: macos-latest
+            php: '8.5'
+            mode: opcache
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: opcache
+          coverage: none
+
+      - run: composer install --no-interaction --no-progress --prefer-dist
+
+      # The extension is not installed here, so the parity suite is skipped and
+      # the global stats_* functions come from the polyfill. OPcache's optimizer
+      # is exercised explicitly (see docs/notes/opcache-nan.md); with
+      # file_update_protection=0 it also optimizes freshly checked-out files.
+      - name: Run tests
+        run: |
+          case "${{ matrix.mode }}" in
+            no-opcache) flags="-d opcache.enable_cli=0" ;;
+            opcache) flags="-d opcache.enable_cli=1 -d opcache.file_update_protection=0" ;;
+            jit) flags="-d opcache.enable_cli=1 -d opcache.file_update_protection=0 -d opcache.jit=tracing -d opcache.jit_buffer_size=64M" ;;
+          esac
+          php $flags vendor/bin/pest
