@@ -103,3 +103,15 @@ seconds of editing a file used the unoptimized code.
 - The full test suite is run with OPcache disabled, with OPcache enabled, and
   with the tracing JIT. Source files must be at least two seconds old for the
   OPcache runs to exercise the optimizer.
+
+## CI note: setup-php enables the function JIT
+
+setup-php's php.ini sets `opcache.jit=1235`, so a CI job that only passes
+`-d opcache.enable_cli=1` runs the function JIT, not the optimizer alone.
+With that setting PHP 8.5.11 prints `ENTRY n (block b start s) - live var v`
+while compiling large functions, and on 2026-10-16 two such jobs on commit
+04110a9 hung after `NanSafetyTest`. The hang did not recur on the next commit,
+and it could not be reproduced locally with the official Docker image, the
+ondrej/php build, or Homebrew's 8.5.10, with or without `opcache.jit=1235`.
+The workflow now disables the JIT in the `opcache` job, tests `opcache.jit=1235`
+in a separate `function-jit` job, and times every job out after 20 minutes.

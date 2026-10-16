@@ -15,7 +15,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         php: ['8.5']
-        mode: [no-opcache, opcache, jit]
+        mode: [no-opcache, opcache, jit, function-jit]
         include:
           - os: macos-latest
             php: '8.5'
@@ -45,7 +45,10 @@ jobs:
         run: |
           case "${{ matrix.mode }}" in
             no-opcache) flags="-d opcache.enable_cli=0" ;;
-            opcache) flags="-d opcache.enable_cli=1 -d opcache.file_update_protection=0" ;;
+            # setup-php's php.ini enables opcache.jit=1235, so the optimizer-only
+            # mode disables the JIT explicitly and function-jit keeps 1235.
+            opcache) flags="-d opcache.enable_cli=1 -d opcache.file_update_protection=0 -d opcache.jit=disable" ;;
+            function-jit) flags="-d opcache.enable_cli=1 -d opcache.file_update_protection=0 -d opcache.jit=1235 -d opcache.jit_buffer_size=128M" ;;
             jit) flags="-d opcache.enable_cli=1 -d opcache.file_update_protection=0 -d opcache.jit=tracing -d opcache.jit_buffer_size=64M" ;;
           esac
           php $flags vendor/bin/pest
