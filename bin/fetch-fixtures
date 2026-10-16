@@ -26,6 +26,7 @@ files=(
     poisson-r.json
     r-compatibility.json
     stress-r.json
+    formula-r.json
 )
 for file in "${files[@]}"; do
     git -C "$source" show "$commit:tests/fixtures/$file" > "$root/tests/fixtures/$file"
