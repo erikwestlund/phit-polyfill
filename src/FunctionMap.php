@@ -207,6 +207,7 @@ final class FunctionMap
         'stats_poisson_rng' => [Distribution\Poisson::class, 'rng'],
         'stats_poisson_sf' => [Distribution\Poisson::class, 'sf'],
         'stats_poisson_sf_array' => [Distribution\Poisson::class, 'sfArray'],
+        'stats_predict' => [Predict::class, 'predict'],
         'stats_probit' => [Probit::class, 'fit'],
         'stats_quantile' => [Descriptive::class, 'quantile'],
         'stats_quantile_array' => [Descriptive::class, 'quantileArray'],

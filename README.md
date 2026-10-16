@@ -19,7 +19,7 @@ Each polyfill release reproduces one php-stats commit, which is pinned in
 
 | Polyfill | php-stats | Notes |
 |---|---|---|
-| 0.1.0 | [`91ee538`](https://github.com/erikwestlund/php-stats/commit/91ee538253e3ecf7b3f086441305c3f7237200fc) | php-stats has no tagged release yet |
+| 0.1.0 | [`8e6a61e`](https://github.com/erikwestlund/php-stats/commit/8e6a61ee10f0f0986fd51624bfca8912f99fe933) | php-stats has no tagged release yet |
 
 See [CHANGELOG.md](CHANGELOG.md) for what each release contains.
 
@@ -60,7 +60,7 @@ Polyfill::nativeLoaded();              // whether php_stats is loaded
 |---|---|---|
 | Descriptive statistics | `stats_mean`, `stats_var`, `stats_sd`, `stats_median`, `stats_quantile`, `stats_quantile_array`, `stats_cov`, `stats_cor`, `stats_weighted_mean`, `stats_weighted_var` | Provided |
 | Regression | `stats_ols`, `stats_logistic`, `stats_probit`, `stats_poisson`, with weights, offsets, the automatic intercept, and both missing-value policies | Provided |
-| Formula interface | `stats_model_matrix`, `stats_lm`, `stats_glm` | Provided |
+| Formula interface | `stats_model_matrix`, `stats_lm`, `stats_glm`, `stats_predict` | Provided |
 | Distributions | 13 families × 14 functions; see [Distributions](#distributions) | Provided |
 | Mixed models | `stats_lmm`, `stats_lmm_fit`, `stats_logistic_mixed`, `stats_lmer`, `stats_glmer` | Provided (slower than the extension; see [ACCURACY.md](ACCURACY.md#speed)) |
 | Random numbers | 13 seeded `*_rng` functions, one per distribution family | Provided |
@@ -122,6 +122,11 @@ $design = stats_model_matrix('~ area * district', $data);
 $design['columns'];
 
 $logit = stats_glm('y ~ x + offset(log(t))', $other, family: 'binomial');
+
+// Predictions for new data, as R's predict(): fitted factor levels and poly()
+// bases are reused, and rows with a missing predictor predict null.
+$new = stats_predict($fit, ['area' => [60.0, 80.0], 'district' => ['east', 'north']],
+    interval: 'prediction');
 ```
 
 Supported syntax includes `+ - : * / %in% ^`, `0`/`1`/`-1`, `.`, `offset()`,
@@ -129,9 +134,9 @@ Supported syntax includes `+ - : * / %in% ^`, `0`/`1`/`-1`, `.`, `offset()`,
 `abs`, and others), `poly()`, `factor()`, `ordered()`, and `cbind()` responses
 for grouped binomial data. Families are gaussian, binomial (logit or probit),
 and poisson. Formulas with random-effect bars such as `(1 | g)` are accepted
-by `stats_model_matrix`, which returns the random-effect design. `stats_lm`
-and `stats_glm` reject them with code 1007, because `stats_lmer` and
-`stats_glmer` need the extension.
+by `stats_model_matrix`, which returns the random-effect design, and are fitted
+by `stats_lmer` and `stats_glmer`. `stats_lm` and `stats_glm` reject them with
+code 1007. `stats_predict` works with all four fit functions.
 
 ## How it works
 

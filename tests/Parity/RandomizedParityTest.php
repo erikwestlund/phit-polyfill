@@ -270,3 +270,54 @@ it('fits mixed models exactly like the extension', function () {
     }
     expect(true)->toBeTrue();
 });
+
+it('predicts exactly like the extension', function () {
+    randomParitySeed('predict');
+    for ($round = 0; $round < randomParityIterations(); $round++) {
+        $n = mt_rand(12, 60);
+        $make = function (int $rows, bool $missing) {
+            $data = ['x' => [], 'z' => [], 'g' => [], 'f' => [], 'y' => [], 'b' => []];
+            for ($i = 0; $i < $rows; $i++) {
+                $x = randomUniform(-3, 3);
+                $g = ['a', 'b', 'c'][mt_rand(0, 2)];
+                $data['x'][] = $missing && mt_rand(0, 9) === 0 ? null : $x;
+                $data['z'][] = mt_rand(0, 1) === 1;
+                $data['g'][] = $g;
+                $data['f'][] = 'u'.mt_rand(1, 4);
+                $eta = 0.5 * $x + ($g === 'b' ? 0.7 : 0.0);
+                $data['y'][] = 1.0 + $eta + randomUniform(-1, 1);
+                $data['b'][] = randomUniform(0, 1) < 1 / (1 + exp(-$eta)) ? 1 : 0;
+            }
+
+            return $data;
+        };
+        $train = $make($n, false);
+        $new = $make(mt_rand(1, 15), true);
+        $rhs = ['x + g', 'poly(x, 2) + g + z', 'x * g + offset(0.1 * x)', 'poly(x, 3) + I(x > 0)', 'log(abs(x) + 1) + z'][mt_rand(0, 4)];
+        $fits = [];
+        set_error_handler(fn () => true);
+        try {
+            foreach ([
+                fn () => stats_lm("y ~ $rhs", $train),
+                fn () => stats_glm("b ~ $rhs", $train, family: 'binomial'),
+                fn () => stats_glm("b ~ $rhs", $train, family: 'binomial', link: 'probit'),
+                fn () => stats_lmer('y ~ x + (1 | f)', $train),
+                fn () => stats_glmer('b ~ x + (1 | f)', $train),
+            ] as $fit) {
+                try {
+                    $fits[] = $fit();
+                } catch (\Throwable) {
+                    // An unidentifiable random design; the fit errors match elsewhere.
+                }
+            }
+        } finally {
+            restore_error_handler();
+        }
+        foreach ($fits as $fit) {
+            foreach ([[], ['type' => 'response', 'se_fit' => true], ['interval' => 'prediction', 'level' => 0.9], ['random' => false], ['allow_new_levels' => true]] as $options) {
+                randomParityCompare('stats_predict', [$fit, $new, ...$options]);
+            }
+        }
+    }
+    expect(true)->toBeTrue();
+});

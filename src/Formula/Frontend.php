@@ -123,6 +123,8 @@ final class Frontend
             $named[$name] = $output['coefficients'][$j];
         }
         $output['named'] = $named;
+        // Factor levels and poly() coefficients that stats_predict() reuses.
+        $output['predvars'] = $design->predvars;
 
         return $output;
     }

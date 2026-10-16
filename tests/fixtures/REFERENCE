@@ -1,3 +1,3 @@
 # Reference extension the fixtures are copied from. bin/fetch-fixtures reads this file.
 repository=https://github.com/erikwestlund/php-stats.git
-commit=91ee538253e3ecf7b3f086441305c3f7237200fc
+commit=8e6a61ee10f0f0986fd51624bfca8912f99fe933

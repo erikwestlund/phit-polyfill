@@ -34,6 +34,7 @@ files=(
     lmm-public-r.json
     logistic-mixed-r.json
     formula-lme4-r.json
+    predict-r.json
 )
 for file in "${files[@]}"; do
     git -C "$source" show "$commit:tests/fixtures/$file" > "$root/tests/fixtures/$file"

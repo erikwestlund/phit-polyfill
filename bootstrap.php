@@ -1400,6 +1400,13 @@ if (! function_exists('stats_poisson_sf_array')) {
     }
 }
 
+if (! function_exists('stats_predict')) {
+    function stats_predict(array $fit, mixed $newdata, string $type = 'link', bool $se_fit = false, string $interval = 'none', float $level = 0.95, bool $random = true, bool $allow_new_levels = false): array
+    {
+        return \PhpStats\Polyfill\Predict::predict($fit, $newdata, $type, $se_fit, $interval, $level, $random, $allow_new_levels);
+    }
+}
+
 if (! function_exists('stats_probit')) {
     function stats_probit(array $x, array $y, string $missing = 'drop', ?array $weights = null, ?array $offset = null, bool $intercept = true): array
     {

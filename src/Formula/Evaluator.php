@@ -23,6 +23,32 @@ use PhpStats\Polyfill\ErrorCode;
  */
 final class Evaluator
 {
+    /**
+     * poly() coefficients by call text. While a fit's design is built, every
+     * orthogonal basis is recorded; while a prediction design is built, the
+     * fit's coefficients are frozen and evaluated at the new values, as R's
+     * predict() does through the terms' predvars.
+     *
+     * @var array<string, array{alpha: list<float>, norm2: list<float>}>|null
+     */
+    private static ?array $frozenPoly = null;
+
+    /** @var array<string, array{alpha: list<float>, norm2: list<float>}> */
+    private static array $recordedPoly = [];
+
+    /** Start recording (null) or freeze the given coefficients for one design. */
+    public static function beginDesign(?array $frozen): void
+    {
+        self::$frozenPoly = $frozen;
+        self::$recordedPoly = [];
+    }
+
+    /** @return array<string, array{alpha: list<float>, norm2: list<float>}> */
+    public static function recordedPoly(): array
+    {
+        return self::$recordedPoly;
+    }
+
     public static function missing(array $value, int $i): bool
     {
         return match ($value['t']) {
@@ -222,6 +248,19 @@ final class Evaluator
      */
     public static function orthonormalPoly(array $x, int $degree): array
     {
+        return self::polyBasis($x, $degree)[0];
+    }
+
+    /**
+     * The basis and R's poly() coefficients: the three-term recurrence centers
+     * alpha and the squared norms norm2 of the monic polynomials (with R's
+     * leading 1), enough to evaluate the basis at new values.
+     *
+     * @param  list<float>  $x
+     * @return array{0: list<list<float>>, 1: array{alpha: list<float>, norm2: list<float>}}
+     */
+    public static function polyBasis(array $x, int $degree): array
+    {
         if ($degree >= count(self::distinct($x))) {
             throw Parser::error("'degree' must be less than number of unique points");
         }
@@ -232,6 +271,7 @@ final class Evaluator
         $mean = $sum / count($x);
         $centered = array_map(fn ($v) => $v - $mean, $x);
         $basis = [];
+        $coefs = ['alpha' => [], 'norm2' => [1.0]];
         for ($k = 0; $k <= $degree; $k++) {
             $v = array_map(fn ($c) => self::powi($c, $k), $centered);
             for ($pass = 0; $pass < 2; $pass++) {
@@ -245,22 +285,64 @@ final class Evaluator
                     }
                 }
             }
-            $norm = 0.0;
+            // v is the monic orthogonal polynomial of degree k, R's unnormalized Z column.
+            $norm2 = -0.0;
             foreach ($v as $a) {
-                $norm += $a * $a;
+                $norm2 += $a * $a;
             }
-            $norm = sqrt($norm);
+            $norm = sqrt($norm2);
             if ($norm == 0.0 || ! is_finite($norm)) {
                 throw ErrorCode::exception(ErrorCode::RANK_DEFICIENCY, 'polynomial basis is numerically rank deficient');
             }
+            if ($k < $degree) {
+                $weighted = -0.0;
+                foreach ($centered as $i => $c) {
+                    $weighted += $c * $v[$i] * $v[$i];
+                }
+                $coefs['alpha'][] = $weighted / $norm2 + $mean;
+            }
+            $coefs['norm2'][] = $norm2;
             $basis[] = array_map(fn ($a) => $a / $norm, $v);
         }
         array_shift($basis);
 
-        return $basis;
+        return [$basis, $coefs];
     }
 
-    /** @param list<array{0: ?string, 1: array}> $args */
+    /**
+     * R's predict.poly: evaluate a fitted orthogonal basis at new values.
+     *
+     * @param  list<?float>  $x
+     * @return list<list<?float>>
+     */
+    public static function polyPredict(array $x, array $coefs): array
+    {
+        $alpha = $coefs['alpha'];
+        $norm2 = $coefs['norm2'];
+        $degree = count($alpha);
+        $cols = array_fill(0, $degree, []);
+        foreach ($x as $v) {
+            if ($v === null) {
+                for ($k = 0; $k < $degree; $k++) {
+                    $cols[$k][] = null;
+                }
+
+                continue;
+            }
+            $previous = 1.0;
+            $current = $v - $alpha[0];
+            $cols[0][] = self::clean($current / sqrt($norm2[2]));
+            for ($k = 1; $k < $degree; $k++) {
+                $next = ($v - $alpha[$k]) * $current - ($norm2[$k + 1] / $norm2[$k]) * $previous;
+                $previous = $current;
+                $current = $next;
+                $cols[$k][] = self::clean($current / sqrt($norm2[$k + 2]));
+            }
+        }
+
+        return $cols;
+    }
+
     private static function arg(array $args, int $position, string $name): ?array
     {
         foreach ($args as [$n, $value]) {
@@ -580,10 +662,22 @@ final class Evaluator
 
             return ['t' => 'mat', 'cols' => $cols, 'names' => $names];
         }
+        if (self::$frozenPoly !== null) {
+            $coefs = self::$frozenPoly[$text] ?? throw Parser::error("the fit has no coefficients for '$text'");
+            if (count($coefs['alpha']) !== $degree || count($coefs['norm2']) !== $degree + 2) {
+                throw Parser::error("malformed coefficients for '$text'");
+            }
+
+            return ['t' => 'mat', 'cols' => self::polyPredict($x, $coefs), 'names' => $names];
+        }
         if (in_array(null, $x, true)) {
             throw Parser::error('missing values are not allowed in orthogonal poly(); use raw = TRUE or remove them');
         }
+        [$basis, $coefs] = self::polyBasis($x, $degree);
+        if (! array_key_exists($text, self::$recordedPoly)) {
+            self::$recordedPoly[$text] = $coefs;
+        }
 
-        return ['t' => 'mat', 'cols' => self::orthonormalPoly($x, $degree), 'names' => $names];
+        return ['t' => 'mat', 'cols' => $basis, 'names' => $names];
     }
 }

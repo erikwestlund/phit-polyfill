@@ -256,6 +256,17 @@ order, and warning text are identical, and every invalid input raises the same
 exception code with the same message. The fits are identical to the bit in
 every group.
 
+### Prediction
+
+`stats_predict` ports the extension's prediction design (the fitted factor
+levels and `poly()` recurrence coefficients from `predvars`) and its
+prediction code. The extension's `predict.php` passes unchanged against the
+polyfill: 25 cases against R's `predict()` for lm, glm, lmer, and glmer fits,
+with 877 comparisons at the extension's tolerances. Against the extension,
+441 calls over the fixture cases (each with seven option sets on new and
+training data, plus malformed fits and invalid options) and the randomized
+parity suite's 1,390 predictions per seed are identical, including errors.
+
 ## Random numbers
 
 Each `*_rng` call seeds a fresh ChaCha20 stream with rand_core's

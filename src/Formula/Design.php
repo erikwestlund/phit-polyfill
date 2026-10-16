@@ -57,6 +57,14 @@ final class Design
     /** @var list<int> */
     public array $droppedRows;
 
+    /**
+     * What prediction must reuse, as R's xlevels and predvars: factor levels
+     * after deletion by variable, and orthogonal poly() coefficients by call.
+     *
+     * @var array{levels: array<string, list<string>>, poly: array<string, array{alpha: list<float>, norm2: list<float>}>}
+     */
+    public array $predvars;
+
     private static function error(string $message): \Exception
     {
         return ErrorCode::exception(ErrorCode::INVALID_INPUT, $message);
@@ -99,6 +107,45 @@ final class Design
             default:
                 throw self::error('a string literal cannot be a model variable');
         }
+    }
+
+    /**
+     * Code a variable against the levels it had when the model was fitted, as
+     * predict() does; a level the fit never saw is an error, as in R.
+     */
+    private static function codeFrozen(string $name, array $value, array $rows, ?array $levels): array
+    {
+        switch ($value['t']) {
+            case 'lgl':
+                $labels = array_map(fn ($b) => $b ? 'TRUE' : 'FALSE', self::subset($value['v'], $rows));
+                break;
+            case 'text':
+                $labels = self::subset($value['v'], $rows);
+                break;
+            case 'factor':
+                $labels = array_map(fn ($c) => $value['levels'][$c], self::subset($value['codes'], $rows));
+                break;
+            default:
+                if ($levels !== null) {
+                    throw self::error("variable '$name' was a factor when the model was fitted");
+                }
+
+                return self::code($value, $rows, false);
+        }
+        $ordered = $value['t'] === 'factor' && $value['ordered'];
+        if ($levels === null) {
+            throw self::error("variable '$name' was numeric when the model was fitted");
+        }
+        $index = [];
+        foreach ($levels as $i => $level) {
+            $index[$level] ??= $i;
+        }
+        $codes = [];
+        foreach ($labels as $label) {
+            $codes[] = $index[$label] ?? throw self::error("factor $name has new level $label");
+        }
+
+        return ['factor', array_values($levels), $codes, $ordered];
     }
 
     /** Contrast matrix (levels x columns) and column suffixes. */
@@ -277,6 +324,36 @@ final class Design
      */
     public static function build(string $formula, Data $data, bool $dropMissing, bool $dropUnusedLevels, array $extra = []): self
     {
+        return self::design($formula, $data, $dropMissing, $dropUnusedLevels, $extra, null, false);
+    }
+
+    /**
+     * The design for new data under a fitted model, as R's predict() builds it:
+     * the response is not needed, factors keep the fitted levels, poly() keeps
+     * the fitted basis, and rows with missing predictors are reported as
+     * dropped rather than raised. Random-effect terms are evaluated only when
+     * requested.
+     */
+    public static function prediction(string $formula, Data $data, array $predvars, bool $random): self
+    {
+        return self::design($formula, $data, true, false, [], $predvars, $random);
+    }
+
+    private static function design(string $formula, Data $data, bool $dropMissing, bool $dropUnusedLevels, array $extra, ?array $predvars, bool $random): self
+    {
+        $predict = $predvars !== null;
+        Evaluator::beginDesign($predict ? $predvars['poly'] : null);
+        try {
+            return self::designWith($formula, $data, $dropMissing, $dropUnusedLevels, $extra, $predvars, $random);
+        } finally {
+            Evaluator::beginDesign(null);
+        }
+    }
+
+    private static function designWith(string $formula, Data $data, bool $dropMissing, bool $dropUnusedLevels, array $extra, ?array $predvars, bool $random): self
+    {
+        $predict = $predvars !== null;
+        $levelsOf = fn (string $name): ?array => $predict ? ($predvars['levels'][$name] ?? null) : null;
         $parsed = Parser::parse($formula);
         if ($parsed[0] === 'binary' && $parsed[1] === '~') {
             $responseExpr = $parsed[2];
@@ -291,6 +368,9 @@ final class Design
         $bars = [];
         Terms::splitBars($rhs, $parts, $bars, false);
         $fixed = Terms::build($responseExpr, $parts, $data->names);
+        if ($predict && $random === false) {
+            $bars = [];
+        }
         $specs = [];
         foreach ($bars as $bar) {
             $lhsParts = [];
@@ -323,7 +403,13 @@ final class Design
                 throw ErrorCode::exception(ErrorCode::DIMENSION_MISMATCH, 'weights must have one value per original observation');
             }
         }
-        $values = array_map(fn ($v) => Evaluator::evaluate($v[1], $data), $fixed->variables);
+        $values = [];
+        foreach ($fixed->variables as $v => [, $expr]) {
+            // predict() does not need the response; it may be absent.
+            $values[$v] = $predict && $v === $fixed->response
+                ? ['t' => 'num', 'v' => array_fill(0, $n, 0.0)]
+                : Evaluator::evaluate($expr, $data);
+        }
         $barValues = array_map(
             fn ($s) => array_map(fn ($v) => Evaluator::evaluate($v[1], $data), $s['terms']->variables),
             $specs,
@@ -357,13 +443,18 @@ final class Design
         if ($dropped !== [] && ! $dropMissing) {
             throw self::error("missing values found with missing='raise'");
         }
-        if ($retained === []) {
+        if ($retained === [] && $predict === false) {
             throw self::error('no complete observations remain after removing missing values');
         }
         $m = count($retained);
         $coded = [];
         foreach ($values as $v => $value) {
-            $coded[$v] = $v === $fixed->response ? null : self::code($value, $retained, $dropUnusedLevels);
+            $name = $fixed->variables[$v][0];
+            $coded[$v] = match (true) {
+                $v === $fixed->response => null,
+                $predict => self::codeFrozen($name, $value, $retained, $levelsOf($name)),
+                default => self::code($value, $retained, $dropUnusedLevels),
+            };
         }
         $block = self::buildBlock($fixed, $coded, $m);
         if ($block['columns'] === []) {
@@ -382,7 +473,7 @@ final class Design
             self::checkFinite($offset, 'offset');
         }
         $response = null;
-        if ($fixed->response !== null) {
+        if ($fixed->response !== null && $predict === false) {
             $value = $values[$fixed->response];
             if ($value['t'] === 'num') {
                 $response = ['numeric', self::subset($value['v'], $retained)];
@@ -406,9 +497,26 @@ final class Design
         } elseif ($response !== null && $response[0] === 'binomial') {
             self::checkFinite([...$response[1], ...$response[2]], 'response');
         }
+        $levels = [];
+        $record = function (array $variables, array $coded) use (&$levels): void {
+            foreach ($variables as $v => [$name]) {
+                $value = $coded[$v] ?? null;
+                if ($value !== null && $value[0] === 'factor' && ! array_key_exists($name, $levels)) {
+                    $levels[$name] = $value[1];
+                }
+            }
+        };
+        $record($fixed->variables, $coded);
         $random = [];
         foreach ($specs as $s => $spec) {
-            $barCoded = array_map(fn ($v) => self::code($v, $retained, $dropUnusedLevels), $barValues[$s]);
+            $barCoded = [];
+            foreach ($barValues[$s] as $v => $value) {
+                $name = $spec['terms']->variables[$v][0];
+                $barCoded[$v] = $predict
+                    ? self::codeFrozen($name, $value, $retained, $levelsOf($name))
+                    : self::code($value, $retained, $dropUnusedLevels);
+            }
+            $record($spec['terms']->variables, $barCoded);
             $barBlock = self::buildBlock($spec['terms'], $barCoded, $m);
             $z = self::rowsOf($barBlock['columns'], $m);
             self::checkFinite(self::flatten($z), 'random-effect design');
@@ -460,6 +568,7 @@ final class Design
         $design->nInput = $n;
         $design->retainedRows = $retained;
         $design->droppedRows = $dropped;
+        $design->predvars = ['levels' => $levels, 'poly' => Evaluator::recordedPoly()];
 
         return $design;
     }

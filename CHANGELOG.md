@@ -11,7 +11,7 @@ from it.
 ## [0.1.0] - Unreleased
 
 Reproduces php-stats commit
-[`91ee538`](https://github.com/erikwestlund/php-stats/commit/91ee538253e3ecf7b3f086441305c3f7237200fc).
+[`8e6a61e`](https://github.com/erikwestlund/php-stats/commit/8e6a61ee10f0f0986fd51624bfca8912f99fe933).
 php-stats has no tagged release yet.
 
 ### Added
@@ -33,7 +33,12 @@ php-stats has no tagged release yet.
   binomial by mean). Each has the density or mass function, cdf, survival
   function, their logarithms, and the quantile, with `_array` variants (182
   functions).
-- Formula interface: `stats_model_matrix`, `stats_lm`, and `stats_glm`.
+- Formula interface: `stats_model_matrix`, `stats_lm`, and `stats_glm`, with
+  the fitted factor levels and `poly()` coefficients in a `predvars` key.
+- `stats_predict` for `stats_lm`, `stats_glm`, `stats_lmer`, and
+  `stats_glmer` fits, as R's `predict()`: link or response scale, delta-method
+  standard errors, confidence and prediction intervals for linear models, and
+  random-effect or population predictions for mixed models.
 - Seeded sampling: the 13 `*_rng` functions, with the extension's ChaCha20
   generator and inverse-CDF sampling, so the same seed gives the same draws.
 - Posterior-draw kernels: `stats_draw_moments`, `stats_draw_covariance_map`,
