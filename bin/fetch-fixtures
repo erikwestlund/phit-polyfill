@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Copy the reference fixtures from the pinned php_stats commit into tests/fixtures.
+# Usage: bin/fetch-fixtures [path-to-php-stat-models-checkout]
+# Without a path, the repository in tests/fixtures/REFERENCE is cloned to a temp dir.
+# The copies are committed as-is; never edit them by hand.
+set -euo pipefail
+root="$(cd "$(dirname "$0")/.." && pwd)"
+pin="$root/tests/fixtures/REFERENCE"
+commit="$(sed -n 's/^commit=//p' "$pin")"
+repository="$(sed -n 's/^repository=//p' "$pin")"
+source="${1:-${PHP_STATS_REPO:-}}"
+if [ -z "$source" ]; then
+    source="$(mktemp -d)"
+    trap 'rm -rf "$source"' EXIT
+    git clone --quiet --filter=blob:none --no-checkout "$repository" "$source"
+fi
+files=(
+    php-api.json
+    descriptive-r.json
+    distributions-r.json
+    distributions-scipy.json
+    distributions-mpmath.json
+    ols-r.json
+    logistic-r.json
+    probit-r.json
+    poisson-r.json
+    r-compatibility.json
+    stress-r.json
+)
+for file in "${files[@]}"; do
+    git -C "$source" show "$commit:tests/fixtures/$file" > "$root/tests/fixtures/$file"
+    echo "fetched $file"
+done

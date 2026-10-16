@@ -1,0 +1,42 @@
+{
+    "name": "erikwestlund/php-stats-polyfill",
+    "description": "Pure-PHP polyfill for the php_stats native extension: descriptive statistics, OLS/logistic/probit/Poisson regression and probability distributions",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["statistics", "polyfill", "regression", "distributions", "phpstats"],
+    "homepage": "https://phpstats.org",
+    "require": {
+        "php": "^8.5"
+    },
+    "require-dev": {
+        "pestphp/pest": "^4.0"
+    },
+    "provide": {
+        "ext-php_stats": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "PhpStats\\Polyfill\\": "src/"
+        },
+        "files": [
+            "bootstrap.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PhpStats\\Polyfill\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "\"$HOME/Library/Application Support/Herd/bin/php85\" vendor/bin/pest",
+        "test:ext": "\"$HOME/Library/Application Support/Herd/bin/php85\" -d extension=.ext/libphp_stats.dylib vendor/bin/pest"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
