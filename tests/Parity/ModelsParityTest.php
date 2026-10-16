@@ -391,3 +391,20 @@ it('agrees with the extension on huge weights and counts', function (string $fn)
         }
     }
 })->with(['stats_ols', 'stats_poisson']);
+
+it('agrees on widely spread per-row offsets', function (string $fn) {
+    // Review finding: with offsets spread over about -50 to 55 the IRLS steps are
+    // dominated by rounding, so agreement needs the extension's exact QR
+    // arithmetic (php-stats 91ee538: Householder QR, triangular solves).
+    mt_srand(23 + crc32($fn));
+    for ($trial = 0; $trial < 40; $trial++) {
+        $n = mt_rand(3, 35);
+        $x = array_fill(0, $n, []);
+        $offset = array_map(fn () => -50.0 + 105.0 * uniform(), range(1, $n));
+        $y = $fn === 'stats_poisson'
+            ? array_map(fn () => (float) mt_rand(0, 3), range(1, $n))
+            : array_map(fn () => (float) mt_rand(0, 1), range(1, $n));
+        $weights = $trial % 3 === 0 ? array_map(fn () => (float) mt_rand(1, 4), range(1, $n)) : null;
+        assertModelParity($fn, [$x, $y, 'drop', $weights, $offset], 1e-9, 'offsets');
+    }
+})->with(['stats_logistic', 'stats_poisson']);

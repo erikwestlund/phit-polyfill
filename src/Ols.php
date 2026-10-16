@@ -78,9 +78,16 @@ final class Ols
         }
         $p = count($x[0]);
         $intercept = self::hasIntercept($x, $p);
+        // Householder QR is unstable when row scales differ by many orders of
+        // magnitude unless the heavy rows come first (Powell and Reid), so the
+        // whitened rows are factored in decreasing-weight order, as in the
+        // extension. fitted and residuals are rebuilt in the original order below.
+        $order = array_keys($weights);
+        usort($order, fn (int $a, int $b): int => $weights[$b] <=> $weights[$a]);
         $wx = [];
         $wy = [];
-        foreach ($x as $i => $row) {
+        foreach ($order as $i) {
+            $row = $x[$i];
             $root = sqrt($weights[$i]);
             $scaled = [];
             foreach ($row as $value) {
@@ -188,11 +195,8 @@ final class Ols
         $scales = [];
         for ($j = 0; $j < $p; $j++) {
             $column = array_column($x, $j);
-            $sum = 0.0;
-            foreach ($column as $value) {
-                $sum += $value * $value;
-            }
-            $scale = sqrt($sum);
+            // nalgebra's column norm, summed the same way.
+            $scale = sqrt(LeastSquares::dot($column, $column, 0, $n));
             if (! is_finite($scale) || $scale == 0.0) {
                 throw self::error(ErrorCode::RANK_DEFICIENCY, 'design is rank deficient or its scale exceeds floating-point range');
             }
@@ -206,7 +210,8 @@ final class Ols
         if ($ls->rankDeficient()) {
             throw self::error(ErrorCode::RANK_DEFICIENCY, 'design is rank deficient at numerical precision');
         }
-        $solution = $ls->solution();
+        $solution = $ls->solution()
+            ?? throw self::error(ErrorCode::FACTORIZATION_FAILURE, 'least-squares factorization failed');
         $beta = [];
         for ($j = 0; $j < $p; $j++) {
             $beta[$j] = $solution[$j] / $scales[$j];
@@ -231,7 +236,8 @@ final class Ols
         if (($rss == 0.0 && $nonzeroResidual) || ($rss > 0.0 && $variance == 0.0)) {
             throw self::error(ErrorCode::NONFINITE, 'nonzero residual variance underflows floating-point range; rescale the outcome');
         }
-        $covariance = $ls->inverseGram($scales, $variance);
+        $covariance = $ls->inverseGram($scales, $variance)
+            ?? throw self::error(ErrorCode::FACTORIZATION_FAILURE, 'triangular factor could not be inverted');
         $critical = Statrs::tCritical95((float) $df);
         $stdErrors = [];
         $tStatistics = [];

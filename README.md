@@ -19,7 +19,7 @@ Each polyfill release reproduces one php-stats commit, which is pinned in
 
 | Polyfill | php-stats | Notes |
 |---|---|---|
-| 0.1.0 | [`dc44c54`](https://github.com/erikwestlund/php-stats/commit/dc44c549f81bd1068e0fecd86a22118c62d4e438) | php-stats has no tagged release yet |
+| 0.1.0 | [`91ee538`](https://github.com/erikwestlund/php-stats/commit/91ee538253e3ecf7b3f086441305c3f7237200fc) | php-stats has no tagged release yet |
 
 See [CHANGELOG.md](CHANGELOG.md) for what each release contains.
 
@@ -133,13 +133,16 @@ and `stats_glm` reject them with code 1007, because `stats_lmer` and
 The implementations are ports of the extension's Rust code, not independent
 reimplementations, so results agree to rounding in most cases.
 
-- **Least squares.** `stats_ols` scales the design columns to unit norm,
-  factors the design by Householder QR, and takes a one-sided Jacobi SVD of the
-  small R factor. Those singular values equal the design's, so the extension's
+- **Least squares.** `stats_ols` scales the design columns to unit norm and
+  factors the design by Householder QR, using the same operation order as the
+  extension's linear-algebra library. The singular values of the small R
+  factor (computed by a Jacobi sweep) equal the design's, so the extension's
   rank rule (s ≤ ε·max(n, p)·s_max) makes the same rank decisions.
+  Coefficients and covariances come from R by back-substitution. Weighted fits
+  factor rows in decreasing-weight order, as the extension does.
 - **Generalized linear models.** `stats_logistic` and `stats_poisson` use
   damped Newton IRLS and `stats_probit` uses Fisher scoring. Each iteration
-  solves a weighted least-squares step with the same QR and SVD, halves the step
+  solves a weighted least-squares step with the same QR, halves the step
   until the likelihood does not decrease, and stops only after a small full
   step. The separation certificate, boundary handling, starting values for
   extreme offsets, and exception codes match the extension.
@@ -180,11 +183,11 @@ In summary:
 
 - Descriptive statistics agree with the extension exactly on every input
   tested, including values offset by 10¹².
-- OLS agrees with the extension to about 10⁻¹⁰ relative on the reference
-  fixtures. On designs with condition numbers up to 10¹⁰ it agrees to about
-  cond(X)·ε, which is what two backward-stable solvers can promise.
-- Logistic, probit, and Poisson regression agree with the extension to about
-  10⁻⁸, the level of their shared convergence rule, and usually to 10⁻¹².
+- OLS agrees with the extension to about 10⁻¹⁴, including designs with
+  condition numbers up to 10¹⁰ and extreme prior weights.
+- Logistic, probit, and Poisson regression take the same iteration path as the
+  extension and agree with it to about 10⁻¹³ on every tested input, including
+  near-collinear designs, separation, and extreme offsets.
 - Distribution functions are bit-identical to the extension on every input
   tested, and within 10⁻¹² of mpmath down to probabilities near 10⁻³⁰⁰.
 - The formula functions produce identical design matrices, column names, and
@@ -197,9 +200,9 @@ In summary:
 - Scalar arguments of the wrong type follow PHP's userland rules (coercion in
   non-strict files, otherwise `TypeError`). The extension raises an
   `\Exception` instead.
-- The `iterations` reported by an iterative fit can differ by one, and by a
-  little more when the likelihood is flat to rounding near the optimum. The
-  estimates still agree.
+- The `iterations` reported by an iterative fit matched the extension on every
+  tested input, but the suite allows a difference of one at the edge of
+  floating-point range.
 
 ## Performance
 

@@ -88,61 +88,59 @@ The parity suite compares every result key. Each value is judged on the scale
 of its quantity. Coefficients and intervals are compared relative to
 |b| + standard error, t/z statistics and R² relative to |b| + 1, p-values on the
 log scale, and fitted values and residuals relative to |b| + max |y|. Other keys
-are compared relative to |b| + 10⁻³·max |b|. The required agreement is 10⁻¹⁰
-for OLS on the fixtures, 10⁻⁹ for OLS on random data, and 10⁻⁷ for the
-iterative models. The iterative models stop once a full step is below 10⁻⁸
-relative, so two implementations agree to about that level and not to
-rounding.
+are compared relative to |b| + 10⁻³·max |b|.
+
+The least-squares steps reproduce the extension's arithmetic: Householder QR
+with nalgebra's operation order (including its eight-way blocked dot products
+and sign handling), solves and (R'R)⁻¹ by back-substitution on R, and weighted
+OLS rows factored in decreasing-weight order (php-stats 91ee538). Only the
+final R⁻¹R⁻ᵀ product, which nalgebra computes with a blocked matrix multiply,
+is summed in a different order. As a result the two implementations take the
+same path through every iterative fit tested. The `iterations` they report
+were identical in every case below.
 
 | Group | Inputs | OLS | Logistic | Probit | Poisson |
 |---|---|---:|---:|---:|---:|
-| fixtures | all R fixtures, with and without the automatic intercept | 2.7e-10 | 2.2e-12 | 1.1e-12 | 2.3e-13 |
-| random | 40 seeded designs per model: n 12–400, 1–5 predictors, weights, offsets, missing rows | 7.7e-13 | 6.1e-12 | 7.9e-9 | 6.8e-14 |
-| scaling | predictors and outcomes scaled by 10⁻⁸ to 10⁸ | 1.4e-13 | 2.3e-13 | 3.5e-14 | 1.8e-14 |
-| collinear | condition numbers about 10⁶ to 10¹⁰ | 1.2e-5 | 8.8e-9 | (rejected identically) | 3.1e-9 |
-| separation | complete, quasi-complete, rare events (1 in 2000), grouped near-boundary proportions | | 9.7e-9 | 2.5e-14 | |
-| offsets / counts | binary offsets −50 to 40 shifted together; Poisson counts up to 10¹², common offsets −700 to 300, sparse counts | | 5.4e-14 | 7.5e-14 | 1.2e-8 |
-| huge weights | prior weights 10¹⁰⁰ to 10²⁰⁰ (equal, or one dominating row); Poisson counts scaled by 10¹⁰⁰ and 10¹⁶⁰ | <1e-13 | | | 1.2e-8 |
-| errors | invalid shapes, types, domains, weights, policies, rank deficiency | 1.3e-13 | same codes | same codes | 6.7e-8 |
+| fixtures | all R fixtures, with and without the automatic intercept, plus the r-compatibility and stress fixtures | 6.7e-16 | 1.0e-13 | 0 | 0 |
+| random | 40 seeded designs per model: n 12–400, 1–5 predictors, weights, offsets, missing rows | 9.9e-15 | 5.1e-14 | 3.5e-16 | 1.1e-15 |
+| scaling | predictors and outcomes scaled by 10⁻⁸ to 10⁸; prior weights 10¹⁰⁰ to 10²⁰⁰ | 1.6e-14 | 3.1e-15 | 0 | 0 |
+| collinear | condition numbers about 10⁶ to 10¹⁰ | 8.6e-16 | 1.2e-9 | (rejected identically) | 0 |
+| separation | complete, quasi-complete, rare events (1 in 2000), grouped near-boundary proportions | | 2.5e-15 | 0 | |
+| offsets | binary offsets −50 to 40; per-row offsets spread over −50 to 55 (40 seeded fits each) | | 1.0e-14 | 0 | 0 |
+| counts | Poisson counts up to 10¹² and scaled by 10¹⁶⁰, common offsets −700 to 300, sparse counts | | | | 0 |
+| errors | invalid shapes, types, domains, weights, policies, rank deficiency | 0 | same codes | same codes | 0 |
 
-Every invalid input in the error group raises the same exception code in both.
-In the collinear OLS group, two backward-stable solvers agree to about
-cond(X)·ε. At a condition number of 10¹⁰, 1.2·10⁻⁵ of a standard error is the
-expected agreement. Probit fits on the collinear designs are rejected by both
-implementations with the same code.
+Every invalid input in the error group raises the same exception code in both,
+and every fit that fails in one implementation fails with the same code in the
+other. Probit fits on the collinear designs are rejected by both with the same
+code.
 
-The stopping iteration can differ between the two. On the fixtures and random
-data it differs by at most one. In the stress groups the likelihood can be flat
-to rounding near the optimum. For example, Poisson offsets near 300 make the
-linear predictor a difference of numbers near 300, and counts scaled by 10¹⁶⁰
-give a log-likelihood near 10¹⁶². There the stopping iteration differed by up
-to three while the estimates still agreed to 10⁻⁸.
+Inputs at the edge of floating-point range can still be computed slightly
+differently by the two, for example when the R⁻¹R⁻ᵀ product rounds
+differently. The parity suite therefore keeps tolerances (10⁻¹⁰ for OLS on
+the fixtures, 10⁻⁹ on random data, and 10⁻⁷ for the iterative models, whose
+stopping rule is a 10⁻⁸ relative step) and allows the reported `iterations` to
+differ by one.
 
-### Where agreement is not guaranteed
+### Inputs where the results are sensitive to rounding
 
-Both implementations solve each IRLS step from the working residual
-score/√w. When the offsets of individual rows are spread over a wide range
-(for example −50 to 55, so the fitted means differ by a factor of about
-e¹⁰⁰), or one count dwarfs the others by a factor of 10¹² or more, that
-residual is dominated by a few rows. The step is then computed with an
-absolute error larger than the 10⁻⁸ convergence threshold. In this regime the
-two implementations reach the same log-likelihood to about 10⁻¹⁴, but they can
-stop at points that differ by up to about 10⁻⁷ relative (more where the
-likelihood is nearly flat in a coefficient), and one may report
-non-convergence (1006) where the other converges. An independent review found
-such cases with randomly spread offsets in Poisson and logistic fits. The
-behavior comes from the algorithm the polyfill shares with the extension, not
-from the port, and has been reported upstream.
+With per-row offsets spread over a wide range (for example −50 to 55, so the
+fitted means differ by a factor of about e¹⁰⁰), or one count larger than the
+others by 10¹² or more, the IRLS working residual is dominated by a few rows.
+Each step then carries rounding error close to the convergence threshold. The
+polyfill and the extension still agree, because they perform the same
+arithmetic. Their common answer can differ from R's by more than usual, and in
+some such cases both report non-convergence (1006).
 
-### Where the polyfill deliberately differs
+### Weighted least squares with a dominating weight
 
-With one prior weight far larger than the rest (10¹⁸ or above, for example
-`PHP_INT_MAX`) on an otherwise ordinary OLS design, the extension's
-coefficients are wrong. For y = (1, 2, 2.5, 4, 4.5, 6) on x = 1, …, 6 with
-weights (1, 2, 3, 4, 5, 10¹⁸), the exact weighted least-squares solution is
-(−0.4, 1.0667). The polyfill returns (−0.4000001, 1.0666667) and the extension
-returns (319.6, −52.27). This has been reported upstream. The polyfill keeps
-the correct result, so it does not match the extension in this case.
+Before php-stats 91ee538 the extension's OLS was wrong when one prior weight was
+far larger than the rest. For y = (1, 2, 2.5, 4, 4.5, 6) on x = 1, …, 6 with
+weights (1, 2, 3, 4, 5, 10¹⁸), it returned (319.6, −52.27) instead of the
+exact (−0.4, 1.0667). The extension now orders rows by weight and solves R by
+back-substitution, and the polyfill does the same. Both return
+(−0.4000000000000019, 1.0666666666666669), and both raise rank deficiency
+(1004) at a weight of 10³⁰.
 
 ## Distributions
 

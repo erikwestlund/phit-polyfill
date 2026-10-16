@@ -219,18 +219,17 @@ final class Terms
                 $base = $this->encode($l, $negate);
                 $result = $base;
                 $acc = $base;
-                // The extension repeats the interaction power - 1 times. Once neither
-                // the accumulated interaction nor the result changes, further rounds
-                // are identical, so stop there. This gives the same terms for any
-                // power without casting a huge power to int (which PHP turns into 0).
-                for ($k = 1.0; $k < $r[1]; $k += 1.0) {
-                    $nextAcc = self::interact($acc, $base);
-                    $nextResult = self::trim([...$result, ...$nextAcc]);
-                    if ($nextAcc === $acc && $nextResult === $result) {
-                        break;
-                    }
-                    $acc = $nextAcc;
-                    $result = $nextResult;
+                // Interactions cannot exceed the number of distinct variables, so
+                // higher powers add nothing. Capping as the extension does (php-stats
+                // 91ee538) also avoids casting a huge power to int.
+                $variables = [];
+                foreach ($base as $term) {
+                    $variables = self::union($variables, $term);
+                }
+                $rounds = min($r[1], (float) max(count($variables), 1));
+                for ($k = 1.0; $k < $rounds; $k += 1.0) {
+                    $acc = self::interact($acc, $base);
+                    $result = self::trim([...$result, ...$acc]);
                 }
 
                 return $result;

@@ -11,7 +11,7 @@ from it.
 ## [0.1.0] - Unreleased
 
 Reproduces php-stats commit
-[`dc44c54`](https://github.com/erikwestlund/php-stats/commit/dc44c549f81bd1068e0fecd86a22118c62d4e438).
+[`91ee538`](https://github.com/erikwestlund/php-stats/commit/91ee538253e3ecf7b3f086441305c3f7237200fc).
 php-stats has no tagged release yet.
 
 ### Added

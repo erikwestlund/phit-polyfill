@@ -132,14 +132,13 @@ abstract class Glm
         $intercept = false;
         for ($j = 0; $j < $p; $j++) {
             $column = array_column($x, $j);
-            $sum = 0.0;
             $ones = true;
             foreach ($column as $value) {
-                $sum += $value * $value;
                 $ones = $ones && $value == 1.0;
             }
             $intercept = $intercept || $ones;
-            $scale = sqrt($sum);
+            // nalgebra's column norm, summed the same way.
+            $scale = sqrt(LeastSquares::dot($column, $column, 0, $n));
             if (! is_finite($scale) || $scale == 0.0) {
                 throw self::error(ErrorCode::RANK_DEFICIENCY, 'design is rank deficient or exceeds floating-point range');
             }
@@ -188,7 +187,8 @@ abstract class Glm
                     throw self::error(ErrorCode::NONCONVERGENCE, $this->overflowMessage());
                 }
             }
-            $step = $ls->solution();
+            $step = $ls->solution()
+                ?? throw self::error(ErrorCode::FACTORIZATION_FAILURE, 'least-squares factorization failed');
             foreach ($step as $value) {
                 if (! is_finite($value)) {
                     throw self::error(ErrorCode::NONFINITE, $this->name().' step exceeds floating-point range');
@@ -260,7 +260,8 @@ abstract class Glm
         if ($ls->rankDeficient()) {
             throw self::error(ErrorCode::RANK_DEFICIENCY, 'final '.$this->name().' information is numerically rank deficient');
         }
-        $covariance = $ls->inverseGram($scales);
+        $covariance = $ls->inverseGram($scales)
+            ?? throw self::error(ErrorCode::FACTORIZATION_FAILURE, 'triangular factor could not be inverted');
         $critical = Statrs::Z_975;
         $stdErrors = $zStatistics = $pValues = $confInt = [];
         $finite = true;
