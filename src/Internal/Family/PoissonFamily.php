@@ -101,7 +101,9 @@ final class PoissonFamily extends Glm
 
     protected function likelihood(array $eta, array $y, array $weights): float
     {
+        // Neumaier-compensated sum, as the extension.
         $sum = 0.0;
+        $compensation = 0.0;
         $half = 0.5;
         $ln2pi = log(2.0 * M_PI);
         foreach ($eta as $i => $e) {
@@ -116,10 +118,13 @@ final class PoissonFamily extends Glm
             } else {
                 $term = $v * $e - exp($e) - Statrs::lnGamma($v + 1.0);
             }
-            $sum += $weights[$i] * $term;
+            $term = $weights[$i] * $term;
+            $total = $sum + $term;
+            $compensation += abs($sum) >= abs($term) ? ($sum - $total) + $term : ($term - $total) + $sum;
+            $sum = $total;
         }
 
-        return $sum;
+        return $sum + $compensation;
     }
 
     private static function deviance(array $eta, array $y, array $weights): float

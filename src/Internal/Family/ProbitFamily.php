@@ -58,13 +58,18 @@ final class ProbitFamily extends Binary
 
     protected function likelihood(array $eta, array $y, array $weights): float
     {
+        // Neumaier-compensated sum, as the extension.
         $sum = 0.0;
+        $compensation = 0.0;
         foreach ($eta as $i => $e) {
             $v = $y[$i];
-            $sum += $weights[$i] * ($v * self::logProbability($e) + (1.0 - $v) * self::logProbability(-$e));
+            $term = $weights[$i] * ($v * self::logProbability($e) + (1.0 - $v) * self::logProbability(-$e));
+            $total = $sum + $term;
+            $compensation += abs($sum) >= abs($term) ? ($sum - $total) + $term : ($term - $total) + $sum;
+            $sum = $total;
         }
 
-        return $sum;
+        return $sum + $compensation;
     }
 
     protected function rootWeights(array $eta): array

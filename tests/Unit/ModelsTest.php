@@ -353,3 +353,31 @@ describe('automatic intercept', function () {
         expectCode(fn () => pf('stats_poisson', array_fill(0, 8, []), $counts, missing: 'raise', offset: $offset), 1001);
     });
 });
+
+describe('rounding near the optimum', function () {
+    // Plain summation of the likelihood accumulates systematic rounding in
+    // intercept-only fits, which made the exact Newton step look like a decrease
+    // (extension issue fixed in 4ba33e4 with compensated sums).
+    it('fits intercept-only binary and count models on large samples', function (string $fn) {
+        mt_srand(3);
+        foreach ([1000, 10000, 20000] as $n) {
+            for ($trial = 0; $trial < 5; $trial++) {
+                $q = mt_rand(5, 95) / 100;
+                $y = [];
+                for ($i = 0; $i < $n; $i++) {
+                    $y[] = mt_rand() / mt_getrandmax() < $q ? 1 : 0;
+                }
+                $result = pf($fn, array_fill(0, $n, []), $y);
+                $mean = array_sum($y) / $n;
+                $expected = match ($fn) {
+                    'stats_logistic' => log($mean / (1 - $mean)),
+                    'stats_poisson' => log($mean),
+                    default => null,
+                };
+                if ($expected !== null) {
+                    expect(abs($result['coefficients'][0] - $expected))->toBeLessThan(1e-9);
+                }
+            }
+        }
+    })->with(['stats_logistic', 'stats_probit', 'stats_poisson']);
+});

@@ -40,13 +40,19 @@ final class LogisticFamily extends Binary
 
     protected function likelihood(array $eta, array $y, array $weights): float
     {
+        // Neumaier-compensated, as the extension: near the optimum, rounding in a plain
+        // sum can make an exact Newton step look like a decrease and stall the search.
         $sum = 0.0;
+        $compensation = 0.0;
         foreach ($eta as $i => $e) {
             $v = $y[$i];
-            $sum += $weights[$i] * (-$v * self::softplus(-$e) - (1.0 - $v) * self::softplus($e));
+            $term = $weights[$i] * (-$v * self::softplus(-$e) - (1.0 - $v) * self::softplus($e));
+            $total = $sum + $term;
+            $compensation += abs($sum) >= abs($term) ? ($sum - $total) + $term : ($term - $total) + $sum;
+            $sum = $total;
         }
 
-        return $sum;
+        return $sum + $compensation;
     }
 
     protected function rootWeights(array $eta): array
