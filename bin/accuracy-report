@@ -1,0 +1,165 @@
+#!/usr/bin/env php
+<?php
+
+// Measure the polyfill against every reference fixture and print Markdown
+// tables of the largest observed errors (used for ACCURACY.md).
+//
+//   php85 bin/accuracy-report > build/accuracy-models.md
+//
+// Each comparison uses the reference suite's own tolerance (abs + rel * |b|).
+// "Tolerance used" is the largest |a - b| / (abs + rel * |b|); "max relative
+// error" skips entries that are rounding noise (see errors()). Perfect-fit OLS
+// inference is skipped as in the extension's suite.
+
+declare(strict_types=1);
+
+require dirname(__DIR__).'/vendor/autoload.php';
+
+use PhpStats\Polyfill\Polyfill;
+
+$root = dirname(__DIR__).'/tests/fixtures/';
+
+function fixture(string $name): array
+{
+    return json_decode(file_get_contents($GLOBALS['root'].$name), true, flags: JSON_THROW_ON_ERROR);
+}
+
+function flatten(mixed $value): array
+{
+    if (! is_array($value)) {
+        return [$value];
+    }
+
+    return array_merge(...array_map(flatten(...), array_values($value)));
+}
+
+/**
+ * [relative error, fraction of tolerance used] for one result entry, judged
+ * with the reference suite's tolerance |a - b| <= abs + rel * |b|. The relative
+ * error skips entries below the absolute tolerance (and below 1e-3 of the
+ * largest value in the entry), where both sides are rounding noise.
+ */
+function errors(mixed $actual, mixed $expected, float $abs, float $rel): array
+{
+    $a = flatten($actual);
+    $b = flatten($expected);
+    if (count($a) !== count($b)) {
+        return [INF, INF];
+    }
+    $largest = 0.0;
+    foreach ($b as $v) {
+        if ((is_int($v) || is_float($v)) && is_finite((float) $v)) {
+            $largest = max($largest, abs((float) $v));
+        }
+    }
+    $relative = 0.0;
+    $used = 0.0;
+    foreach ($b as $i => $v) {
+        if (! is_int($v) && ! is_float($v)) {
+            continue;
+        }
+        $x = (float) $a[$i];
+        $y = (float) $v;
+        if (is_nan($y) || is_infinite($y)) {
+            $same = $x === $y || (is_nan($x) && is_nan($y));
+            $relative = max($relative, $same ? 0.0 : INF);
+            $used = max($used, $same ? 0.0 : INF);
+
+            continue;
+        }
+        $difference = abs($x - $y);
+        $used = max($used, $difference == 0.0 ? 0.0 : $difference / ($abs + $rel * abs($y)));
+        if (abs($y) > $abs && abs($y) >= 1e-3 * $largest) {
+            $relative = max($relative, $difference / abs($y));
+        }
+    }
+
+    return [$relative, $used];
+}
+
+$rows = [];
+$record = function (string $fn, string $reference, array $error, string $domain) use (&$rows): void {
+    $key = "$fn|$reference";
+    $rows[$key] ??= ['fn' => $fn, 'reference' => $reference, 'error' => 0.0, 'used' => 0.0, 'cases' => 0, 'domain' => []];
+    $rows[$key]['error'] = max($rows[$key]['error'], $error[0]);
+    $rows[$key]['used'] = max($rows[$key]['used'], $error[1]);
+    $rows[$key]['cases']++;
+    $rows[$key]['domain'][$domain] = true;
+};
+
+$quiet = function (callable $f): mixed {
+    set_error_handler(fn () => true);
+    try {
+        return $f();
+    } finally {
+        restore_error_handler();
+    }
+};
+
+// Regression models against R (glm/lm) fixtures.
+$models = ['stats_ols' => 'ols-r.json', 'stats_logistic' => 'logistic-r.json', 'stats_probit' => 'probit-r.json', 'stats_poisson' => 'poisson-r.json'];
+foreach ($models as $fn => $file) {
+    foreach (fixture($file)['cases'] as $case) {
+        $result = $quiet(fn () => Polyfill::implementation($fn)($case['x'], $case['y'], 'drop', null, null, false));
+        foreach ($case['expected'] as $key => $expected) {
+            if ($fn === 'stats_ols' && in_array($case['name'], ['perfect', 'zero'], true)
+                && in_array($key, ['t_statistics', 'p_values', 'log_likelihood', 'r_squared', 'adj_r_squared', 'conf_int'], true)) {
+                continue;
+            }
+            $record($fn, "R ($file)", errors($result[$key], $expected, 1e-9, 1e-7), sprintf('n=%d, p=%d', count($case['y']), count($case['x'][0])));
+        }
+    }
+}
+foreach (['r-compatibility.json', 'stress-r.json'] as $file) {
+    foreach (fixture($file)['cases'] as $case) {
+        $fn = 'stats_'.$case['model'];
+        $result = $quiet(fn () => Polyfill::implementation($fn)($case['x'], $case['y'], 'drop', $case['weights'], $case['offset'], false));
+        foreach ($case['expected'] as $key => $expected) {
+            $actualKey = $key === 'statistics' ? ($case['model'] === 'ols' ? 't_statistics' : 'z_statistics') : $key;
+            if ($file === 'stress-r.json') {
+                $factor = match ($key) {
+                    'covariance' => $case['response_scale'] ** 2,
+                    'coefficients', 'std_errors', 'conf_int', 'fitted', 'residuals' => $case['response_scale'],
+                    default => 1,
+                };
+                $tolerance = [$case['tolerance']['absolute'] * $factor, $case['tolerance']['relative']];
+            } else {
+                $tolerance = [1e-7, 1e-6];
+            }
+            $record($fn, "R ($file)", errors($result[$actualKey], $expected, ...$tolerance), $case['name']);
+        }
+    }
+}
+
+// Descriptive statistics against R.
+$d = fixture('descriptive-r.json');
+foreach ($d['descriptive'] as $c) {
+    foreach (['mean' => 'stats_mean', 'variance' => 'stats_var', 'sd' => 'stats_sd', 'median' => 'stats_median'] as $key => $fn) {
+        $record($fn, 'R (descriptive-r.json)', errors(Polyfill::implementation($fn)($c['values']), $c[$key], 0.0, 1e-12), $c['name']);
+    }
+    $record('stats_var', 'R (descriptive-r.json)', errors(Polyfill::implementation('stats_var')($c['values'], 'population'), $c['population_variance'], 0.0, 1e-12), $c['name']);
+    $record('stats_quantile_array', 'R (descriptive-r.json)', errors(Polyfill::implementation('stats_quantile_array')($c['values'], $c['quantile_probabilities']), $c['quantiles'], 0.0, 1e-12), $c['name']);
+    foreach ($c['quantile_probabilities'] as $j => $q) {
+        $record('stats_quantile', 'R (descriptive-r.json)', errors(Polyfill::implementation('stats_quantile')($c['values'], $q), $c['quantiles'][$j], 0.0, 1e-12), $c['name']);
+    }
+}
+foreach ($d['pairs'] as $c) {
+    $record('stats_cov', 'R (descriptive-r.json)', errors(Polyfill::implementation('stats_cov')($c['x'], $c['y']), $c['covariance'], 0.0, 1e-12), $c['name']);
+    $record('stats_cov', 'R (descriptive-r.json)', errors(Polyfill::implementation('stats_cov')($c['x'], $c['y'], 'population'), $c['population_covariance'], 0.0, 1e-12), $c['name']);
+    $record('stats_cor', 'R (descriptive-r.json)', errors(Polyfill::implementation('stats_cor')($c['x'], $c['y']), $c['correlation'], 0.0, 1e-12), $c['name']);
+}
+foreach ($d['weighted'] ?? [] as $c) {
+    $record('stats_weighted_mean', 'R (descriptive-r.json)', errors(Polyfill::implementation('stats_weighted_mean')($c['values'], $c['weights']), $c['mean'], 0.0, 1e-12), $c['name']);
+    foreach (['frequency', 'reliability', 'population'] as $type) {
+        $record('stats_weighted_var', 'R (descriptive-r.json)', errors(Polyfill::implementation('stats_weighted_var')($c['values'], $c['weights'], $type), $c[$type], 0.0, 1e-12), $c['name']);
+    }
+}
+
+ksort($rows);
+echo "| Function | Reference | Comparisons | Max relative error | Tolerance used | Tested domain |\n";
+echo "|---|---|---:|---:|---:|---|\n";
+foreach ($rows as $row) {
+    $domain = array_keys($row['domain']);
+    $shown = implode(', ', array_slice($domain, 0, 4)).(count($domain) > 4 ? sprintf(', and %d more', count($domain) - 4) : '');
+    printf("| `%s` | %s | %d | %.1e | %.0f%% | %s |\n", $row['fn'], $row['reference'], $row['cases'], $row['error'], 100 * $row['used'], $shown);
+}
