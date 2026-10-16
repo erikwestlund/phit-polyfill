@@ -18,7 +18,7 @@ abstract class Binary extends Glm
     protected function prepareOutcomes(array $y, array $weights, array $offset, int $n): array
     {
         foreach ($y as $value) {
-            if (! ($value >= 0.0 && $value <= 1.0)) {
+            if (is_nan($value) || $value < 0.0 || $value > 1.0) {
                 throw self::error(ErrorCode::INVALID_INPUT, 'x must be finite and y must be finite proportions in [0,1], with integer successes under the supplied trial weights');
             }
         }

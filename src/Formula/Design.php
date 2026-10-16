@@ -417,7 +417,7 @@ final class Design
                 $singleInteger = true;
                 foreach ($retained as $i) {
                     $g = $spec['groups'][0]['v'][$i];
-                    if ($g === null || fmod($g, 1.0) != 0.0 || ! (abs($g) < 9.0e15)) {
+                    if ($g === null || fmod($g, 1.0) != 0.0 || is_nan($g) || abs($g) >= 9.0e15) {
                         $singleInteger = false;
                         break;
                     }

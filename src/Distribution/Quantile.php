@@ -105,7 +105,10 @@ final class Quantile
         for ($i = 0; $i < 400; $i++) {
             $step = fdiv($gx, $slope($x));
             $next = $x - $step;
-            if (! (is_finite($next) && $next > $a && $next < $b)) {
+            // Written without a negation: opcache folds !(x > a) into x <= a, which is wrong for NaN.
+            if (is_finite($next) && $next > $a && $next < $b) {
+                // Keep the Newton step.
+            } else {
                 $next = self::midpoint($a, $b);
             }
             if ($next == $x || abs($next - $x) <= 4.0 * PHP_FLOAT_EPSILON * abs($next)) {

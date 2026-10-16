@@ -24,7 +24,7 @@ final class NegativeBinomial
     {
         Support::positive('size', $size);
         Support::finite('prob', $prob);
-        if (! ($prob > 0.0 && $prob <= 1.0)) {
+        if (is_nan($prob) || $prob <= 0.0 || $prob > 1.0) {
             throw Support::invalid('prob must be in (0, 1]');
         }
 

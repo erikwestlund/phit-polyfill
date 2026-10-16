@@ -27,7 +27,7 @@ final class Binomial
             throw Support::invalid('size must be nonnegative');
         }
         Support::finite('prob', $prob);
-        if (! ($prob >= 0.0 && $prob <= 1.0)) {
+        if (is_nan($prob) || $prob < 0.0 || $prob > 1.0) {
             throw Support::invalid('prob must be in [0, 1]');
         }
         if ($size > self::MAX_SIZE) {

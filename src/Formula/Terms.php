@@ -213,7 +213,7 @@ final class Terms
 
                 return self::trim(array_map(fn ($t) => self::union($t, $all), $left));
             case '^':
-                if ($r[0] !== 'num' || ! ($r[1] >= 1.0) || fmod($r[1], 1.0) != 0.0) {
+                if ($r[0] !== 'num' || is_nan($r[1]) || $r[1] < 1.0 || fmod($r[1], 1.0) != 0.0) {
                     throw Parser::error('invalid power in formula: use a positive integer, e.g. (a + b)^2');
                 }
                 $power = (int) $r[1];

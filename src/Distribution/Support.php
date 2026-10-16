@@ -25,7 +25,7 @@ final class Support
 
     public static function positive(string $name, float $value): float
     {
-        if (! (self::finite($name, $value) > 0.0)) {
+        if (self::finite($name, $value) <= 0.0) {
             throw ErrorCode::exception(ErrorCode::INVALID_INPUT, "$name must be positive");
         }
 
@@ -99,7 +99,7 @@ final class Support
         if (is_nan($p)) {
             throw ErrorCode::exception(ErrorCode::NONFINITE, 'probabilities must not be NaN');
         }
-        if (! ($p >= 0.0 && $p <= 1.0)) {
+        if (is_nan($p) || $p < 0.0 || $p > 1.0) {
             throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'probabilities must be in [0, 1]');
         }
 

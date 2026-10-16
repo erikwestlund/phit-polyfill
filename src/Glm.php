@@ -131,7 +131,7 @@ final class Glm
             }
         }
         foreach ($y as $v) {
-            if (! ($v >= 0.0 && $v <= 1.0)) {
+            if (is_nan($v) || $v < 0.0 || $v > 1.0) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'binary/grouped-binomial y must be in [0,1]');
             }
         }

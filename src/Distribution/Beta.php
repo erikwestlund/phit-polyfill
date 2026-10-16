@@ -154,7 +154,7 @@ final class Beta
     {
         $a = $this->alpha;
         $b = $this->beta;
-        if (! ($x >= 0.0 && $x <= 1.0)) {
+        if (is_nan($x) || $x < 0.0 || $x > 1.0) {
             return -INF;
         }
         if ($x == 0.0) {

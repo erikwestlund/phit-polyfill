@@ -115,7 +115,7 @@ final class ModelData
         $outcomes = [];
         foreach ($y as $value) {
             $value = self::number($value);
-            if ($value !== null && $outcome === 'binary' && ! ($value >= 0.0 && $value <= 1.0)) {
+            if ($value !== null && $outcome === 'binary' && (is_nan($value) || $value < 0.0 || $value > 1.0)) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'binary/grouped-binomial y must be in [0,1]');
             }
             if ($value !== null && $outcome === 'count' && ($value < 0.0 || fmod($value, 1.0) != 0.0)) {
