@@ -49,7 +49,7 @@ Polyfill::nativeLoaded();              // whether php_stats is loaded
 |---|---|---|
 | Descriptive statistics | `stats_mean`, `stats_var`, `stats_sd`, `stats_median`, `stats_quantile`, `stats_quantile_array`, `stats_cov`, `stats_cor`, `stats_weighted_mean`, `stats_weighted_var` | Provided |
 | Regression | `stats_ols`, `stats_logistic`, `stats_probit`, `stats_poisson`, with weights, offsets, the automatic intercept, and both missing-value policies | Provided |
-| Distributions | See [Distributions](#distributions) | Provided where accurate |
+| Distributions | 13 families × 14 functions; see [Distributions](#distributions) | Provided |
 | Mixed models | `stats_lmm`, `stats_lmm_fit`, `stats_logistic_mixed` | Extension only |
 | Random numbers and draws | every `*_rng` function, `stats_draw_affine`, `stats_draw_covariance_map`, `stats_draw_moments` | Extension only |
 | Other | `stats_hello` | Extension only |
@@ -59,7 +59,28 @@ Functions marked "Extension only" stay undefined without the extension, so
 
 ### Distributions
 
-Distribution functions are in progress and will be listed here.
+All 13 distribution families are provided, each with the full set of
+operations and their `_array` variants:
+
+| Family | Prefix | Parameters | Operations |
+|---|---|---|---|
+| Normal | `stats_normal_` | mean, sd | pdf, logpdf, cdf, logcdf, sf, logsf, quantile |
+| Student's t | `stats_t_` | df | same |
+| Chi-square | `stats_chisquare_` | df | same |
+| F | `stats_f_` | df1, df2 | same |
+| Exponential | `stats_exponential_` | rate | same |
+| Logistic | `stats_logistic_` | location, scale | same |
+| Log-normal | `stats_lognormal_` | meanlog, sdlog | same |
+| Gamma | `stats_gamma_` | shape, scale | same |
+| Beta | `stats_beta_` | alpha, beta | same |
+| Binomial | `stats_binomial_` | size, prob | pmf, logpmf, cdf, logcdf, sf, logsf, quantile |
+| Poisson | `stats_poisson_` | lambda | same |
+| Negative binomial | `stats_nbinom_` | size, prob | same |
+| Negative binomial by mean | `stats_nbinom_mu_` | size, mu | same |
+
+For example, `stats_t_sf(2.5, df: 12)` and
+`stats_normal_quantile_array([0.025, 0.975])`. The random-number functions
+(`stats_normal_rng` and the other `*_rng` functions) need the extension.
 
 ## How it works
 
@@ -76,6 +97,11 @@ reimplementations, so results agree to rounding in most cases.
   until the likelihood does not decrease, and stops only after a small full
   step. The separation certificate, boundary handling, starting values for
   extreme offsets, and exception codes match the extension.
+- **Distributions.** The extension's distribution layer is ported together
+  with the parts of cdflib it calls: TOMS 708 (incomplete beta), TOMS 654
+  (incomplete gamma), Cody's normal CDF, and the `dinvnr`/`dt1` quantile
+  starts. Log-scale tails, saddle-point densities, and the safeguarded quantile
+  search are ported as well.
 - **Special functions.** The statrs routines that the extension's estimators
   call (erfc, ln Γ, the regularized incomplete beta, and the inverse error
   function) are ported from the same crate version.
@@ -113,6 +139,8 @@ In summary:
   cond(X)·ε, which is what two backward-stable solvers can promise.
 - Logistic, probit, and Poisson regression agree with the extension to about
   10⁻⁸, the level of their shared convergence rule, and usually to 10⁻¹².
+- Distribution functions are bit-identical to the extension on every input
+  tested, and within 10⁻¹² of mpmath down to probabilities near 10⁻³⁰⁰.
 
 ### Known differences
 
@@ -124,6 +152,10 @@ In summary:
 - The `iterations` reported by an iterative fit can differ by one, and by a
   little more when the likelihood is flat to rounding near the optimum. The
   estimates still agree.
+- Three distribution calls with a parameter equal to `PHP_FLOAT_MAX` never
+  return in the extension. The polyfill raises exception 1006 for them instead.
+  `stats_t_quantile` with df below about 0.05 is also much faster in the
+  polyfill, with identical results. ACCURACY.md has the details.
 
 ## Performance
 

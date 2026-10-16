@@ -7,6 +7,300 @@ if (extension_loaded('php_stats')) {
     return;
 }
 
+if (! function_exists('stats_beta_cdf')) {
+    function stats_beta_cdf(float $x, float $alpha, float $beta): float
+    {
+        return \PhpStats\Polyfill\Distribution\Beta::cdf($x, $alpha, $beta);
+    }
+}
+
+if (! function_exists('stats_beta_cdf_array')) {
+    function stats_beta_cdf_array(array $values, float $alpha, float $beta): array
+    {
+        return \PhpStats\Polyfill\Distribution\Beta::cdfArray($values, $alpha, $beta);
+    }
+}
+
+if (! function_exists('stats_beta_logcdf')) {
+    function stats_beta_logcdf(float $x, float $alpha, float $beta): float
+    {
+        return \PhpStats\Polyfill\Distribution\Beta::logcdf($x, $alpha, $beta);
+    }
+}
+
+if (! function_exists('stats_beta_logcdf_array')) {
+    function stats_beta_logcdf_array(array $values, float $alpha, float $beta): array
+    {
+        return \PhpStats\Polyfill\Distribution\Beta::logcdfArray($values, $alpha, $beta);
+    }
+}
+
+if (! function_exists('stats_beta_logpdf')) {
+    function stats_beta_logpdf(float $x, float $alpha, float $beta): float
+    {
+        return \PhpStats\Polyfill\Distribution\Beta::logpdf($x, $alpha, $beta);
+    }
+}
+
+if (! function_exists('stats_beta_logpdf_array')) {
+    function stats_beta_logpdf_array(array $values, float $alpha, float $beta): array
+    {
+        return \PhpStats\Polyfill\Distribution\Beta::logpdfArray($values, $alpha, $beta);
+    }
+}
+
+if (! function_exists('stats_beta_logsf')) {
+    function stats_beta_logsf(float $x, float $alpha, float $beta): float
+    {
+        return \PhpStats\Polyfill\Distribution\Beta::logsf($x, $alpha, $beta);
+    }
+}
+
+if (! function_exists('stats_beta_logsf_array')) {
+    function stats_beta_logsf_array(array $values, float $alpha, float $beta): array
+    {
+        return \PhpStats\Polyfill\Distribution\Beta::logsfArray($values, $alpha, $beta);
+    }
+}
+
+if (! function_exists('stats_beta_pdf')) {
+    function stats_beta_pdf(float $x, float $alpha, float $beta): float
+    {
+        return \PhpStats\Polyfill\Distribution\Beta::pdf($x, $alpha, $beta);
+    }
+}
+
+if (! function_exists('stats_beta_pdf_array')) {
+    function stats_beta_pdf_array(array $values, float $alpha, float $beta): array
+    {
+        return \PhpStats\Polyfill\Distribution\Beta::pdfArray($values, $alpha, $beta);
+    }
+}
+
+if (! function_exists('stats_beta_quantile')) {
+    function stats_beta_quantile(float $p, float $alpha, float $beta): float
+    {
+        return \PhpStats\Polyfill\Distribution\Beta::quantile($p, $alpha, $beta);
+    }
+}
+
+if (! function_exists('stats_beta_quantile_array')) {
+    function stats_beta_quantile_array(array $probabilities, float $alpha, float $beta): array
+    {
+        return \PhpStats\Polyfill\Distribution\Beta::quantileArray($probabilities, $alpha, $beta);
+    }
+}
+
+if (! function_exists('stats_beta_sf')) {
+    function stats_beta_sf(float $x, float $alpha, float $beta): float
+    {
+        return \PhpStats\Polyfill\Distribution\Beta::sf($x, $alpha, $beta);
+    }
+}
+
+if (! function_exists('stats_beta_sf_array')) {
+    function stats_beta_sf_array(array $values, float $alpha, float $beta): array
+    {
+        return \PhpStats\Polyfill\Distribution\Beta::sfArray($values, $alpha, $beta);
+    }
+}
+
+if (! function_exists('stats_binomial_cdf')) {
+    function stats_binomial_cdf(float $k, int $size, float $prob): float
+    {
+        return \PhpStats\Polyfill\Distribution\Binomial::cdf($k, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_binomial_cdf_array')) {
+    function stats_binomial_cdf_array(array $counts, int $size, float $prob): array
+    {
+        return \PhpStats\Polyfill\Distribution\Binomial::cdfArray($counts, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_binomial_logcdf')) {
+    function stats_binomial_logcdf(float $k, int $size, float $prob): float
+    {
+        return \PhpStats\Polyfill\Distribution\Binomial::logcdf($k, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_binomial_logcdf_array')) {
+    function stats_binomial_logcdf_array(array $counts, int $size, float $prob): array
+    {
+        return \PhpStats\Polyfill\Distribution\Binomial::logcdfArray($counts, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_binomial_logpmf')) {
+    function stats_binomial_logpmf(float $k, int $size, float $prob): float
+    {
+        return \PhpStats\Polyfill\Distribution\Binomial::logpmf($k, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_binomial_logpmf_array')) {
+    function stats_binomial_logpmf_array(array $counts, int $size, float $prob): array
+    {
+        return \PhpStats\Polyfill\Distribution\Binomial::logpmfArray($counts, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_binomial_logsf')) {
+    function stats_binomial_logsf(float $k, int $size, float $prob): float
+    {
+        return \PhpStats\Polyfill\Distribution\Binomial::logsf($k, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_binomial_logsf_array')) {
+    function stats_binomial_logsf_array(array $counts, int $size, float $prob): array
+    {
+        return \PhpStats\Polyfill\Distribution\Binomial::logsfArray($counts, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_binomial_pmf')) {
+    function stats_binomial_pmf(float $k, int $size, float $prob): float
+    {
+        return \PhpStats\Polyfill\Distribution\Binomial::pmf($k, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_binomial_pmf_array')) {
+    function stats_binomial_pmf_array(array $counts, int $size, float $prob): array
+    {
+        return \PhpStats\Polyfill\Distribution\Binomial::pmfArray($counts, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_binomial_quantile')) {
+    function stats_binomial_quantile(float $p, int $size, float $prob): float
+    {
+        return \PhpStats\Polyfill\Distribution\Binomial::quantile($p, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_binomial_quantile_array')) {
+    function stats_binomial_quantile_array(array $probabilities, int $size, float $prob): array
+    {
+        return \PhpStats\Polyfill\Distribution\Binomial::quantileArray($probabilities, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_binomial_sf')) {
+    function stats_binomial_sf(float $k, int $size, float $prob): float
+    {
+        return \PhpStats\Polyfill\Distribution\Binomial::sf($k, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_binomial_sf_array')) {
+    function stats_binomial_sf_array(array $counts, int $size, float $prob): array
+    {
+        return \PhpStats\Polyfill\Distribution\Binomial::sfArray($counts, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_chisquare_cdf')) {
+    function stats_chisquare_cdf(float $x, float $df): float
+    {
+        return \PhpStats\Polyfill\Distribution\ChiSquare::cdf($x, $df);
+    }
+}
+
+if (! function_exists('stats_chisquare_cdf_array')) {
+    function stats_chisquare_cdf_array(array $values, float $df): array
+    {
+        return \PhpStats\Polyfill\Distribution\ChiSquare::cdfArray($values, $df);
+    }
+}
+
+if (! function_exists('stats_chisquare_logcdf')) {
+    function stats_chisquare_logcdf(float $x, float $df): float
+    {
+        return \PhpStats\Polyfill\Distribution\ChiSquare::logcdf($x, $df);
+    }
+}
+
+if (! function_exists('stats_chisquare_logcdf_array')) {
+    function stats_chisquare_logcdf_array(array $values, float $df): array
+    {
+        return \PhpStats\Polyfill\Distribution\ChiSquare::logcdfArray($values, $df);
+    }
+}
+
+if (! function_exists('stats_chisquare_logpdf')) {
+    function stats_chisquare_logpdf(float $x, float $df): float
+    {
+        return \PhpStats\Polyfill\Distribution\ChiSquare::logpdf($x, $df);
+    }
+}
+
+if (! function_exists('stats_chisquare_logpdf_array')) {
+    function stats_chisquare_logpdf_array(array $values, float $df): array
+    {
+        return \PhpStats\Polyfill\Distribution\ChiSquare::logpdfArray($values, $df);
+    }
+}
+
+if (! function_exists('stats_chisquare_logsf')) {
+    function stats_chisquare_logsf(float $x, float $df): float
+    {
+        return \PhpStats\Polyfill\Distribution\ChiSquare::logsf($x, $df);
+    }
+}
+
+if (! function_exists('stats_chisquare_logsf_array')) {
+    function stats_chisquare_logsf_array(array $values, float $df): array
+    {
+        return \PhpStats\Polyfill\Distribution\ChiSquare::logsfArray($values, $df);
+    }
+}
+
+if (! function_exists('stats_chisquare_pdf')) {
+    function stats_chisquare_pdf(float $x, float $df): float
+    {
+        return \PhpStats\Polyfill\Distribution\ChiSquare::pdf($x, $df);
+    }
+}
+
+if (! function_exists('stats_chisquare_pdf_array')) {
+    function stats_chisquare_pdf_array(array $values, float $df): array
+    {
+        return \PhpStats\Polyfill\Distribution\ChiSquare::pdfArray($values, $df);
+    }
+}
+
+if (! function_exists('stats_chisquare_quantile')) {
+    function stats_chisquare_quantile(float $p, float $df): float
+    {
+        return \PhpStats\Polyfill\Distribution\ChiSquare::quantile($p, $df);
+    }
+}
+
+if (! function_exists('stats_chisquare_quantile_array')) {
+    function stats_chisquare_quantile_array(array $probabilities, float $df): array
+    {
+        return \PhpStats\Polyfill\Distribution\ChiSquare::quantileArray($probabilities, $df);
+    }
+}
+
+if (! function_exists('stats_chisquare_sf')) {
+    function stats_chisquare_sf(float $x, float $df): float
+    {
+        return \PhpStats\Polyfill\Distribution\ChiSquare::sf($x, $df);
+    }
+}
+
+if (! function_exists('stats_chisquare_sf_array')) {
+    function stats_chisquare_sf_array(array $values, float $df): array
+    {
+        return \PhpStats\Polyfill\Distribution\ChiSquare::sfArray($values, $df);
+    }
+}
+
 if (! function_exists('stats_cor')) {
     function stats_cor(array $x, array $y, string $missing = 'raise'): float
     {
@@ -21,10 +315,500 @@ if (! function_exists('stats_cov')) {
     }
 }
 
+if (! function_exists('stats_exponential_cdf')) {
+    function stats_exponential_cdf(float $x, float $rate = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Exponential::cdf($x, $rate);
+    }
+}
+
+if (! function_exists('stats_exponential_cdf_array')) {
+    function stats_exponential_cdf_array(array $values, float $rate = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Exponential::cdfArray($values, $rate);
+    }
+}
+
+if (! function_exists('stats_exponential_logcdf')) {
+    function stats_exponential_logcdf(float $x, float $rate = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Exponential::logcdf($x, $rate);
+    }
+}
+
+if (! function_exists('stats_exponential_logcdf_array')) {
+    function stats_exponential_logcdf_array(array $values, float $rate = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Exponential::logcdfArray($values, $rate);
+    }
+}
+
+if (! function_exists('stats_exponential_logpdf')) {
+    function stats_exponential_logpdf(float $x, float $rate = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Exponential::logpdf($x, $rate);
+    }
+}
+
+if (! function_exists('stats_exponential_logpdf_array')) {
+    function stats_exponential_logpdf_array(array $values, float $rate = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Exponential::logpdfArray($values, $rate);
+    }
+}
+
+if (! function_exists('stats_exponential_logsf')) {
+    function stats_exponential_logsf(float $x, float $rate = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Exponential::logsf($x, $rate);
+    }
+}
+
+if (! function_exists('stats_exponential_logsf_array')) {
+    function stats_exponential_logsf_array(array $values, float $rate = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Exponential::logsfArray($values, $rate);
+    }
+}
+
+if (! function_exists('stats_exponential_pdf')) {
+    function stats_exponential_pdf(float $x, float $rate = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Exponential::pdf($x, $rate);
+    }
+}
+
+if (! function_exists('stats_exponential_pdf_array')) {
+    function stats_exponential_pdf_array(array $values, float $rate = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Exponential::pdfArray($values, $rate);
+    }
+}
+
+if (! function_exists('stats_exponential_quantile')) {
+    function stats_exponential_quantile(float $p, float $rate = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Exponential::quantile($p, $rate);
+    }
+}
+
+if (! function_exists('stats_exponential_quantile_array')) {
+    function stats_exponential_quantile_array(array $probabilities, float $rate = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Exponential::quantileArray($probabilities, $rate);
+    }
+}
+
+if (! function_exists('stats_exponential_sf')) {
+    function stats_exponential_sf(float $x, float $rate = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Exponential::sf($x, $rate);
+    }
+}
+
+if (! function_exists('stats_exponential_sf_array')) {
+    function stats_exponential_sf_array(array $values, float $rate = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Exponential::sfArray($values, $rate);
+    }
+}
+
+if (! function_exists('stats_f_cdf')) {
+    function stats_f_cdf(float $x, float $df1, float $df2): float
+    {
+        return \PhpStats\Polyfill\Distribution\FisherF::cdf($x, $df1, $df2);
+    }
+}
+
+if (! function_exists('stats_f_cdf_array')) {
+    function stats_f_cdf_array(array $values, float $df1, float $df2): array
+    {
+        return \PhpStats\Polyfill\Distribution\FisherF::cdfArray($values, $df1, $df2);
+    }
+}
+
+if (! function_exists('stats_f_logcdf')) {
+    function stats_f_logcdf(float $x, float $df1, float $df2): float
+    {
+        return \PhpStats\Polyfill\Distribution\FisherF::logcdf($x, $df1, $df2);
+    }
+}
+
+if (! function_exists('stats_f_logcdf_array')) {
+    function stats_f_logcdf_array(array $values, float $df1, float $df2): array
+    {
+        return \PhpStats\Polyfill\Distribution\FisherF::logcdfArray($values, $df1, $df2);
+    }
+}
+
+if (! function_exists('stats_f_logpdf')) {
+    function stats_f_logpdf(float $x, float $df1, float $df2): float
+    {
+        return \PhpStats\Polyfill\Distribution\FisherF::logpdf($x, $df1, $df2);
+    }
+}
+
+if (! function_exists('stats_f_logpdf_array')) {
+    function stats_f_logpdf_array(array $values, float $df1, float $df2): array
+    {
+        return \PhpStats\Polyfill\Distribution\FisherF::logpdfArray($values, $df1, $df2);
+    }
+}
+
+if (! function_exists('stats_f_logsf')) {
+    function stats_f_logsf(float $x, float $df1, float $df2): float
+    {
+        return \PhpStats\Polyfill\Distribution\FisherF::logsf($x, $df1, $df2);
+    }
+}
+
+if (! function_exists('stats_f_logsf_array')) {
+    function stats_f_logsf_array(array $values, float $df1, float $df2): array
+    {
+        return \PhpStats\Polyfill\Distribution\FisherF::logsfArray($values, $df1, $df2);
+    }
+}
+
+if (! function_exists('stats_f_pdf')) {
+    function stats_f_pdf(float $x, float $df1, float $df2): float
+    {
+        return \PhpStats\Polyfill\Distribution\FisherF::pdf($x, $df1, $df2);
+    }
+}
+
+if (! function_exists('stats_f_pdf_array')) {
+    function stats_f_pdf_array(array $values, float $df1, float $df2): array
+    {
+        return \PhpStats\Polyfill\Distribution\FisherF::pdfArray($values, $df1, $df2);
+    }
+}
+
+if (! function_exists('stats_f_quantile')) {
+    function stats_f_quantile(float $p, float $df1, float $df2): float
+    {
+        return \PhpStats\Polyfill\Distribution\FisherF::quantile($p, $df1, $df2);
+    }
+}
+
+if (! function_exists('stats_f_quantile_array')) {
+    function stats_f_quantile_array(array $probabilities, float $df1, float $df2): array
+    {
+        return \PhpStats\Polyfill\Distribution\FisherF::quantileArray($probabilities, $df1, $df2);
+    }
+}
+
+if (! function_exists('stats_f_sf')) {
+    function stats_f_sf(float $x, float $df1, float $df2): float
+    {
+        return \PhpStats\Polyfill\Distribution\FisherF::sf($x, $df1, $df2);
+    }
+}
+
+if (! function_exists('stats_f_sf_array')) {
+    function stats_f_sf_array(array $values, float $df1, float $df2): array
+    {
+        return \PhpStats\Polyfill\Distribution\FisherF::sfArray($values, $df1, $df2);
+    }
+}
+
+if (! function_exists('stats_gamma_cdf')) {
+    function stats_gamma_cdf(float $x, float $shape, float $scale = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Gamma::cdf($x, $shape, $scale);
+    }
+}
+
+if (! function_exists('stats_gamma_cdf_array')) {
+    function stats_gamma_cdf_array(array $values, float $shape, float $scale = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Gamma::cdfArray($values, $shape, $scale);
+    }
+}
+
+if (! function_exists('stats_gamma_logcdf')) {
+    function stats_gamma_logcdf(float $x, float $shape, float $scale = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Gamma::logcdf($x, $shape, $scale);
+    }
+}
+
+if (! function_exists('stats_gamma_logcdf_array')) {
+    function stats_gamma_logcdf_array(array $values, float $shape, float $scale = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Gamma::logcdfArray($values, $shape, $scale);
+    }
+}
+
+if (! function_exists('stats_gamma_logpdf')) {
+    function stats_gamma_logpdf(float $x, float $shape, float $scale = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Gamma::logpdf($x, $shape, $scale);
+    }
+}
+
+if (! function_exists('stats_gamma_logpdf_array')) {
+    function stats_gamma_logpdf_array(array $values, float $shape, float $scale = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Gamma::logpdfArray($values, $shape, $scale);
+    }
+}
+
+if (! function_exists('stats_gamma_logsf')) {
+    function stats_gamma_logsf(float $x, float $shape, float $scale = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Gamma::logsf($x, $shape, $scale);
+    }
+}
+
+if (! function_exists('stats_gamma_logsf_array')) {
+    function stats_gamma_logsf_array(array $values, float $shape, float $scale = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Gamma::logsfArray($values, $shape, $scale);
+    }
+}
+
+if (! function_exists('stats_gamma_pdf')) {
+    function stats_gamma_pdf(float $x, float $shape, float $scale = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Gamma::pdf($x, $shape, $scale);
+    }
+}
+
+if (! function_exists('stats_gamma_pdf_array')) {
+    function stats_gamma_pdf_array(array $values, float $shape, float $scale = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Gamma::pdfArray($values, $shape, $scale);
+    }
+}
+
+if (! function_exists('stats_gamma_quantile')) {
+    function stats_gamma_quantile(float $p, float $shape, float $scale = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Gamma::quantile($p, $shape, $scale);
+    }
+}
+
+if (! function_exists('stats_gamma_quantile_array')) {
+    function stats_gamma_quantile_array(array $probabilities, float $shape, float $scale = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Gamma::quantileArray($probabilities, $shape, $scale);
+    }
+}
+
+if (! function_exists('stats_gamma_sf')) {
+    function stats_gamma_sf(float $x, float $shape, float $scale = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Gamma::sf($x, $shape, $scale);
+    }
+}
+
+if (! function_exists('stats_gamma_sf_array')) {
+    function stats_gamma_sf_array(array $values, float $shape, float $scale = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Gamma::sfArray($values, $shape, $scale);
+    }
+}
+
 if (! function_exists('stats_logistic')) {
     function stats_logistic(array $x, array $y, string $missing = 'drop', ?array $weights = null, ?array $offset = null, bool $intercept = true): array
     {
         return \PhpStats\Polyfill\Logistic::fit($x, $y, $missing, $weights, $offset, $intercept);
+    }
+}
+
+if (! function_exists('stats_logistic_cdf')) {
+    function stats_logistic_cdf(float $x, float $location = 0.0, float $scale = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Logistic::cdf($x, $location, $scale);
+    }
+}
+
+if (! function_exists('stats_logistic_cdf_array')) {
+    function stats_logistic_cdf_array(array $values, float $location = 0.0, float $scale = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Logistic::cdfArray($values, $location, $scale);
+    }
+}
+
+if (! function_exists('stats_logistic_logcdf')) {
+    function stats_logistic_logcdf(float $x, float $location = 0.0, float $scale = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Logistic::logcdf($x, $location, $scale);
+    }
+}
+
+if (! function_exists('stats_logistic_logcdf_array')) {
+    function stats_logistic_logcdf_array(array $values, float $location = 0.0, float $scale = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Logistic::logcdfArray($values, $location, $scale);
+    }
+}
+
+if (! function_exists('stats_logistic_logpdf')) {
+    function stats_logistic_logpdf(float $x, float $location = 0.0, float $scale = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Logistic::logpdf($x, $location, $scale);
+    }
+}
+
+if (! function_exists('stats_logistic_logpdf_array')) {
+    function stats_logistic_logpdf_array(array $values, float $location = 0.0, float $scale = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Logistic::logpdfArray($values, $location, $scale);
+    }
+}
+
+if (! function_exists('stats_logistic_logsf')) {
+    function stats_logistic_logsf(float $x, float $location = 0.0, float $scale = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Logistic::logsf($x, $location, $scale);
+    }
+}
+
+if (! function_exists('stats_logistic_logsf_array')) {
+    function stats_logistic_logsf_array(array $values, float $location = 0.0, float $scale = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Logistic::logsfArray($values, $location, $scale);
+    }
+}
+
+if (! function_exists('stats_logistic_pdf')) {
+    function stats_logistic_pdf(float $x, float $location = 0.0, float $scale = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Logistic::pdf($x, $location, $scale);
+    }
+}
+
+if (! function_exists('stats_logistic_pdf_array')) {
+    function stats_logistic_pdf_array(array $values, float $location = 0.0, float $scale = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Logistic::pdfArray($values, $location, $scale);
+    }
+}
+
+if (! function_exists('stats_logistic_quantile')) {
+    function stats_logistic_quantile(float $p, float $location = 0.0, float $scale = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Logistic::quantile($p, $location, $scale);
+    }
+}
+
+if (! function_exists('stats_logistic_quantile_array')) {
+    function stats_logistic_quantile_array(array $probabilities, float $location = 0.0, float $scale = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Logistic::quantileArray($probabilities, $location, $scale);
+    }
+}
+
+if (! function_exists('stats_logistic_sf')) {
+    function stats_logistic_sf(float $x, float $location = 0.0, float $scale = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Logistic::sf($x, $location, $scale);
+    }
+}
+
+if (! function_exists('stats_logistic_sf_array')) {
+    function stats_logistic_sf_array(array $values, float $location = 0.0, float $scale = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Logistic::sfArray($values, $location, $scale);
+    }
+}
+
+if (! function_exists('stats_lognormal_cdf')) {
+    function stats_lognormal_cdf(float $x, float $meanlog = 0.0, float $sdlog = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\LogNormal::cdf($x, $meanlog, $sdlog);
+    }
+}
+
+if (! function_exists('stats_lognormal_cdf_array')) {
+    function stats_lognormal_cdf_array(array $values, float $meanlog = 0.0, float $sdlog = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\LogNormal::cdfArray($values, $meanlog, $sdlog);
+    }
+}
+
+if (! function_exists('stats_lognormal_logcdf')) {
+    function stats_lognormal_logcdf(float $x, float $meanlog = 0.0, float $sdlog = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\LogNormal::logcdf($x, $meanlog, $sdlog);
+    }
+}
+
+if (! function_exists('stats_lognormal_logcdf_array')) {
+    function stats_lognormal_logcdf_array(array $values, float $meanlog = 0.0, float $sdlog = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\LogNormal::logcdfArray($values, $meanlog, $sdlog);
+    }
+}
+
+if (! function_exists('stats_lognormal_logpdf')) {
+    function stats_lognormal_logpdf(float $x, float $meanlog = 0.0, float $sdlog = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\LogNormal::logpdf($x, $meanlog, $sdlog);
+    }
+}
+
+if (! function_exists('stats_lognormal_logpdf_array')) {
+    function stats_lognormal_logpdf_array(array $values, float $meanlog = 0.0, float $sdlog = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\LogNormal::logpdfArray($values, $meanlog, $sdlog);
+    }
+}
+
+if (! function_exists('stats_lognormal_logsf')) {
+    function stats_lognormal_logsf(float $x, float $meanlog = 0.0, float $sdlog = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\LogNormal::logsf($x, $meanlog, $sdlog);
+    }
+}
+
+if (! function_exists('stats_lognormal_logsf_array')) {
+    function stats_lognormal_logsf_array(array $values, float $meanlog = 0.0, float $sdlog = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\LogNormal::logsfArray($values, $meanlog, $sdlog);
+    }
+}
+
+if (! function_exists('stats_lognormal_pdf')) {
+    function stats_lognormal_pdf(float $x, float $meanlog = 0.0, float $sdlog = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\LogNormal::pdf($x, $meanlog, $sdlog);
+    }
+}
+
+if (! function_exists('stats_lognormal_pdf_array')) {
+    function stats_lognormal_pdf_array(array $values, float $meanlog = 0.0, float $sdlog = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\LogNormal::pdfArray($values, $meanlog, $sdlog);
+    }
+}
+
+if (! function_exists('stats_lognormal_quantile')) {
+    function stats_lognormal_quantile(float $p, float $meanlog = 0.0, float $sdlog = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\LogNormal::quantile($p, $meanlog, $sdlog);
+    }
+}
+
+if (! function_exists('stats_lognormal_quantile_array')) {
+    function stats_lognormal_quantile_array(array $probabilities, float $meanlog = 0.0, float $sdlog = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\LogNormal::quantileArray($probabilities, $meanlog, $sdlog);
+    }
+}
+
+if (! function_exists('stats_lognormal_sf')) {
+    function stats_lognormal_sf(float $x, float $meanlog = 0.0, float $sdlog = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\LogNormal::sf($x, $meanlog, $sdlog);
+    }
+}
+
+if (! function_exists('stats_lognormal_sf_array')) {
+    function stats_lognormal_sf_array(array $values, float $meanlog = 0.0, float $sdlog = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\LogNormal::sfArray($values, $meanlog, $sdlog);
     }
 }
 
@@ -42,6 +826,300 @@ if (! function_exists('stats_median')) {
     }
 }
 
+if (! function_exists('stats_nbinom_cdf')) {
+    function stats_nbinom_cdf(float $k, float $size, float $prob): float
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomial::cdf($k, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_nbinom_cdf_array')) {
+    function stats_nbinom_cdf_array(array $counts, float $size, float $prob): array
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomial::cdfArray($counts, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_nbinom_logcdf')) {
+    function stats_nbinom_logcdf(float $k, float $size, float $prob): float
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomial::logcdf($k, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_nbinom_logcdf_array')) {
+    function stats_nbinom_logcdf_array(array $counts, float $size, float $prob): array
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomial::logcdfArray($counts, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_nbinom_logpmf')) {
+    function stats_nbinom_logpmf(float $k, float $size, float $prob): float
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomial::logpmf($k, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_nbinom_logpmf_array')) {
+    function stats_nbinom_logpmf_array(array $counts, float $size, float $prob): array
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomial::logpmfArray($counts, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_nbinom_logsf')) {
+    function stats_nbinom_logsf(float $k, float $size, float $prob): float
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomial::logsf($k, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_nbinom_logsf_array')) {
+    function stats_nbinom_logsf_array(array $counts, float $size, float $prob): array
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomial::logsfArray($counts, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_nbinom_mu_cdf')) {
+    function stats_nbinom_mu_cdf(float $k, float $size, float $mu): float
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomialMu::cdf($k, $size, $mu);
+    }
+}
+
+if (! function_exists('stats_nbinom_mu_cdf_array')) {
+    function stats_nbinom_mu_cdf_array(array $counts, float $size, float $mu): array
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomialMu::cdfArray($counts, $size, $mu);
+    }
+}
+
+if (! function_exists('stats_nbinom_mu_logcdf')) {
+    function stats_nbinom_mu_logcdf(float $k, float $size, float $mu): float
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomialMu::logcdf($k, $size, $mu);
+    }
+}
+
+if (! function_exists('stats_nbinom_mu_logcdf_array')) {
+    function stats_nbinom_mu_logcdf_array(array $counts, float $size, float $mu): array
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomialMu::logcdfArray($counts, $size, $mu);
+    }
+}
+
+if (! function_exists('stats_nbinom_mu_logpmf')) {
+    function stats_nbinom_mu_logpmf(float $k, float $size, float $mu): float
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomialMu::logpmf($k, $size, $mu);
+    }
+}
+
+if (! function_exists('stats_nbinom_mu_logpmf_array')) {
+    function stats_nbinom_mu_logpmf_array(array $counts, float $size, float $mu): array
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomialMu::logpmfArray($counts, $size, $mu);
+    }
+}
+
+if (! function_exists('stats_nbinom_mu_logsf')) {
+    function stats_nbinom_mu_logsf(float $k, float $size, float $mu): float
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomialMu::logsf($k, $size, $mu);
+    }
+}
+
+if (! function_exists('stats_nbinom_mu_logsf_array')) {
+    function stats_nbinom_mu_logsf_array(array $counts, float $size, float $mu): array
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomialMu::logsfArray($counts, $size, $mu);
+    }
+}
+
+if (! function_exists('stats_nbinom_mu_pmf')) {
+    function stats_nbinom_mu_pmf(float $k, float $size, float $mu): float
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomialMu::pmf($k, $size, $mu);
+    }
+}
+
+if (! function_exists('stats_nbinom_mu_pmf_array')) {
+    function stats_nbinom_mu_pmf_array(array $counts, float $size, float $mu): array
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomialMu::pmfArray($counts, $size, $mu);
+    }
+}
+
+if (! function_exists('stats_nbinom_mu_quantile')) {
+    function stats_nbinom_mu_quantile(float $p, float $size, float $mu): float
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomialMu::quantile($p, $size, $mu);
+    }
+}
+
+if (! function_exists('stats_nbinom_mu_quantile_array')) {
+    function stats_nbinom_mu_quantile_array(array $probabilities, float $size, float $mu): array
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomialMu::quantileArray($probabilities, $size, $mu);
+    }
+}
+
+if (! function_exists('stats_nbinom_mu_sf')) {
+    function stats_nbinom_mu_sf(float $k, float $size, float $mu): float
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomialMu::sf($k, $size, $mu);
+    }
+}
+
+if (! function_exists('stats_nbinom_mu_sf_array')) {
+    function stats_nbinom_mu_sf_array(array $counts, float $size, float $mu): array
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomialMu::sfArray($counts, $size, $mu);
+    }
+}
+
+if (! function_exists('stats_nbinom_pmf')) {
+    function stats_nbinom_pmf(float $k, float $size, float $prob): float
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomial::pmf($k, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_nbinom_pmf_array')) {
+    function stats_nbinom_pmf_array(array $counts, float $size, float $prob): array
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomial::pmfArray($counts, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_nbinom_quantile')) {
+    function stats_nbinom_quantile(float $p, float $size, float $prob): float
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomial::quantile($p, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_nbinom_quantile_array')) {
+    function stats_nbinom_quantile_array(array $probabilities, float $size, float $prob): array
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomial::quantileArray($probabilities, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_nbinom_sf')) {
+    function stats_nbinom_sf(float $k, float $size, float $prob): float
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomial::sf($k, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_nbinom_sf_array')) {
+    function stats_nbinom_sf_array(array $counts, float $size, float $prob): array
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomial::sfArray($counts, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_normal_cdf')) {
+    function stats_normal_cdf(float $x, float $mean = 0.0, float $sd = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Normal::cdf($x, $mean, $sd);
+    }
+}
+
+if (! function_exists('stats_normal_cdf_array')) {
+    function stats_normal_cdf_array(array $values, float $mean = 0.0, float $sd = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Normal::cdfArray($values, $mean, $sd);
+    }
+}
+
+if (! function_exists('stats_normal_logcdf')) {
+    function stats_normal_logcdf(float $x, float $mean = 0.0, float $sd = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Normal::logcdf($x, $mean, $sd);
+    }
+}
+
+if (! function_exists('stats_normal_logcdf_array')) {
+    function stats_normal_logcdf_array(array $values, float $mean = 0.0, float $sd = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Normal::logcdfArray($values, $mean, $sd);
+    }
+}
+
+if (! function_exists('stats_normal_logpdf')) {
+    function stats_normal_logpdf(float $x, float $mean = 0.0, float $sd = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Normal::logpdf($x, $mean, $sd);
+    }
+}
+
+if (! function_exists('stats_normal_logpdf_array')) {
+    function stats_normal_logpdf_array(array $values, float $mean = 0.0, float $sd = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Normal::logpdfArray($values, $mean, $sd);
+    }
+}
+
+if (! function_exists('stats_normal_logsf')) {
+    function stats_normal_logsf(float $x, float $mean = 0.0, float $sd = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Normal::logsf($x, $mean, $sd);
+    }
+}
+
+if (! function_exists('stats_normal_logsf_array')) {
+    function stats_normal_logsf_array(array $values, float $mean = 0.0, float $sd = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Normal::logsfArray($values, $mean, $sd);
+    }
+}
+
+if (! function_exists('stats_normal_pdf')) {
+    function stats_normal_pdf(float $x, float $mean = 0.0, float $sd = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Normal::pdf($x, $mean, $sd);
+    }
+}
+
+if (! function_exists('stats_normal_pdf_array')) {
+    function stats_normal_pdf_array(array $values, float $mean = 0.0, float $sd = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Normal::pdfArray($values, $mean, $sd);
+    }
+}
+
+if (! function_exists('stats_normal_quantile')) {
+    function stats_normal_quantile(float $p, float $mean = 0.0, float $sd = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Normal::quantile($p, $mean, $sd);
+    }
+}
+
+if (! function_exists('stats_normal_quantile_array')) {
+    function stats_normal_quantile_array(array $probabilities, float $mean = 0.0, float $sd = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Normal::quantileArray($probabilities, $mean, $sd);
+    }
+}
+
+if (! function_exists('stats_normal_sf')) {
+    function stats_normal_sf(float $x, float $mean = 0.0, float $sd = 1.0): float
+    {
+        return \PhpStats\Polyfill\Distribution\Normal::sf($x, $mean, $sd);
+    }
+}
+
+if (! function_exists('stats_normal_sf_array')) {
+    function stats_normal_sf_array(array $values, float $mean = 0.0, float $sd = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Normal::sfArray($values, $mean, $sd);
+    }
+}
+
 if (! function_exists('stats_ols')) {
     function stats_ols(array $x, array $y, string $missing = 'drop', ?array $weights = null, ?array $offset = null, bool $intercept = true): array
     {
@@ -53,6 +1131,104 @@ if (! function_exists('stats_poisson')) {
     function stats_poisson(array $x, array $y, string $missing = 'drop', ?array $weights = null, ?array $offset = null, bool $intercept = true): array
     {
         return \PhpStats\Polyfill\Poisson::fit($x, $y, $missing, $weights, $offset, $intercept);
+    }
+}
+
+if (! function_exists('stats_poisson_cdf')) {
+    function stats_poisson_cdf(float $k, float $lambda): float
+    {
+        return \PhpStats\Polyfill\Distribution\Poisson::cdf($k, $lambda);
+    }
+}
+
+if (! function_exists('stats_poisson_cdf_array')) {
+    function stats_poisson_cdf_array(array $counts, float $lambda): array
+    {
+        return \PhpStats\Polyfill\Distribution\Poisson::cdfArray($counts, $lambda);
+    }
+}
+
+if (! function_exists('stats_poisson_logcdf')) {
+    function stats_poisson_logcdf(float $k, float $lambda): float
+    {
+        return \PhpStats\Polyfill\Distribution\Poisson::logcdf($k, $lambda);
+    }
+}
+
+if (! function_exists('stats_poisson_logcdf_array')) {
+    function stats_poisson_logcdf_array(array $counts, float $lambda): array
+    {
+        return \PhpStats\Polyfill\Distribution\Poisson::logcdfArray($counts, $lambda);
+    }
+}
+
+if (! function_exists('stats_poisson_logpmf')) {
+    function stats_poisson_logpmf(float $k, float $lambda): float
+    {
+        return \PhpStats\Polyfill\Distribution\Poisson::logpmf($k, $lambda);
+    }
+}
+
+if (! function_exists('stats_poisson_logpmf_array')) {
+    function stats_poisson_logpmf_array(array $counts, float $lambda): array
+    {
+        return \PhpStats\Polyfill\Distribution\Poisson::logpmfArray($counts, $lambda);
+    }
+}
+
+if (! function_exists('stats_poisson_logsf')) {
+    function stats_poisson_logsf(float $k, float $lambda): float
+    {
+        return \PhpStats\Polyfill\Distribution\Poisson::logsf($k, $lambda);
+    }
+}
+
+if (! function_exists('stats_poisson_logsf_array')) {
+    function stats_poisson_logsf_array(array $counts, float $lambda): array
+    {
+        return \PhpStats\Polyfill\Distribution\Poisson::logsfArray($counts, $lambda);
+    }
+}
+
+if (! function_exists('stats_poisson_pmf')) {
+    function stats_poisson_pmf(float $k, float $lambda): float
+    {
+        return \PhpStats\Polyfill\Distribution\Poisson::pmf($k, $lambda);
+    }
+}
+
+if (! function_exists('stats_poisson_pmf_array')) {
+    function stats_poisson_pmf_array(array $counts, float $lambda): array
+    {
+        return \PhpStats\Polyfill\Distribution\Poisson::pmfArray($counts, $lambda);
+    }
+}
+
+if (! function_exists('stats_poisson_quantile')) {
+    function stats_poisson_quantile(float $p, float $lambda): float
+    {
+        return \PhpStats\Polyfill\Distribution\Poisson::quantile($p, $lambda);
+    }
+}
+
+if (! function_exists('stats_poisson_quantile_array')) {
+    function stats_poisson_quantile_array(array $probabilities, float $lambda): array
+    {
+        return \PhpStats\Polyfill\Distribution\Poisson::quantileArray($probabilities, $lambda);
+    }
+}
+
+if (! function_exists('stats_poisson_sf')) {
+    function stats_poisson_sf(float $k, float $lambda): float
+    {
+        return \PhpStats\Polyfill\Distribution\Poisson::sf($k, $lambda);
+    }
+}
+
+if (! function_exists('stats_poisson_sf_array')) {
+    function stats_poisson_sf_array(array $counts, float $lambda): array
+    {
+        return \PhpStats\Polyfill\Distribution\Poisson::sfArray($counts, $lambda);
     }
 }
 
@@ -81,6 +1257,104 @@ if (! function_exists('stats_sd')) {
     function stats_sd(array $values, string $type = 'sample', string $missing = 'raise'): float
     {
         return \PhpStats\Polyfill\Descriptive::sd($values, $type, $missing);
+    }
+}
+
+if (! function_exists('stats_t_cdf')) {
+    function stats_t_cdf(float $x, float $df): float
+    {
+        return \PhpStats\Polyfill\Distribution\StudentT::cdf($x, $df);
+    }
+}
+
+if (! function_exists('stats_t_cdf_array')) {
+    function stats_t_cdf_array(array $values, float $df): array
+    {
+        return \PhpStats\Polyfill\Distribution\StudentT::cdfArray($values, $df);
+    }
+}
+
+if (! function_exists('stats_t_logcdf')) {
+    function stats_t_logcdf(float $x, float $df): float
+    {
+        return \PhpStats\Polyfill\Distribution\StudentT::logcdf($x, $df);
+    }
+}
+
+if (! function_exists('stats_t_logcdf_array')) {
+    function stats_t_logcdf_array(array $values, float $df): array
+    {
+        return \PhpStats\Polyfill\Distribution\StudentT::logcdfArray($values, $df);
+    }
+}
+
+if (! function_exists('stats_t_logpdf')) {
+    function stats_t_logpdf(float $x, float $df): float
+    {
+        return \PhpStats\Polyfill\Distribution\StudentT::logpdf($x, $df);
+    }
+}
+
+if (! function_exists('stats_t_logpdf_array')) {
+    function stats_t_logpdf_array(array $values, float $df): array
+    {
+        return \PhpStats\Polyfill\Distribution\StudentT::logpdfArray($values, $df);
+    }
+}
+
+if (! function_exists('stats_t_logsf')) {
+    function stats_t_logsf(float $x, float $df): float
+    {
+        return \PhpStats\Polyfill\Distribution\StudentT::logsf($x, $df);
+    }
+}
+
+if (! function_exists('stats_t_logsf_array')) {
+    function stats_t_logsf_array(array $values, float $df): array
+    {
+        return \PhpStats\Polyfill\Distribution\StudentT::logsfArray($values, $df);
+    }
+}
+
+if (! function_exists('stats_t_pdf')) {
+    function stats_t_pdf(float $x, float $df): float
+    {
+        return \PhpStats\Polyfill\Distribution\StudentT::pdf($x, $df);
+    }
+}
+
+if (! function_exists('stats_t_pdf_array')) {
+    function stats_t_pdf_array(array $values, float $df): array
+    {
+        return \PhpStats\Polyfill\Distribution\StudentT::pdfArray($values, $df);
+    }
+}
+
+if (! function_exists('stats_t_quantile')) {
+    function stats_t_quantile(float $p, float $df): float
+    {
+        return \PhpStats\Polyfill\Distribution\StudentT::quantile($p, $df);
+    }
+}
+
+if (! function_exists('stats_t_quantile_array')) {
+    function stats_t_quantile_array(array $probabilities, float $df): array
+    {
+        return \PhpStats\Polyfill\Distribution\StudentT::quantileArray($probabilities, $df);
+    }
+}
+
+if (! function_exists('stats_t_sf')) {
+    function stats_t_sf(float $x, float $df): float
+    {
+        return \PhpStats\Polyfill\Distribution\StudentT::sf($x, $df);
+    }
+}
+
+if (! function_exists('stats_t_sf_array')) {
+    function stats_t_sf_array(array $values, float $df): array
+    {
+        return \PhpStats\Polyfill\Distribution\StudentT::sfArray($values, $df);
     }
 }
 

@@ -118,7 +118,81 @@ iteration differed by up to two while the estimates still agreed to 10⁻⁸.
 
 ## Distributions
 
-Pending.
+All 13 families in the extension are provided: normal, t, chi-square, F,
+exponential, logistic, log-normal, gamma, beta, binomial, Poisson, negative
+binomial, and negative binomial by mean. Each family has 14 functions. These
+are the density or mass function and its logarithm, cdf, logcdf, sf, logsf,
+and quantile, each with an `_array` variant. That makes 182 functions in all.
+
+The implementation ports the extension's distribution layer and the parts of
+the cdflib crate it calls. The cdflib parts are TOMS 708 (incomplete beta),
+TOMS 654 (incomplete gamma), Cody's normal CDF, and the `dinvnr`/`dt1`
+quantile starts. The extension's log-scale tails, Loader's saddle-point
+densities, and its safeguarded Newton quantile search are ported as well.
+
+### Against the references
+
+The fixture comparisons use the extension's own tolerances. These are
+1e-12 relative for probabilities and densities (with a 1e-300 floor),
+1e-12·max(1, |value|) for log-scale values, and 1e-15 + 1e-12·|value| for
+quantiles. The table gives the largest error observed against each reference,
+measured the same way. R and SciPy are measured only at points where that
+reference itself agrees with mpmath, and the bracketed count is the number of
+points excluded because it did not.
+
+| Family | mpmath | R | SciPy | Tested domain |
+|---|---:|---:|---:|---|
+| normal | 2.9e-14 | 1.8e-14 | 1.1e-13 | sd 1e-8 to 1e3, \|x\| to 1e13 |
+| t | 1.8e-13 | 2.6e-13 [4] | 6.6e-13 [40] | df 0.5 to 1e6, \|x\| to 1e10 |
+| chi-square | 8.3e-13 | 8.3e-13 [3] | 8.9e-13 [64] | df 0.5 to 1e6, x to 1e7 |
+| F | 1.6e-13 | 5.2e-13 [15] | 3.4e-13 [46] | df1 0.5 to 100, df2 0.5 to 1e6, x to 1e20 |
+| exponential | 1.5e-14 | 2.1e-16 | 2.1e-16 | rate 1e-5 to 1e5 |
+| logistic | 1.5e-15 | 2.0e-16 | 2.0e-16 | scale 1e-5 to 2 |
+| log-normal | 9.1e-14 | 2.1e-14 [1] | 1.1e-13 | sdlog 0.5 to 3 |
+| gamma | 7.5e-13 | 7.5e-13 | 5.6e-13 [40] | shape 0.01 to 1e4, scale 0.01 to 1e5 |
+| beta | 1.5e-13 | 5.7e-14 | 2.6e-13 [15] | shapes 0.1 to 1e3 |
+| binomial | 3.3e-14 | 5.7e-14 [3] | 9.9e-13 [31] | size up to 1e6 |
+| Poisson | 3.7e-13 | 3.7e-13 [6] | 3.7e-13 [57] | lambda 0 to 1e6 |
+| negative binomial | 6.8e-14 | 2.5e-14 [4] | 4.5e-14 [35] | size 0.5 to 1e5 |
+| negative binomial (mu) | 5.1e-14 | 3.8e-13 [10] | 9.5e-13 [70] | mu 0 to 1e5, size 0.5 to 1e6 |
+
+Probabilities are tested down to about 1e-300, and the log-scale functions
+beyond the double range. `tests/Unit/DistributionsStressTest.php` adds
+comparisons with closed forms and summed series in the extreme tails. These
+cover the normal asymptotics to z = 1e150, Cauchy and t with df = 2 to 1e300,
+chi-square with df 1 and 2, the incomplete gamma for integer shapes up to 1e6,
+beta with a unit shape, F with df 2, and the support edges of the binomial and
+negative binomial. The suite also checks densities at extreme parameters and
+quantile/cdf round trips for p from 1e-300 to 1 − 2⁻⁵².
+
+### Against the extension
+
+Every family is bit-identical to the extension: the largest difference is 0 on
+about 8,600 fixture points and on seeded sweeps over tails, ±INF evaluation
+points, p in {0, 1, 5e-324, 1e-300, 1 − 2⁻⁵²}, and extreme parameters.
+Exception codes are the same for every invalid input tested.
+
+### Limits shared with the extension
+
+For gamma, chi-square, and Poisson, log tails below 1e-280 lose accuracy at
+shape or lambda of about 1e6 and above. The relative error is 2e-12 at 1e6,
+7e-12 at 1e7, and 5e-10 at 1e8, from cancellation in the extension's
+formula. The polyfill reproduces the extension's values exactly there, and a
+stress test records the bound.
+
+### Deliberate differences from the extension
+
+- The extension never returns from `stats_f_cdf(2, PHP_FLOAT_MAX, 3)`,
+  `stats_nbinom_mu_cdf(2, PHP_FLOAT_MAX, 3)`, and
+  `stats_beta_quantile(1e-10, 1.5, PHP_FLOAT_MAX)`. A NaN reaches a cdflib
+  continued fraction whose loop never meets its convergence test. The polyfill
+  leaves those loops when the iterate is NaN, and the call raises exception
+  1006. This has been reported upstream.
+- For `stats_t_quantile` with df below about 0.05, the extension brackets the
+  root with additive steps of 2 from a very large start and can take seconds
+  per call. The polyfill searches the same grid of points with an exponential
+  and binary search. Its results are identical on all 400 sweep cases, and a
+  unit test checks it against a literal port of the original walk.
 
 ## Not provided
 
