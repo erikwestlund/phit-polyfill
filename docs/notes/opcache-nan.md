@@ -115,3 +115,14 @@ and it could not be reproduced locally with the official Docker image, the
 ondrej/php build, or Homebrew's 8.5.10, with or without `opcache.jit=1235`.
 The workflow now disables the JIT in the `opcache` job, tests `opcache.jit=1235`
 in a separate `function-jit` job, and times every job out after 20 minutes.
+
+The `function-jit` job on commit 298cdb0 hung at the same point, after printing
+`ENTRY 102 (block 580 start 3111) - live var 2930`. The message appears to come
+from the JIT's register allocator, which counts IR instructions, so the
+function being compiled is probably one of the four large BOBYQA routines
+(`Bobyqb::solve`, `Rescue::rescue`, `TrustRegion::trsbox`, and
+`Geometry::geostep`, each with 1,000 to 1,400 opcodes). With
+`opcache.jit=1235` the JIT compiles functions once they become hot, which
+would explain why the hang is intermittent. The optimizer alone
+(`opcache.jit=disable`) and the tracing JIT pass. The job is non-blocking until
+the cause is confirmed. Nothing has been reported upstream.

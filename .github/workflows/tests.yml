@@ -10,6 +10,9 @@ jobs:
     name: PHP ${{ matrix.php }}, ${{ matrix.mode }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
+    # PHP 8.5.11's function JIT (opcache.jit=1235) intermittently hangs while
+    # compiling one of the large BOBYQA functions; see docs/notes/opcache-nan.md.
+    continue-on-error: ${{ matrix.mode == 'function-jit' }}
     strategy:
       fail-fast: false
       matrix:
