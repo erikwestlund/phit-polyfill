@@ -1,0 +1,27 @@
+<?php
+
+declare(strict_types=1);
+
+namespace PhpStats\Polyfill;
+
+use PhpStats\Polyfill\Formula\Frontend;
+
+/**
+ * Linear model from a formula: the stats_ols core plus coefficient names (stats_lm).
+ */
+final class Lm
+{
+    public static function fit(string $formula, mixed $data, string $missing = 'drop', mixed $weights = null): array
+    {
+        Frontend::stringArgument($formula, 'formula');
+        Frontend::stringArgument($missing, 'missing');
+        [$design, $w] = Frontend::prepare($formula, $data, $missing, $weights, true);
+        Frontend::rejectRandom($design, 'stats_lm');
+        $y = Frontend::numericResponse($design, 'stats_lm');
+        $offset = $design->offset ?? array_fill(0, count($y), 0.0);
+        $output = Ols::fitWithData($design->x, $y, $w, $offset);
+        $output = Frontend::addNames($output, $design);
+
+        return Frontend::finish($output, $design, 'stats_lm', 'scaled_svd');
+    }
+}

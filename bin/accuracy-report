@@ -131,6 +131,27 @@ foreach (['r-compatibility.json', 'stress-r.json'] as $file) {
     }
 }
 
+// Formula interfaces against R's model.matrix(), lm() and glm().
+$formulas = fixture('formula-r.json');
+foreach ($formulas['cases'] as $case) {
+    $data = $formulas['datasets'][$case['dataset']];
+    $fn = 'stats_'.$case['function'];
+    $result = $quiet(fn () => match ($case['function']) {
+        'model_matrix' => Polyfill::implementation($fn)($case['formula'], $data),
+        'lm' => Polyfill::implementation($fn)($case['formula'], $data, weights: $case['weights']),
+        'glm' => Polyfill::implementation($fn)($case['formula'], $data, $case['family'], $case['link'], weights: $case['weights']),
+    });
+    [$abs, $rel] = $case['function'] === 'model_matrix' && ! str_contains($case['formula'], 'poly(area_m2, 2)') ? [1e-12, 1e-12] : [1e-9, 1e-7];
+    foreach ($case['expected'] as $key => $expected) {
+        if (in_array($key, ['columns', 'terms', 'retained_rows'], true)) {
+            $record($fn, 'R (formula-r.json)', [$result[$key] === $expected ? 0.0 : INF, $result[$key] === $expected ? 0.0 : INF], $case['dataset']);
+
+            continue;
+        }
+        $record($fn, 'R (formula-r.json)', errors($result[$key], $expected, $abs, $rel), $case['dataset']);
+    }
+}
+
 // Descriptive statistics against R.
 $d = fixture('descriptive-r.json');
 foreach ($d['descriptive'] as $c) {

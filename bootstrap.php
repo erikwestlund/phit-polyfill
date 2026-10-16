@@ -609,6 +609,20 @@ if (! function_exists('stats_gamma_sf_array')) {
     }
 }
 
+if (! function_exists('stats_glm')) {
+    function stats_glm(string $formula, mixed $data, string $family = 'gaussian', string $link = '', string $missing = 'drop', mixed $weights = null): array
+    {
+        return \PhpStats\Polyfill\Glm::fit($formula, $data, $family, $link, $missing, $weights);
+    }
+}
+
+if (! function_exists('stats_lm')) {
+    function stats_lm(string $formula, mixed $data, string $missing = 'drop', mixed $weights = null): array
+    {
+        return \PhpStats\Polyfill\Lm::fit($formula, $data, $missing, $weights);
+    }
+}
+
 if (! function_exists('stats_logistic')) {
     function stats_logistic(array $x, array $y, string $missing = 'drop', ?array $weights = null, ?array $offset = null, bool $intercept = true): array
     {
@@ -823,6 +837,13 @@ if (! function_exists('stats_median')) {
     function stats_median(array $values, string $missing = 'raise'): float
     {
         return \PhpStats\Polyfill\Descriptive::median($values, $missing);
+    }
+}
+
+if (! function_exists('stats_model_matrix')) {
+    function stats_model_matrix(string $formula, mixed $data, string $missing = 'drop'): array
+    {
+        return \PhpStats\Polyfill\ModelMatrix::build($formula, $data, $missing);
     }
 }
 

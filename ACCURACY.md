@@ -201,10 +201,42 @@ extension (since 0aafc26) and the polyfill now search that run of points by
 exponential probing and bisection. The visited points are the same, so the
 results equal those of the original walk.
 
+## Formula interface
+
+`stats_model_matrix`, `stats_lm`, and `stats_glm` port the extension's formula
+parser, term expansion, evaluation, and coding. The fits reuse the polyfill's
+OLS and GLM code described above.
+
+### Against R
+
+The 62 cases in `formula-r.json` cover 33 model matrices, 14 `lm` fits, and 15
+`glm` fits. The tolerances are those of the extension's suite: 1e-12 for
+design matrices (1e-9 + 1e-7·|b| for the orthogonal `poly()` case) and
+1e-9 + 1e-7·|b| for fits. Column names, terms, and retained rows must match
+exactly.
+
+| Function | Comparisons | Max relative error | Tolerance used | Datasets |
+|---|---:|---:|---:|---|
+| `stats_model_matrix` | 266 | 6.7e-16 | 0% | housing, schools, cbpp, synthetic, small |
+| `stats_lm` | 238 | 2.7e-12 | 0% | housing, schools, synthetic |
+| `stats_glm` | 240 | 5.9e-10 | 1% | learning, cbpp, clinic, synthetic |
+
+### Against the extension
+
+`tests/Parity/FormulaParityTest.php` compares the two on every fixture case.
+It also covers about 170 syntax forms, about 120 malformed formulas, factor
+level and collation edge cases, both missing-value policies, about 28 weight
+shapes, 20 family and link combinations, about 50 data shapes, and 30 random
+designs. Design matrices, column names, terms, `assign`, row accounting, key
+order, and warning text are identical, and every invalid input raises the same
+exception code with the same message. The largest scale-aware difference in
+the fits is 4.4e-13 on the fixtures and 7.9e-13 across the other cases.
+
 ## Not provided
 
 The following functions need the native extension and are left undefined:
-`stats_lmm`, `stats_lmm_fit`, `stats_logistic_mixed`, every `*_rng` function,
+`stats_lmm`, `stats_lmm_fit`, `stats_logistic_mixed`, `stats_lmer`,
+`stats_glmer`, every `*_rng` function,
 the `stats_draw_*` functions, and `stats_hello`.
 `PhpStats\Polyfill\Polyfill::supports()` reports which functions are
 available.

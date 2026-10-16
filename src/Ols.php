@@ -51,8 +51,11 @@ final class Ols
     /**
      * Weighted Gaussian fit with known additive offsets. Prior weights specify
      * Var(e_i) = sigma^2 / w_i; residuals stay on the response scale.
+     * Shared with the formula interface (stats_lm, stats_glm gaussian).
+     *
+     * @internal
      */
-    private static function fitWithData(array $x, array $y, array $weights, array $offset): array
+    public static function fitWithData(array $x, array $y, array $weights, array $offset): array
     {
         $n = count($x);
         foreach ($weights as $w) {

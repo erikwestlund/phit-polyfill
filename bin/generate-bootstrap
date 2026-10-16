@@ -21,15 +21,20 @@ $families = [
 ];
 $operations = ['pdf', 'logpdf', 'pmf', 'logpmf', 'cdf', 'logcdf', 'sf', 'logsf', 'quantile'];
 $models = ['ols' => 'Ols', 'logistic' => 'Logistic', 'probit' => 'Probit', 'poisson' => 'Poisson'];
+// Formula interfaces: stats_* name => [class, method].
+$formulas = ['model_matrix' => ['ModelMatrix', 'build'], 'lm' => ['Lm', 'fit'], 'glm' => ['Glm', 'fit']];
 
 function camel(string $name): string
 {
     return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $name))));
 }
 
-function target(string $fn, array $families, array $operations, array $models): ?array
+function target(string $fn, array $families, array $operations, array $models, array $formulas): ?array
 {
     $name = substr($fn, strlen('stats_'));
+    if (isset($formulas[$name])) {
+        return ['PhpStats\\Polyfill\\'.$formulas[$name][0], $formulas[$name][1]];
+    }
     if (isset($models[$name])) {
         return ['PhpStats\\Polyfill\\'.$models[$name], 'fit'];
     }
@@ -60,7 +65,7 @@ function literal(mixed $value): string
 $map = [];
 $functions = [];
 foreach ($api as $fn => $spec) {
-    $target = target($fn, $families, $operations, $models);
+    $target = target($fn, $families, $operations, $models, $formulas);
     if ($target === null || ! method_exists($target[0], $target[1])) {
         continue;
     }

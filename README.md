@@ -49,8 +49,9 @@ Polyfill::nativeLoaded();              // whether php_stats is loaded
 |---|---|---|
 | Descriptive statistics | `stats_mean`, `stats_var`, `stats_sd`, `stats_median`, `stats_quantile`, `stats_quantile_array`, `stats_cov`, `stats_cor`, `stats_weighted_mean`, `stats_weighted_var` | Provided |
 | Regression | `stats_ols`, `stats_logistic`, `stats_probit`, `stats_poisson`, with weights, offsets, the automatic intercept, and both missing-value policies | Provided |
+| Formula interface | `stats_model_matrix`, `stats_lm`, `stats_glm` | Provided |
 | Distributions | 13 families × 14 functions; see [Distributions](#distributions) | Provided |
-| Mixed models | `stats_lmm`, `stats_lmm_fit`, `stats_logistic_mixed` | Extension only |
+| Mixed models | `stats_lmm`, `stats_lmm_fit`, `stats_logistic_mixed`, `stats_lmer`, `stats_glmer` | Extension only |
 | Random numbers and draws | every `*_rng` function, `stats_draw_affine`, `stats_draw_covariance_map`, `stats_draw_moments` | Extension only |
 | Other | `stats_hello` | Extension only |
 
@@ -81,6 +82,39 @@ operations and their `_array` variants:
 For example, `stats_t_sf(2.5, df: 12)` and
 `stats_normal_quantile_array([0.025, 0.975])`. The random-number functions
 (`stats_normal_rng` and the other `*_rng` functions) need the extension.
+
+### Formula interface
+
+`stats_model_matrix`, `stats_lm`, and `stats_glm` accept an R-style formula
+over named columns. They port the extension's parser, term expansion, and
+coding, so column names, term order, contrasts, and missing-value handling
+match the extension. Where the extension differs from R, the polyfill follows
+the extension (see the php-stats formula documentation).
+
+```php
+$data = [
+    'rent' => [1879.25, 1805.03, 2022.29, 1267.85, 1509.24, 2240.10],
+    'area' => [74.4, 57.4, 66.4, 49.1, 45.7, 92.4],
+    'district' => ['north', 'south', 'north', 'east', 'east', 'south'],
+];
+
+$fit = stats_lm('rent ~ log(area) + district', $data);
+$fit['named'];    // coefficients keyed by column name
+
+$design = stats_model_matrix('~ area * district', $data);
+$design['columns'];
+
+$logit = stats_glm('y ~ x + offset(log(t))', $other, family: 'binomial');
+```
+
+Supported syntax includes `+ - : * / %in% ^`, `0`/`1`/`-1`, `.`, `offset()`,
+`I()`, the common transforms (`log`, `log2`, `log10`, `log1p`, `exp`, `sqrt`,
+`abs`, and others), `poly()`, `factor()`, `ordered()`, and `cbind()` responses
+for grouped binomial data. Families are gaussian, binomial (logit or probit),
+and poisson. Formulas with random-effect bars such as `(1 | g)` are accepted
+by `stats_model_matrix`, which returns the random-effect design. `stats_lm`
+and `stats_glm` reject them with code 1007, because `stats_lmer` and
+`stats_glmer` need the extension.
 
 ## How it works
 
@@ -141,6 +175,8 @@ In summary:
   10⁻⁸, the level of their shared convergence rule, and usually to 10⁻¹².
 - Distribution functions are bit-identical to the extension on every input
   tested, and within 10⁻¹² of mpmath down to probabilities near 10⁻³⁰⁰.
+- The formula functions produce identical design matrices, column names, and
+  terms, and their fits agree with the extension to about 10⁻¹².
 
 ### Known differences
 

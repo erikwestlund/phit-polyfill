@@ -32,8 +32,14 @@ final class ModelData
         public array $dropped,
     ) {}
 
+    /** Sample accounting only, for results whose rows were prepared elsewhere (formulas). */
+    public static function accounting(int $nInput, array $retained, array $dropped): self
+    {
+        return new self([], [], [], [], $nInput, $retained, $dropped);
+    }
+
     /** A PHP value as a number; null and NaN are missing, INF and non-numbers are errors. */
-    private static function number(mixed $value): ?float
+    public static function number(mixed $value): ?float
     {
         if ($value === null) {
             return null;
