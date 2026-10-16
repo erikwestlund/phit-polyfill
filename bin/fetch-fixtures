@@ -27,6 +27,13 @@ files=(
     r-compatibility.json
     stress-r.json
     formula-r.json
+    rng-python-r.json
+    draws-python.json
+    lmm-r.json
+    lmm-expanded-r.json
+    lmm-public-r.json
+    logistic-mixed-r.json
+    formula-lme4-r.json
 )
 for file in "${files[@]}"; do
     git -C "$source" show "$commit:tests/fixtures/$file" > "$root/tests/fixtures/$file"

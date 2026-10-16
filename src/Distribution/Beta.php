@@ -99,6 +99,12 @@ final class Beta
         return Support::probabilities($probabilities, self::create($alpha, $beta)->quantileAt(...));
     }
 
+    /** stats_beta_rng */
+    public static function rng(int $n, int $seed, float $alpha, float $beta): array
+    {
+        return Support::sample($n, $seed, self::create($alpha, $beta)->quantileAt(...));
+    }
+
     private function lnLower(float $x): float
     {
         return Special::lnBetaLowerFraction($this->alpha, $this->beta, $x, log($x), log1p(-$x));

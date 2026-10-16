@@ -47,7 +47,7 @@ it('leaves extension-only functions undefined', function () use ($api) {
             expect(function_exists($fn))->toBeFalse($fn);
         }
     }
-    foreach (['stats_lmm', 'stats_lmm_fit', 'stats_logistic_mixed', 'stats_hello', 'stats_normal_rng', 'stats_draw_affine'] as $fn) {
+    foreach (['stats_read_csv'] as $fn) {
         expect(Polyfill::supports($fn))->toBeFalse($fn);
     }
 });

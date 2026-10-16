@@ -99,6 +99,12 @@ final class LogNormal
         return Support::probabilities($probabilities, self::create($meanlog, $sdlog)->quantileAt(...));
     }
 
+    /** stats_lognormal_rng */
+    public static function rng(int $n, int $seed, float $meanlog = 0.0, float $sdlog = 1.0): array
+    {
+        return Support::sample($n, $seed, self::create($meanlog, $sdlog)->quantileAt(...));
+    }
+
     private function z(float $x): float
     {
         return $x <= 0.0 ? -INF : (log($x) - $this->meanlog) / $this->sdlog;

@@ -99,6 +99,12 @@ final class FisherF
         return Support::probabilities($probabilities, self::create($df1, $df2)->quantileAt(...));
     }
 
+    /** stats_f_rng */
+    public static function rng(int $n, int $seed, float $df1, float $df2): array
+    {
+        return Support::sample($n, $seed, self::create($df1, $df2)->quantileAt(...));
+    }
+
     /**
      * Beta arguments u = df1 x/(df1 x + df2) and v = 1 - u, with their logs.
      *

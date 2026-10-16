@@ -91,6 +91,13 @@ if (! function_exists('stats_beta_quantile_array')) {
     }
 }
 
+if (! function_exists('stats_beta_rng')) {
+    function stats_beta_rng(int $n, int $seed, float $alpha, float $beta): array
+    {
+        return \PhpStats\Polyfill\Distribution\Beta::rng($n, $seed, $alpha, $beta);
+    }
+}
+
 if (! function_exists('stats_beta_sf')) {
     function stats_beta_sf(float $x, float $alpha, float $beta): float
     {
@@ -186,6 +193,13 @@ if (! function_exists('stats_binomial_quantile_array')) {
     function stats_binomial_quantile_array(array $probabilities, int $size, float $prob): array
     {
         return \PhpStats\Polyfill\Distribution\Binomial::quantileArray($probabilities, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_binomial_rng')) {
+    function stats_binomial_rng(int $n, int $seed, int $size, float $prob): array
+    {
+        return \PhpStats\Polyfill\Distribution\Binomial::rng($n, $seed, $size, $prob);
     }
 }
 
@@ -287,6 +301,13 @@ if (! function_exists('stats_chisquare_quantile_array')) {
     }
 }
 
+if (! function_exists('stats_chisquare_rng')) {
+    function stats_chisquare_rng(int $n, int $seed, float $df): array
+    {
+        return \PhpStats\Polyfill\Distribution\ChiSquare::rng($n, $seed, $df);
+    }
+}
+
 if (! function_exists('stats_chisquare_sf')) {
     function stats_chisquare_sf(float $x, float $df): float
     {
@@ -312,6 +333,27 @@ if (! function_exists('stats_cov')) {
     function stats_cov(array $x, array $y, string $type = 'sample', string $missing = 'raise'): float
     {
         return \PhpStats\Polyfill\Descriptive::cov($x, $y, $type, $missing);
+    }
+}
+
+if (! function_exists('stats_draw_affine')) {
+    function stats_draw_affine(array $draws, array $matrix, array $shift): array
+    {
+        return \PhpStats\Polyfill\Draws::affine($draws, $matrix, $shift);
+    }
+}
+
+if (! function_exists('stats_draw_covariance_map')) {
+    function stats_draw_covariance_map(array $source_covariance, array $target_covariance): array
+    {
+        return \PhpStats\Polyfill\Draws::covarianceMap($source_covariance, $target_covariance);
+    }
+}
+
+if (! function_exists('stats_draw_moments')) {
+    function stats_draw_moments(array $draws, ?array $weights = null, string $normalization = 'population'): array
+    {
+        return \PhpStats\Polyfill\Draws::moments($draws, $weights, $normalization);
     }
 }
 
@@ -396,6 +438,13 @@ if (! function_exists('stats_exponential_quantile_array')) {
     function stats_exponential_quantile_array(array $probabilities, float $rate = 1.0): array
     {
         return \PhpStats\Polyfill\Distribution\Exponential::quantileArray($probabilities, $rate);
+    }
+}
+
+if (! function_exists('stats_exponential_rng')) {
+    function stats_exponential_rng(int $n, int $seed, float $rate = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Exponential::rng($n, $seed, $rate);
     }
 }
 
@@ -497,6 +546,13 @@ if (! function_exists('stats_f_quantile_array')) {
     }
 }
 
+if (! function_exists('stats_f_rng')) {
+    function stats_f_rng(int $n, int $seed, float $df1, float $df2): array
+    {
+        return \PhpStats\Polyfill\Distribution\FisherF::rng($n, $seed, $df1, $df2);
+    }
+}
+
 if (! function_exists('stats_f_sf')) {
     function stats_f_sf(float $x, float $df1, float $df2): float
     {
@@ -595,6 +651,13 @@ if (! function_exists('stats_gamma_quantile_array')) {
     }
 }
 
+if (! function_exists('stats_gamma_rng')) {
+    function stats_gamma_rng(int $n, int $seed, float $shape, float $scale = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Gamma::rng($n, $seed, $shape, $scale);
+    }
+}
+
 if (! function_exists('stats_gamma_sf')) {
     function stats_gamma_sf(float $x, float $shape, float $scale = 1.0): float
     {
@@ -613,6 +676,13 @@ if (! function_exists('stats_glm')) {
     function stats_glm(string $formula, mixed $data, string $family = 'gaussian', string $link = '', string $missing = 'drop', mixed $weights = null): array
     {
         return \PhpStats\Polyfill\Glm::fit($formula, $data, $family, $link, $missing, $weights);
+    }
+}
+
+if (! function_exists('stats_hello')) {
+    function stats_hello(): string
+    {
+        return \PhpStats\Polyfill\Hello::hello();
     }
 }
 
@@ -714,6 +784,13 @@ if (! function_exists('stats_logistic_quantile_array')) {
     }
 }
 
+if (! function_exists('stats_logistic_rng')) {
+    function stats_logistic_rng(int $n, int $seed, float $location = 0.0, float $scale = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Logistic::rng($n, $seed, $location, $scale);
+    }
+}
+
 if (! function_exists('stats_logistic_sf')) {
     function stats_logistic_sf(float $x, float $location = 0.0, float $scale = 1.0): float
     {
@@ -809,6 +886,13 @@ if (! function_exists('stats_lognormal_quantile_array')) {
     function stats_lognormal_quantile_array(array $probabilities, float $meanlog = 0.0, float $sdlog = 1.0): array
     {
         return \PhpStats\Polyfill\Distribution\LogNormal::quantileArray($probabilities, $meanlog, $sdlog);
+    }
+}
+
+if (! function_exists('stats_lognormal_rng')) {
+    function stats_lognormal_rng(int $n, int $seed, float $meanlog = 0.0, float $sdlog = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\LogNormal::rng($n, $seed, $meanlog, $sdlog);
     }
 }
 
@@ -987,6 +1071,13 @@ if (! function_exists('stats_nbinom_mu_quantile_array')) {
     }
 }
 
+if (! function_exists('stats_nbinom_mu_rng')) {
+    function stats_nbinom_mu_rng(int $n, int $seed, float $size, float $mu): array
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomialMu::rng($n, $seed, $size, $mu);
+    }
+}
+
 if (! function_exists('stats_nbinom_mu_sf')) {
     function stats_nbinom_mu_sf(float $k, float $size, float $mu): float
     {
@@ -1026,6 +1117,13 @@ if (! function_exists('stats_nbinom_quantile_array')) {
     function stats_nbinom_quantile_array(array $probabilities, float $size, float $prob): array
     {
         return \PhpStats\Polyfill\Distribution\NegativeBinomial::quantileArray($probabilities, $size, $prob);
+    }
+}
+
+if (! function_exists('stats_nbinom_rng')) {
+    function stats_nbinom_rng(int $n, int $seed, float $size, float $prob): array
+    {
+        return \PhpStats\Polyfill\Distribution\NegativeBinomial::rng($n, $seed, $size, $prob);
     }
 }
 
@@ -1124,6 +1222,13 @@ if (! function_exists('stats_normal_quantile_array')) {
     function stats_normal_quantile_array(array $probabilities, float $mean = 0.0, float $sd = 1.0): array
     {
         return \PhpStats\Polyfill\Distribution\Normal::quantileArray($probabilities, $mean, $sd);
+    }
+}
+
+if (! function_exists('stats_normal_rng')) {
+    function stats_normal_rng(int $n, int $seed, float $mean = 0.0, float $sd = 1.0): array
+    {
+        return \PhpStats\Polyfill\Distribution\Normal::rng($n, $seed, $mean, $sd);
     }
 }
 
@@ -1236,6 +1341,13 @@ if (! function_exists('stats_poisson_quantile_array')) {
     function stats_poisson_quantile_array(array $probabilities, float $lambda): array
     {
         return \PhpStats\Polyfill\Distribution\Poisson::quantileArray($probabilities, $lambda);
+    }
+}
+
+if (! function_exists('stats_poisson_rng')) {
+    function stats_poisson_rng(int $n, int $seed, float $lambda): array
+    {
+        return \PhpStats\Polyfill\Distribution\Poisson::rng($n, $seed, $lambda);
     }
 }
 
@@ -1362,6 +1474,13 @@ if (! function_exists('stats_t_quantile_array')) {
     function stats_t_quantile_array(array $probabilities, float $df): array
     {
         return \PhpStats\Polyfill\Distribution\StudentT::quantileArray($probabilities, $df);
+    }
+}
+
+if (! function_exists('stats_t_rng')) {
+    function stats_t_rng(int $n, int $seed, float $df): array
+    {
+        return \PhpStats\Polyfill\Distribution\StudentT::rng($n, $seed, $df);
     }
 }
 

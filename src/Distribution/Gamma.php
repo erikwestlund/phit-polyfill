@@ -99,6 +99,12 @@ final class Gamma
         return Support::probabilities($probabilities, self::create($shape, $scale)->quantileAt(...));
     }
 
+    /** stats_gamma_rng */
+    public static function rng(int $n, int $seed, float $shape, float $scale = 1.0): array
+    {
+        return Support::sample($n, $seed, self::create($shape, $scale)->quantileAt(...));
+    }
+
     // Standard (scale 1) pieces in y = x / scale.
 
     private function stdLogpdf(float $y): float

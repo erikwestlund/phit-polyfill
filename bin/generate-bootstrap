@@ -19,10 +19,12 @@ $families = [
     'gamma' => 'Gamma', 'beta' => 'Beta', 'binomial' => 'Binomial', 'poisson' => 'Poisson',
     'nbinom' => 'NegativeBinomial', 'nbinom_mu' => 'NegativeBinomialMu',
 ];
-$operations = ['pdf', 'logpdf', 'pmf', 'logpmf', 'cdf', 'logcdf', 'sf', 'logsf', 'quantile'];
+$operations = ['pdf', 'logpdf', 'pmf', 'logpmf', 'cdf', 'logcdf', 'sf', 'logsf', 'quantile', 'rng'];
 $models = ['ols' => 'Ols', 'logistic' => 'Logistic', 'probit' => 'Probit', 'poisson' => 'Poisson'];
-// Formula interfaces: stats_* name => [class, method].
-$formulas = ['model_matrix' => ['ModelMatrix', 'build'], 'lm' => ['Lm', 'fit'], 'glm' => ['Glm', 'fit']];
+// Other entry points: stats_* name => [class, method].
+$formulas = ['model_matrix' => ['ModelMatrix', 'build'], 'lm' => ['Lm', 'fit'], 'glm' => ['Glm', 'fit'],
+    'draw_moments' => ['Draws', 'moments'], 'draw_covariance_map' => ['Draws', 'covarianceMap'],
+    'draw_affine' => ['Draws', 'affine'], 'hello' => ['Hello', 'hello']];
 
 function camel(string $name): string
 {

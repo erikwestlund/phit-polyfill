@@ -258,12 +258,46 @@ order, and warning text are identical, and every invalid input raises the same
 exception code with the same message. The largest scale-aware difference in
 the fits is 4.4e-13 on the fixtures and 7.9e-13 across the other cases.
 
+## Random numbers
+
+Each `*_rng` call seeds a fresh ChaCha20 stream with rand_core's
+`seed_from_u64`, draws open-interval uniforms as rand 0.9's `Open01` does, and
+maps them through the family's quantile function, as the extension does. The
+keystream comes from OpenSSL's `chacha20` cipher when it is available and from
+a pure-PHP ChaCha20 otherwise. The two give identical streams.
+
+Against the extension, every draw is identical, as are the exception codes and
+messages. This holds for the 5 fixture seeds checked during development and
+for the randomized parity suite (all 13 families, random parameters, sizes,
+and seeds, including invalid ones). Against the R and NumPy reference vectors
+in `rng-python-r.json`, continuous draws agree within 1e-12 relative error and
+counts agree exactly.
+
+## Posterior draws
+
+`stats_draw_moments`, `stats_draw_covariance_map`, and `stats_draw_affine`
+follow the extension's operation order: Neumaier sums, nalgebra's Cholesky
+factorization, triangular solve, and partially pivoted LU. For
+`stats_draw_affine` with more than five rows and columns, nalgebra multiplies
+through matrixmultiply, whose aarch64 kernel accumulates each product with a
+fused multiply-add. PHP has no `fma()`, so the polyfill emulates a correctly
+rounded one (Boldo and Melquiond's round-to-odd algorithm). The emulation
+matched exact rational arithmetic on 200,000 random cases.
+
+The results are identical to the extension's in the randomized parity suite.
+Without the fused accumulation, roughly 40 to 90 percent of the
+entries in a typical affine transform would differ in the last bit. The
+numerical-rank check in `stats_draw_affine` compares singular values with a
+tolerance. The polyfill computes them with a one-sided Jacobi method, not
+nalgebra's bidiagonal SVD, so a matrix whose smallest singular value lies
+within rounding of the threshold could be classified differently. Against the
+NumPy references in `draws-python.json`, all cases agree within 1e-11.
+
 ## Not provided
 
 The following functions need the native extension and are left undefined:
 `stats_lmm`, `stats_lmm_fit`, `stats_logistic_mixed`, `stats_lmer`,
-`stats_glmer`, `stats_read_csv`, every `*_rng` function,
-the `stats_draw_*` functions, and `stats_hello`.
+`stats_glmer`, and `stats_read_csv`.
 `PhpStats\Polyfill\Polyfill::supports()` reports which functions are
 available.
 

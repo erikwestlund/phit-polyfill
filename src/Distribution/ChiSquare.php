@@ -99,6 +99,12 @@ final class ChiSquare
         return Support::probabilities($probabilities, self::create($df)->quantileAt(...));
     }
 
+    /** stats_chisquare_rng */
+    public static function rng(int $n, int $seed, float $df): array
+    {
+        return Support::sample($n, $seed, self::create($df)->quantileAt(...));
+    }
+
     /** @internal */
     public function pdfAt(float $x): float
     {

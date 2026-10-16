@@ -99,6 +99,12 @@ final class Exponential
         return Support::probabilities($probabilities, self::create($rate)->quantileAt(...));
     }
 
+    /** stats_exponential_rng */
+    public static function rng(int $n, int $seed, float $rate = 1.0): array
+    {
+        return Support::sample($n, $seed, self::create($rate)->quantileAt(...));
+    }
+
     /** @internal */
     public function pdfAt(float $x): float
     {

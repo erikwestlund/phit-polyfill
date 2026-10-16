@@ -121,6 +121,12 @@ final class Binomial
         return Support::probabilities($probabilities, self::create($size, $prob)->quantileAt(...));
     }
 
+    /** stats_binomial_rng */
+    public static function rng(int $n, int $seed, int $size, float $prob): array
+    {
+        return Support::sample($n, $seed, self::create($size, $prob)->quantileAt(...));
+    }
+
     private function exact(float $k): ?array
     {
         if ($k < 0.0) {

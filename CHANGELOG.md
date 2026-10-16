@@ -33,6 +33,14 @@ php-stats has no tagged release yet.
   function, their logarithms, and the quantile, with `_array` variants (182
   functions).
 - Formula interface: `stats_model_matrix`, `stats_lm`, and `stats_glm`.
+- Seeded sampling: the 13 `*_rng` functions, with the extension's ChaCha20
+  generator and inverse-CDF sampling, so the same seed gives the same draws.
+- Posterior-draw kernels: `stats_draw_moments`, `stats_draw_covariance_map`,
+  and `stats_draw_affine`, including the fused multiply-add accumulation of
+  the extension's matrix product.
+- `stats_hello`.
+- A randomized differential parity suite that compares the polyfill with the
+  loaded extension on seeded random inputs.
 - Test suites ported from the extension and run against the R, SciPy, and
   mpmath reference fixtures. A parity suite compares the polyfill with the
   loaded extension.
@@ -44,8 +52,7 @@ php-stats has no tagged release yet.
 
 These functions are left undefined and need the native extension:
 `stats_lmm`, `stats_lmm_fit`, `stats_logistic_mixed`, `stats_lmer`,
-`stats_glmer`, `stats_read_csv`, every `*_rng` function, the `stats_draw_*`
-functions, and `stats_hello`.
+`stats_glmer`, and `stats_read_csv`.
 
 ### Known differences from the extension
 

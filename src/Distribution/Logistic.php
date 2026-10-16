@@ -99,6 +99,12 @@ final class Logistic
         return Support::probabilities($probabilities, self::create($location, $scale)->quantileAt(...));
     }
 
+    /** stats_logistic_rng */
+    public static function rng(int $n, int $seed, float $location = 0.0, float $scale = 1.0): array
+    {
+        return Support::sample($n, $seed, self::create($location, $scale)->quantileAt(...));
+    }
+
     private function z(float $x): float
     {
         return ($x - $this->location) / $this->scale;

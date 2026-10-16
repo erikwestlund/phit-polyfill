@@ -98,4 +98,10 @@ final class NegativeBinomialMu
     {
         return Support::probabilities($probabilities, self::create($size, $mu)->quantileAt(...));
     }
+
+    /** stats_nbinom_mu_rng */
+    public static function rng(int $n, int $seed, float $size, float $mu): array
+    {
+        return Support::sample($n, $seed, self::create($size, $mu)->quantileAt(...));
+    }
 }

@@ -104,6 +104,12 @@ final class Poisson
         return Support::probabilities($probabilities, self::create($lambda)->quantileAt(...));
     }
 
+    /** stats_poisson_rng */
+    public static function rng(int $n, int $seed, float $lambda): array
+    {
+        return Support::sample($n, $seed, self::create($lambda)->quantileAt(...));
+    }
+
     private function exact(float $k): ?array
     {
         if ($k < 0.0) {

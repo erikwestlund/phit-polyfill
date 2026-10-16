@@ -132,6 +132,17 @@ final class LeastSquares
         return $result;
     }
 
+    /**
+     * Singular values of a square matrix given as columns, sorted descending.
+     *
+     * @param  list<list<float>>  $columns
+     * @return list<float>
+     */
+    public static function singularValuesOf(array $columns, int $p): array
+    {
+        return self::singularValues($columns, $p);
+    }
+
     /** Singular values of R by a one-sided Jacobi sweep, sorted descending. */
     private static function singularValues(array $a, int $p): array
     {

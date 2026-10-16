@@ -63,9 +63,10 @@ Polyfill::nativeLoaded();              // whether php_stats is loaded
 | Formula interface | `stats_model_matrix`, `stats_lm`, `stats_glm` | Provided |
 | Distributions | 13 families × 14 functions; see [Distributions](#distributions) | Provided |
 | Mixed models | `stats_lmm`, `stats_lmm_fit`, `stats_logistic_mixed`, `stats_lmer`, `stats_glmer` | Extension only |
-| Random numbers and draws | every `*_rng` function, `stats_draw_affine`, `stats_draw_covariance_map`, `stats_draw_moments` | Extension only |
+| Random numbers | 13 seeded `*_rng` functions, one per distribution family | Provided |
+| Posterior draws | `stats_draw_moments`, `stats_draw_covariance_map`, `stats_draw_affine` | Provided |
 | CSV reading | `stats_read_csv` (phibble's PHP reader is the fallback) | Extension only |
-| Other | `stats_hello` | Extension only |
+| Other | `stats_hello` | Provided |
 
 Functions marked "Extension only" stay undefined without the extension, so
 `function_exists()` reports them correctly.
@@ -92,8 +93,12 @@ operations and their `_array` variants:
 | Negative binomial by mean | `stats_nbinom_mu_` | size, mu | same |
 
 For example, `stats_t_sf(2.5, df: 12)` and
-`stats_normal_quantile_array([0.025, 0.975])`. The random-number functions
-(`stats_normal_rng` and the other `*_rng` functions) need the extension.
+`stats_normal_quantile_array([0.025, 0.975])`.
+
+Each family also has a seeded sampler, such as `stats_normal_rng(1000, seed: 42)`.
+The polyfill uses the extension's generator (ChaCha20 seeded as in rand_core,
+with inverse-CDF sampling), so a seed gives the same draws, bit for bit, with
+or without the extension.
 
 ### Formula interface
 

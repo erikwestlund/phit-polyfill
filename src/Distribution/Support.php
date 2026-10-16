@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpStats\Polyfill\Distribution;
 
 use PhpStats\Polyfill\ErrorCode;
+use PhpStats\Polyfill\Internal\ChaCha20;
 
 /**
  * Input/result policy shared by the scalar and batch distribution functions
@@ -104,6 +105,39 @@ final class Support
         }
 
         return self::result($f($p));
+    }
+
+    /** Largest n for one stats_*_rng call (stats-core MAX_RNG_DRAWS). */
+    public const int MAX_RNG_DRAWS = 1_000_000;
+
+    /**
+     * stats-core sample_quantiles: map Open01 uniforms from a freshly seeded
+     * ChaCha20 stream through the quantile. A nonfinite draw rejects the call.
+     *
+     * @return list<float>
+     */
+    public static function sample(int $n, int $seed, \Closure $quantile): array
+    {
+        if ($n < 0) {
+            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'n must be nonnegative');
+        }
+        if ($seed < 0) {
+            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'seed must be nonnegative');
+        }
+        if ($n > self::MAX_RNG_DRAWS) {
+            throw ErrorCode::exception(ErrorCode::UNSUPPORTED, 'n must not exceed 1,000,000 samples per call');
+        }
+        $rng = new ChaCha20($seed);
+        $out = [];
+        for ($i = 0; $i < $n; $i++) {
+            $value = (float) $quantile($rng->open01());
+            if (! is_finite($value)) {
+                throw ErrorCode::exception(ErrorCode::NONFINITE, 'sample exceeded floating-point range for these parameters');
+            }
+            $out[] = $value;
+        }
+
+        return $out;
     }
 
     /** @return list<float> */

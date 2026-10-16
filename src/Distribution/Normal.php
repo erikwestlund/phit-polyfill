@@ -101,6 +101,12 @@ final class Normal
         return Support::probabilities($probabilities, self::create($mean, $sd)->quantileAt(...));
     }
 
+    /** stats_normal_rng */
+    public static function rng(int $n, int $seed, float $mean = 0.0, float $sd = 1.0): array
+    {
+        return Support::sample($n, $seed, self::create($mean, $sd)->quantileAt(...));
+    }
+
     // ---------------------------------------------------------------- standard normal pieces (shared)
 
     /** @internal */
