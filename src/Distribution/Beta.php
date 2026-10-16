@@ -126,7 +126,7 @@ final class Beta
         if (($exact = self::exact($x)) !== null) {
             return $exact;
         }
-        [$lower, $upper] = Cdflib::betaInc($this->alpha, $this->beta, $x, 1.0 - $x);
+        [$lower, $upper] = Support::betaInc($this->alpha, $this->beta, $x, 1.0 - $x);
 
         return [
             Special::refine($lower, fn (): float => $this->lnLower($x)),

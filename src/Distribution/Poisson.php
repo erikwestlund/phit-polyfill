@@ -122,7 +122,7 @@ final class Poisson
             return $exact;
         }
         $a = floor($k) + 1.0;
-        [$lowerGamma, $upperGamma] = Cdflib::gammaInc($a, $this->lambda);
+        [$lowerGamma, $upperGamma] = Support::gammaInc($a, $this->lambda);
 
         return [
             Special::refine($upperGamma, fn (): float => Special::lnGammaUpperFraction($a, $this->lambda)),

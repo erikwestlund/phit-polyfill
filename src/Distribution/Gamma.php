@@ -137,7 +137,7 @@ final class Gamma
         if (($exact = self::stdExact($y)) !== null) {
             return $exact;
         }
-        [$p, $q] = Cdflib::gammaInc($this->shape, $y);
+        [$p, $q] = Support::gammaInc($this->shape, $y);
 
         return [
             Special::refine($p, fn (): float => Special::lnGammaLowerSeries($this->shape, $y)),

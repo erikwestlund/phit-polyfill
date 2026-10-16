@@ -145,7 +145,7 @@ final class FisherF
         $a = $this->args($x);
         [$lower, $upper] = $a[1] == 0.0
             ? [1.0, 0.0]
-            : Cdflib::betaInc(0.5 * $this->df1, 0.5 * $this->df2, $a[0], $a[1]);
+            : Support::betaInc(0.5 * $this->df1, 0.5 * $this->df2, $a[0], $a[1]);
 
         return [
             Special::refine($lower, fn (): float => $this->lnLower($a)),

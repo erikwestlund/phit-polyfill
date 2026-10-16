@@ -127,7 +127,7 @@ final class StudentT
     private function tails(float $x): array
     {
         $a = $this->args($x);
-        [$i, $oneMinusI] = $a[0] == 0.0 ? [0.0, 1.0] : Cdflib::betaInc(0.5 * $this->df, 0.5, $a[0], $a[1]);
+        [$i, $oneMinusI] = $a[0] == 0.0 ? [0.0, 1.0] : Support::betaInc(0.5 * $this->df, 0.5, $a[0], $a[1]);
         $small = Special::refine(0.5 * $i, fn (): float => $this->lnSmallTail($a));
         $big = $oneMinusI + 0.5 * $i;
 

@@ -142,7 +142,7 @@ final class Binomial
             return $exact;
         }
         $k = floor($k);
-        [$lower, $upper] = Cdflib::betaInc($this->n - $k, $k + 1.0, $this->q, $this->p);
+        [$lower, $upper] = Support::betaInc($this->n - $k, $k + 1.0, $this->q, $this->p);
 
         return [
             Special::refine($lower, fn (): float => $this->lnLower($k)),

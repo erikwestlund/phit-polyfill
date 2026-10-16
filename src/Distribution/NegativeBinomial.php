@@ -160,7 +160,7 @@ final class NegativeBinomial
             return $exact;
         }
         $k = floor($k);
-        [$lower, $upper] = Cdflib::betaInc($this->size, $k + 1.0, $this->p, $this->q);
+        [$lower, $upper] = Support::betaInc($this->size, $k + 1.0, $this->p, $this->q);
 
         return [
             Special::refine($lower, fn (): float => $this->lnLower($k)),

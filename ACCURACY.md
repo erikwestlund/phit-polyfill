@@ -180,19 +180,26 @@ shape or lambda of about 1e6 and above. The relative error is 2e-12 at 1e6,
 formula. The polyfill reproduces the extension's values exactly there, and a
 stress test records the bound.
 
-### Deliberate differences from the extension
+### Extreme parameters
 
-- The extension never returns from `stats_f_cdf(2, PHP_FLOAT_MAX, 3)`,
-  `stats_nbinom_mu_cdf(2, PHP_FLOAT_MAX, 3)`, and
-  `stats_beta_quantile(1e-10, 1.5, PHP_FLOAT_MAX)`. A NaN reaches a cdflib
-  continued fraction whose loop never meets its convergence test. The polyfill
-  leaves those loops when the iterate is NaN, and the call raises exception
-  1006. This has been reported upstream.
-- For `stats_t_quantile` with df below about 0.05, the extension brackets the
-  root with additive steps of 2 from a very large start and can take seconds
-  per call. The polyfill searches the same grid of points with an exponential
-  and binary search. Its results are identical on all 400 sweep cases, and a
-  unit test checks it against a literal port of the original walk.
+cdflib's incomplete beta and gamma routines never return for some extreme
+arguments and panic in the deep asymptotic regime of the incomplete gamma.
+Since php-stats bd98bf7 the extension returns a failure up front for those
+regimes, and the polyfill applies the same conditions. They are an overflowing
+a + b, a beta parameter above 1e300 with x or 1 − x below 1e-300, and a gamma
+shape or point above 1e300. A panic inside either routine also becomes a
+failure. The functions report every such failure as exception 1006, and a
+quantile search stops with 1006 as soon as a tail evaluation fails.
+`tests/Parity/DistributionsExtremeParityTest.php` compares both
+implementations on a grid of parameters from 1e-300 to `PHP_FLOAT_MAX` for F,
+beta, gamma, chi-square, t, Poisson, and the negative binomial by mean. The
+values or exception codes agree on every point.
+
+For `stats_t_quantile` at very small df, the quantile search used to step from
+a very large starting point by ±2 and could take seconds per call. Both the
+extension (since 0aafc26) and the polyfill now search that run of points by
+exponential probing and bisection. The visited points are the same, so the
+results equal those of the original walk.
 
 ## Not provided
 

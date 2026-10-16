@@ -43,7 +43,44 @@ final class Support
      */
     public static function panic(string $message): never
     {
-        throw new \Error('Rust panic: '.$message);
+        throw new RustPanic('Rust panic: '.$message);
+    }
+
+    /**
+     * cdflib's TOMS 708/654 routines never return for some extreme arguments
+     * and panic in the deep asymptotic regime of the incomplete gamma. As in
+     * the extension (stats-core distributions/mod.rs), those regimes return
+     * NaN up front and any remaining panic becomes NaN, which the distribution
+     * functions report as a numerical failure (1006).
+     */
+    private const float CDFLIB_ARGUMENT_LIMIT = 1e300;
+
+    /** @return array{0: float, 1: float} */
+    public static function betaInc(float $a, float $b, float $x, float $y): array
+    {
+        $larger = is_nan($a) ? $b : (is_nan($b) ? $a : max($a, $b));
+        $smaller = is_nan($x) ? $y : (is_nan($y) ? $x : min($x, $y));
+        if (! is_finite($a + $b) || ($larger > self::CDFLIB_ARGUMENT_LIMIT && $smaller < 1.0 / self::CDFLIB_ARGUMENT_LIMIT)) {
+            return [NAN, NAN];
+        }
+        try {
+            return Cdflib::betaInc($a, $b, $x, $y);
+        } catch (RustPanic) {
+            return [NAN, NAN];
+        }
+    }
+
+    /** @return array{0: float, 1: float} */
+    public static function gammaInc(float $a, float $x): array
+    {
+        if (is_nan($a) || is_nan($x) || $a > self::CDFLIB_ARGUMENT_LIMIT || $x > self::CDFLIB_ARGUMENT_LIMIT) {
+            return [NAN, NAN];
+        }
+        try {
+            return Cdflib::gammaInc($a, $x);
+        } catch (RustPanic) {
+            return [NAN, NAN];
+        }
     }
 
     /** Evaluate a density, CDF or survival function at x (±∞ allowed, NaN rejected). */

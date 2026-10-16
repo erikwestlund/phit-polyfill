@@ -384,3 +384,24 @@ it('finds the same quantile bracket as the literal upstream step-by-2 walk', fun
         expect($bracket->invoke(null, $start, $direction, $stop))->toBe($walk($start, $direction, $stop));
     }
 });
+
+// php-stats bd98bf7: a NaN tail stops the quantile bracket search and fails with
+// 1006 instead of walking to ±INF. The stop test checks NaN explicitly, because
+// with opcache enabled a negated comparison did not treat NaN as stopping.
+it('fails a quantile whose tail evaluation fails during bracketing', function () {
+    expect(thrownCode(fn () => pf('stats_t_quantile', 1.0 - 0.999999999999, 1e299)))->toBe(1006)
+        ->and(thrownCode(fn () => pf('stats_t_quantile', 0.999999999999, 1e299)))->toBe(1006)
+        ->and(thrownCode(fn () => pf('stats_f_quantile', 0.999999999999, 1e-10, 1e299)))->toBe(1006);
+});
+
+it('fails fast on the cdflib regimes that hang or panic upstream', function (string $fn, array $arguments) {
+    expect(thrownCode(fn () => pf($fn, ...$arguments)))->toBe(1006);
+})->with([
+    'F cdf, df2 = MAX' => ['stats_f_cdf', [2.0, 3.0, PHP_FLOAT_MAX]],
+    'NB(mu) cdf, size = MAX' => ['stats_nbinom_mu_cdf', [2.0, PHP_FLOAT_MAX, 3.0]],
+    'beta quantile, beta = MAX' => ['stats_beta_quantile', [1e-10, 1.5, PHP_FLOAT_MAX]],
+    'gamma cdf, shape = x = 1e30' => ['stats_gamma_cdf', [1e30, 1e30]],
+    'chi-square cdf, df = x = 2e30' => ['stats_chisquare_cdf', [2e30, 2e30]],
+    'Poisson cdf, lambda = k = 1e30' => ['stats_poisson_cdf', [1e30, 1e30]],
+    'beta cdf, alpha = beta = 1e308' => ['stats_beta_cdf', [0.5, 1e308, 1e308]],
+]);

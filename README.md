@@ -152,10 +152,6 @@ In summary:
 - The `iterations` reported by an iterative fit can differ by one, and by a
   little more when the likelihood is flat to rounding near the optimum. The
   estimates still agree.
-- Three distribution calls with a parameter equal to `PHP_FLOAT_MAX` never
-  return in the extension. The polyfill raises exception 1006 for them instead.
-  `stats_t_quantile` with df below about 0.05 is also much faster in the
-  polyfill, with identical results. ACCURACY.md has the details.
 
 ## Performance
 

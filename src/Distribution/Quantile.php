@@ -57,23 +57,44 @@ final class Quantile
         if ($gx == 0.0) {
             return $x;
         }
+        // A failed tail evaluation (NaN) must surface as a failure, not steer the search.
+        if (is_nan($gx)) {
+            return NAN;
+        }
         $a = $lower;
         $b = $upper;
         if ($gx < 0.0) {
             $a = $x;
             if (is_infinite($upper)) {
-                $hit = self::bracket($x, 1.0, static fn (float $v): bool => $g($v) >= 0.0);
+                // The upstream walk stops at the first point where g is NaN or
+                // reaches the target; a NaN stop is a failure.
+                // NaN is tested explicitly: opcache's optimizer may rewrite !(a < b) as a >= b.
+                $hit = self::bracket($x, 1.0, static function (float $v) use ($g): bool {
+                    $gv = $g($v);
+
+                    return is_nan($gv) || $gv >= 0.0;
+                });
                 if ($hit === null) {
                     return $upper;
+                }
+                if (is_nan($g($hit[0]))) {
+                    return NAN;
                 }
                 [$b, $a] = $hit;
             }
         } else {
             $b = $x;
             if (is_infinite($lower)) {
-                $hit = self::bracket($x, -1.0, static fn (float $v): bool => $g($v) <= 0.0);
+                $hit = self::bracket($x, -1.0, static function (float $v) use ($g): bool {
+                    $gv = $g($v);
+
+                    return is_nan($gv) || $gv <= 0.0;
+                });
                 if ($hit === null) {
                     return $lower;
+                }
+                if (is_nan($g($hit[0]))) {
+                    return NAN;
                 }
                 [$a, $b] = $hit;
             } elseif ($lower == 0.0 && $g(PHP_FLOAT_MIN) > 0.0) {
@@ -94,6 +115,9 @@ final class Quantile
             $gx = $g($x);
             if ($gx == 0.0) {
                 return $x;
+            }
+            if (is_nan($gx)) {
+                return NAN;
             }
             if ($gx < 0.0) {
                 $a = $x;
@@ -227,15 +251,32 @@ final class Quantile
             return $max;
         }
         $fuzz = 64.0 * PHP_FLOAT_EPSILON;
+        // A NaN tail compares as "not reached"; remember it and fail at the end.
+        $failed = false;
         if ($p > 0.5) {
             $bound = (1.0 - $p) * (1.0 + $fuzz);
-            $reached = static fn (float $k): bool => $sf($k) <= $bound;
+            $reached = static function (float $k) use ($sf, $bound, &$failed): bool {
+                $v = $sf($k);
+                $failed = $failed || is_nan($v);
+
+                return $v <= $bound;
+            };
         } elseif ($p < Special::TINY) {
             $bound = log($p) + log1p(-$fuzz);
-            $reached = static fn (float $k): bool => $logCdf($k) >= $bound;
+            $reached = static function (float $k) use ($logCdf, $bound, &$failed): bool {
+                $v = $logCdf($k);
+                $failed = $failed || is_nan($v);
+
+                return $v >= $bound;
+            };
         } else {
             $bound = $p * (1.0 - $fuzz);
-            $reached = static fn (float $k): bool => $cdf($k) >= $bound;
+            $reached = static function (float $k) use ($cdf, $bound, &$failed): bool {
+                $v = $cdf($k);
+                $failed = $failed || is_nan($v);
+
+                return $v >= $bound;
+            };
         }
         $limit = is_finite($max) ? $max : 9.007_199_254_740_992e15;
         if (is_finite($start)) {
@@ -275,6 +316,10 @@ final class Quantile
                     break;
                 }
                 if ($candidate >= $limit) {
+                    if ($failed) {
+                        return NAN;
+                    }
+
                     return is_finite($max) ? $max : INF;
                 }
                 $lo = $candidate;
@@ -290,7 +335,7 @@ final class Quantile
             }
         }
 
-        return $hi;
+        return $failed ? NAN : $hi;
     }
 
     /** Cornish–Fisher starting value for the discrete quantile search. */
