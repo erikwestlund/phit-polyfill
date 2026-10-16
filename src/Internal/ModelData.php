@@ -84,16 +84,27 @@ final class ModelData
         if ($missing !== 'drop' && $missing !== 'raise') {
             throw ErrorCode::exception(ErrorCode::INVALID_INPUT, "missing must be 'drop' or 'raise'");
         }
+        // Rows are converted with the intercept already in front; null marks a missing value.
         $rows = [];
+        $complete = [];
         foreach ($x as $row) {
             if (! is_array($row)) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'each x row must be an array');
             }
-            $values = [];
+            $values = $intercept ? [1.0] : [];
+            $full = true;
             foreach ($row as $value) {
-                $values[] = self::number($value);
+                // Fast path for finite floats; everything else goes through number().
+                if (is_float($value) && is_finite($value)) {
+                    $values[] = $value;
+                } else {
+                    $value = self::number($value);
+                    $values[] = $value;
+                    $full = $full && $value !== null;
+                }
             }
             $rows[] = $values;
+            $complete[] = $full;
         }
         $outcomes = [];
         foreach ($y as $value) {
@@ -113,7 +124,7 @@ final class ModelData
         if (count($outcomes) !== $n) {
             throw ErrorCode::exception(ErrorCode::DIMENSION_MISMATCH, 'x and y must have the same number of observations');
         }
-        $width = count($rows[0]);
+        $width = count($rows[0]);  // includes the intercept column, the same for every row
         foreach ($rows as $row) {
             if (count($row) !== $width) {
                 throw ErrorCode::exception(ErrorCode::DIMENSION_MISMATCH, 'x must be rectangular');
@@ -144,14 +155,10 @@ final class ModelData
         }
         $cx = $cy = $cw = $co = $retained = $dropped = [];
         foreach ($rows as $i => $row) {
-            $complete = $outcomes[$i] !== null && $w[$i] !== null && $o[$i] !== null && ! in_array(null, $row, true);
-            if (! $complete) {
+            if (! $complete[$i] || $outcomes[$i] === null || $w[$i] === null || $o[$i] === null) {
                 $dropped[] = $i;
 
                 continue;
-            }
-            if ($intercept) {
-                array_unshift($row, 1.0);
             }
             $cx[] = $row;
             $cy[] = $outcomes[$i];
