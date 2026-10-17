@@ -32,7 +32,7 @@ final class Glm
             $family === 'binomial' && ($link === '' || $link === 'logit') => 'logit',
             $family === 'binomial' && $link === 'probit' => 'probit',
             $family === 'poisson' && ($link === '' || $link === 'log') => 'log',
-            \in_array($family, ['gaussian', 'binomial', 'poisson'], true) => throw ErrorCode::exception(
+            in_array($family, ['gaussian', 'binomial', 'poisson'], true) => throw ErrorCode::exception(
                 ErrorCode::UNSUPPORTED,
                 "link '$link' is not supported for family '$family'; supported: gaussian/identity, binomial/logit, binomial/probit, poisson/log",
             ),
@@ -45,7 +45,7 @@ final class Glm
         Frontend::rejectRandom($design, 'stats_glm');
         $x = $design->x;
         $n = count($x);
-        $offset = $design->offset ?? \array_fill(0, $n, 0.0);
+        $offset = $design->offset ?? array_fill(0, $n, 0.0);
         if ($link === 'identity') {
             $y = Frontend::numericResponse($design, 'stats_glm');
             $output = Ols::fitWithData($x, $y, $w, $offset);
@@ -82,7 +82,7 @@ final class Glm
         } else {
             $y = Frontend::numericResponse($design, 'stats_glm');
             foreach ($y as $v) {
-                if ($v < 0.0 || \fmod($v, 1.0) != 0.0) {
+                if ($v < 0.0 || fmod($v, 1.0) != 0.0) {
                     throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'Poisson y must contain nonnegative integer counts');
                 }
             }
@@ -124,7 +124,7 @@ final class Glm
         } else {
             foreach ($response[1] as $i => $s) {
                 $f = $response[2][$i];
-                if ($s < 0.0 || $f < 0.0 || \fmod($s, 1.0) != 0.0 || \fmod($f, 1.0) != 0.0 || $s + $f <= 0.0) {
+                if ($s < 0.0 || $f < 0.0 || fmod($s, 1.0) != 0.0 || fmod($f, 1.0) != 0.0 || $s + $f <= 0.0) {
                     throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'cbind(successes, failures) needs nonnegative integer counts with positive totals');
                 }
                 $y[] = $s / ($s + $f);
@@ -132,18 +132,18 @@ final class Glm
             }
         }
         foreach ($y as $v) {
-            if (\is_nan($v) || $v < 0.0 || $v > 1.0) {
+            if (is_nan($v) || $v < 0.0 || $v > 1.0) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'binary/grouped-binomial y must be in [0,1]');
             }
         }
         foreach ($weights as $w) {
-            if (\fmod($w, 1.0) != 0.0) {
+            if (fmod($w, 1.0) != 0.0) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'binomial weights must be integer trial counts');
             }
         }
         foreach ($y as $i => $v) {
             $events = $v * $weights[$i];
-            if (\abs($events - \round($events)) > 1e-8) {
+            if (abs($events - round($events)) > 1e-8) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'binary/grouped-binomial outcomes require integer trial counts and successes');
             }
         }

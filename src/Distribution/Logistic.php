@@ -113,9 +113,9 @@ final class Logistic
     private static function standardCdf(float $z): float
     {
         if ($z >= 0.0) {
-            return 1.0 / (1.0 + \exp(-$z));
+            return 1.0 / (1.0 + exp(-$z));
         }
-        $e = \exp($z);
+        $e = exp($z);
 
         return $e / (1.0 + $e);
     }
@@ -123,7 +123,7 @@ final class Logistic
     /** @internal */
     public function pdfAt(float $x): float
     {
-        $e = \exp(-\abs($this->z($x)));
+        $e = exp(-abs($this->z($x)));
 
         return $e / ($this->scale * (1.0 + $e) * (1.0 + $e));
     }
@@ -131,9 +131,9 @@ final class Logistic
     /** @internal */
     public function logpdfAt(float $x): float
     {
-        $a = \abs($this->z($x));
+        $a = abs($this->z($x));
 
-        return -$a - 2.0 * \log1p(\exp(-$a)) - \log($this->scale);
+        return -$a - 2.0 * log1p(exp(-$a)) - log($this->scale);
     }
 
     /** @internal */
@@ -164,10 +164,10 @@ final class Logistic
     public function quantileAt(float $p): float
     {
         if ($p <= 0.5) {
-            $logit = \log($p) - \log1p(-$p);
+            $logit = log($p) - log1p(-$p);
         } else {
             $q = 1.0 - $p;
-            $logit = \log1p(-$q) - \log($q);
+            $logit = log1p(-$q) - log($q);
         }
 
         return $this->location + $this->scale * $logit;

@@ -107,12 +107,12 @@ final class Beta
 
     private function lnLower(float $x): float
     {
-        return Special::lnBetaLowerFraction($this->alpha, $this->beta, $x, \log($x), \log1p(-$x));
+        return Special::lnBetaLowerFraction($this->alpha, $this->beta, $x, log($x), log1p(-$x));
     }
 
     private function lnUpper(float $x): float
     {
-        return Special::lnBetaLowerFraction($this->beta, $this->alpha, 1.0 - $x, \log1p(-$x), \log($x));
+        return Special::lnBetaLowerFraction($this->beta, $this->alpha, 1.0 - $x, log1p(-$x), log($x));
     }
 
     private static function exact(float $x): ?array
@@ -146,13 +146,13 @@ final class Beta
             return INF;
         }
 
-        return $shape == 1.0 ? \log($other) : -INF;
+        return $shape == 1.0 ? log($other) : -INF;
     }
 
     /** @internal */
     public function pdfAt(float $x): float
     {
-        return \exp($this->logpdfAt($x));
+        return exp($this->logpdfAt($x));
     }
 
     /** @internal */
@@ -160,7 +160,7 @@ final class Beta
     {
         $a = $this->alpha;
         $b = $this->beta;
-        if (\is_nan($x) || $x < 0.0 || $x > 1.0) {
+        if (is_nan($x) || $x < 0.0 || $x > 1.0) {
             return -INF;
         }
         if ($x == 0.0) {
@@ -170,10 +170,10 @@ final class Beta
             return self::edge($b, $a);
         }
         if ($a <= 2.0 || $b <= 2.0) {
-            return ($a - 1.0) * \log($x) + ($b - 1.0) * \log1p(-$x) - Cdflib::betaLog($a, $b);
+            return ($a - 1.0) * log($x) + ($b - 1.0) * log1p(-$x) - Cdflib::betaLog($a, $b);
         }
 
-        return \log($a + $b - 1.0) + Special::lnBinomialRaw($a - 1.0, $a + $b - 2.0, $x, 1.0 - $x);
+        return log($a + $b - 1.0) + Special::lnBinomialRaw($a - 1.0, $a + $b - 2.0, $x, 1.0 - $x);
     }
 
     /** @internal */
@@ -192,7 +192,7 @@ final class Beta
     public function logcdfAt(float $x): float
     {
         if (($exact = self::exact($x)) !== null) {
-            return \log($exact[0]);
+            return log($exact[0]);
         }
         [$lower, $upper] = $this->tails($x);
 
@@ -203,7 +203,7 @@ final class Beta
     public function logsfAt(float $x): float
     {
         if (($exact = self::exact($x)) !== null) {
-            return \log($exact[1]);
+            return log($exact[1]);
         }
         [$lower, $upper] = $this->tails($x);
 
@@ -217,13 +217,13 @@ final class Beta
         $b = $this->beta;
         $mean = $a / ($a + $b);
         if ($p < 0.01) {
-            $start = \exp((\log($p) + \log($a) + Cdflib::betaLog($a, $b)) / $a);
+            $start = exp((log($p) + log($a) + Cdflib::betaLog($a, $b)) / $a);
             $start = self::min($start, $mean);
         } elseif ($p > 0.99) {
-            $tail = \exp((\log(1.0 - $p) + \log($b) + Cdflib::betaLog($a, $b)) / $b);
+            $tail = exp((log(1.0 - $p) + log($b) + Cdflib::betaLog($a, $b)) / $b);
             $start = 1.0 - self::min($tail, 1.0 - $mean);
         } else {
-            $sd = \sqrt(\fdiv($a * $b, ($a + $b) * ($a + $b) * ($a + $b + 1.0)));
+            $sd = sqrt(fdiv($a * $b, ($a + $b) * ($a + $b) * ($a + $b + 1.0)));
             $start = $mean + $sd * Normal::stdQuantile($p);
             // f64::clamp(min, max)
             $lo = 1e-3 * $mean;
@@ -242,10 +242,10 @@ final class Beta
     /** f64::min: the non-NaN operand when one is NaN. */
     private static function min(float $a, float $b): float
     {
-        if (\is_nan($a)) {
+        if (is_nan($a)) {
             return $b;
         }
-        if (\is_nan($b)) {
+        if (is_nan($b)) {
             return $a;
         }
 

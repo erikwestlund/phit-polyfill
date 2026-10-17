@@ -35,7 +35,7 @@ final class Descriptive
     {
         $v = self::values($values, $missing);
 
-        return \sqrt(self::variance($v, self::population($type)));
+        return sqrt(self::variance($v, self::population($type)));
     }
 
     /** @param array<int|float|null> $values */
@@ -77,7 +77,7 @@ final class Descriptive
         [$a, $b] = self::pairs($x, $y, $missing);
         $population = self::population($type);
         self::checkPair($a, $b, 'covariance');
-        $n = (float) count($a);
+        $n = (float) \count($a);
 
         return self::computed(self::crossProducts($a, $b)[0] / ($population ? $n : $n - 1.0));
     }
@@ -94,9 +94,9 @@ final class Descriptive
         if ($sxx == 0.0 || $syy == 0.0) {
             return NAN;
         }
-        $r = self::computed(($sxy / \sqrt($sxx)) / \sqrt($syy));
+        $r = self::computed(($sxy / sqrt($sxx)) / sqrt($syy));
 
-        return \min(1.0, \max(-1.0, $r));
+        return min(1.0, max(-1.0, $r));
     }
 
     /**
@@ -134,7 +134,7 @@ final class Descriptive
         $ss = $ss < 0.0 ? 0.0 : $ss;
         $denominator = self::computed(match ($type) {
             'frequency' => $total - 1.0,
-            'reliability' => $total - self::sum(\array_map(static fn (float $x): float => $x * $x, $w)) / $total,
+            'reliability' => $total - self::sum(array_map(static fn (float $x): float => $x * $x, $w)) / $total,
             'population' => $total,
         });
         if ($denominator <= 0.0) {
@@ -163,10 +163,10 @@ final class Descriptive
             throw self::error(ErrorCode::INVALID_INPUT, 'values must be integers, floats, or null');
         }
         $value = (float) $value;
-        if (\is_nan($value)) {
+        if (is_nan($value)) {
             return null;
         }
-        if (\is_infinite($value)) {
+        if (is_infinite($value)) {
             throw self::error(ErrorCode::NONFINITE, 'infinite values are not allowed');
         }
 
@@ -208,13 +208,13 @@ final class Descriptive
     private static function pairs(array $x, array $y, string $missing): array
     {
         $drop = self::dropMissing($missing);
-        if (count($x) !== count($y)) {
+        if (\count($x) !== \count($y)) {
             throw self::error(ErrorCode::DIMENSION_MISMATCH, 'arrays must have the same length');
         }
         $a = [];
         $b = [];
-        $ys = \array_values($y);
-        foreach (\array_values($x) as $i => $u) {
+        $ys = array_values($y);
+        foreach (array_values($x) as $i => $u) {
             $u = self::element($u);
             $v = self::element($ys[$i]);
             if ($u !== null && $v !== null) {
@@ -254,7 +254,7 @@ final class Descriptive
 
     private static function computed(float $value): float
     {
-        if (! \is_finite($value)) {
+        if (! is_finite($value)) {
             throw self::error(ErrorCode::NONFINITE, 'descriptive calculation exceeded floating-point range');
         }
 
@@ -265,11 +265,11 @@ final class Descriptive
     private static function check(array $values, int $minimum, string $what): void
     {
         foreach ($values as $v) {
-            if (! \is_finite($v)) {
+            if (! is_finite($v)) {
                 throw self::error(ErrorCode::NONFINITE, 'values must be finite');
             }
         }
-        if (count($values) < $minimum) {
+        if (\count($values) < $minimum) {
             $count = $minimum === 1 ? 'one value' : 'two values';
             throw self::error(ErrorCode::INVALID_INPUT, "$what requires at least $count");
         }
@@ -281,7 +281,7 @@ final class Descriptive
      */
     private static function checkPair(array $x, array $y, string $what): void
     {
-        if (count($x) !== count($y)) {
+        if (\count($x) !== \count($y)) {
             throw self::error(ErrorCode::DIMENSION_MISMATCH, 'x and y must have the same length');
         }
         self::check($x, 2, $what);
@@ -295,7 +295,7 @@ final class Descriptive
         $compensation = 0.0;
         foreach ($values as $v) {
             $t = $total + $v;
-            if (\abs($total) >= \abs($v)) {
+            if (abs($total) >= abs($v)) {
                 $compensation += ($total - $t) + $v;
             } else {
                 $compensation += ($v - $t) + $total;
@@ -309,20 +309,20 @@ final class Descriptive
     /** @param list<float> $values */
     private static function plainMean(array $values): float
     {
-        $n = (float) count($values);
+        $n = (float) \count($values);
         $m = self::sum($values) / $n;
 
-        return $m + self::sum(\array_map(static fn (float $v): float => $v - $m, $values)) / $n;
+        return $m + self::sum(array_map(static fn (float $v): float => $v - $m, $values)) / $n;
     }
 
     /** @param list<float> $values */
     private static function variance(array $values, bool $population): float
     {
         self::check($values, $population ? 1 : 2, 'variance');
-        $n = (float) count($values);
+        $n = (float) \count($values);
         $m = self::plainMean($values);
-        $ss = self::sum(\array_map(static fn (float $v): float => ($v - $m) * ($v - $m), $values));
-        $s = self::sum(\array_map(static fn (float $v): float => $v - $m, $values));
+        $ss = self::sum(array_map(static fn (float $v): float => ($v - $m) * ($v - $m), $values));
+        $s = self::sum(array_map(static fn (float $v): float => $v - $m, $values));
         $ss = self::computed($ss - $s * $s / $n);
         $ss = $ss < 0.0 ? 0.0 : $ss;
 
@@ -338,9 +338,9 @@ final class Descriptive
     {
         $mx = self::plainMean($x);
         $my = self::plainMean($y);
-        $n = (float) count($x);
-        $dx = \array_map(static fn (float $v): float => $v - $mx, $x);
-        $dy = \array_map(static fn (float $v): float => $v - $my, $y);
+        $n = (float) \count($x);
+        $dx = array_map(static fn (float $v): float => $v - $mx, $x);
+        $dy = array_map(static fn (float $v): float => $v - $my, $y);
         $sx = self::sum($dx);
         $sy = self::sum($dy);
         $xy = [];
@@ -370,19 +370,19 @@ final class Descriptive
     {
         self::check($values, 1, 'quantile');
         foreach ($probabilities as $p) {
-            if (\is_nan($p)) {
+            if (is_nan($p)) {
                 throw self::error(ErrorCode::NONFINITE, 'probabilities must not be NaN');
             }
             if ($p < 0.0 || $p > 1.0) {
                 throw self::error(ErrorCode::INVALID_INPUT, 'probabilities must be in [0, 1]');
             }
         }
-        \sort($values, SORT_NUMERIC);
-        $n = count($values);
+        sort($values, SORT_NUMERIC);
+        $n = \count($values);
         $out = [];
         foreach ($probabilities as $p) {
             $index = 1.0 + ($n - 1) * $p;
-            $lo = \floor($index);
+            $lo = floor($index);
             $h = $index - $lo;
             $lo = (int) $lo - 1;
             $low = $values[$lo];
@@ -400,12 +400,12 @@ final class Descriptive
      */
     private static function checkWeights(array $values, array $weights): float
     {
-        if (count($values) !== count($weights)) {
+        if (\count($values) !== \count($weights)) {
             throw self::error(ErrorCode::DIMENSION_MISMATCH, 'values and weights must have the same length');
         }
         self::check($values, 1, 'weighted statistics');
         foreach ($weights as $w) {
-            if (! \is_finite($w)) {
+            if (! is_finite($w)) {
                 throw self::error(ErrorCode::NONFINITE, 'weights must be finite');
             }
         }

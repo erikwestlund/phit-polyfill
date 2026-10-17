@@ -36,9 +36,9 @@ final class LeastSquares
     {
         [$r, $qtb] = self::householder($columns, $n, $p, $rhs);
         $this->r = $r;
-        $this->qtb = $qtb === null ? null : \array_slice($qtb, 0, $p);
+        $this->qtb = $qtb === null ? null : array_slice($qtb, 0, $p);
         $this->singular = self::singularValues($r, $p);
-        $this->tolerance = PHP_FLOAT_EPSILON * \max($n, $p) * $this->singular[0];
+        $this->tolerance = PHP_FLOAT_EPSILON * max($n, $p) * $this->singular[0];
     }
 
     /**
@@ -57,16 +57,16 @@ final class LeastSquares
     public static function householder(array $columns, int $n, int $m, ?array $rhs = null): array
     {
         $qtb = $rhs;
-        $steps = \min($n, $m);
-        $diagonal = \array_fill(0, $steps, 0.0);
+        $steps = min($n, $m);
+        $diagonal = array_fill(0, $steps, 0.0);
         for ($k = 0; $k < $steps; $k++) {
             $ck = &$columns[$k];
             $sq = self::dot($ck, $ck, $k, $n);
-            $norm = \sqrt($sq);
+            $norm = sqrt($sq);
             $x0 = $ck[$k];
             $sign = $x0 < 0.0 ? -1.0 : 1.0; // nalgebra: a -0.0 head counts as positive
             $signedNorm = $sign * $norm;
-            $factor = ($sq + \abs($x0) * $norm) * 2.0;
+            $factor = ($sq + abs($x0) * $norm) * 2.0;
             $ck[$k] += $signedNorm;
             if ($factor == 0.0) {
                 $diagonal[$k] = $signedNorm;
@@ -74,17 +74,17 @@ final class LeastSquares
 
                 continue;
             }
-            $root = \sqrt($factor);
+            $root = sqrt($factor);
             for ($i = $k; $i < $n; $i++) {
                 $ck[$i] /= $root;
             }
-            $length = \sqrt(self::dot($ck, $ck, $k, $n));
+            $length = sqrt(self::dot($ck, $ck, $k, $n));
             for ($i = $k; $i < $n; $i++) {
                 $ck[$i] /= $length;
             }
             $reflectionNorm = -$signedNorm;
             $diagonal[$k] = $reflectionNorm;
-            $reflectSign = $reflectionNorm < 0.0 || ($reflectionNorm == 0.0 && \fdiv(1.0, $reflectionNorm) < 0.0) ? -1.0 : 1.0;
+            $reflectSign = $reflectionNorm < 0.0 || ($reflectionNorm == 0.0 && fdiv(1.0, $reflectionNorm) < 0.0) ? -1.0 : 1.0;
             $scale = $reflectSign * -2.0;
             for ($j = $k + 1; $j < $m; $j++) {
                 $cj = &$columns[$j];
@@ -105,12 +105,12 @@ final class LeastSquares
 
         $r = [];
         for ($j = 0; $j < $m; $j++) {
-            $column = \array_fill(0, $steps, 0.0);
-            for ($i = 0; $i < \min($j, $steps); $i++) {
+            $column = array_fill(0, $steps, 0.0);
+            for ($i = 0; $i < min($j, $steps); $i++) {
                 $column[$i] = $columns[$j][$i];
             }
             if ($j < $steps) {
-                $column[$j] = \abs($diagonal[$j]);
+                $column[$j] = abs($diagonal[$j]);
             }
             $r[$j] = $column;
         }
@@ -168,19 +168,35 @@ final class LeastSquares
             $rotated = false;
             for ($i = 0; $i < $p - 1; $i++) {
                 for ($j = $i + 1; $j < $p; $j++) {
-                    [$alpha, $beta, $gamma] = self::jacobiDots($a[$i], $a[$j], $p);
+                    $ai = $a[$i];
+                    $aj = $a[$j];
+                    $alpha = 0.0;
+                    $beta = 0.0;
+                    $gamma = 0.0;
+                    for ($k = 0; $k < $p; $k++) {
+                        $alpha += $ai[$k] * $ai[$k];
+                        $beta += $aj[$k] * $aj[$k];
+                        $gamma += $ai[$k] * $aj[$k];
+                    }
                     // sqrt(alpha) * sqrt(beta): the product alpha * beta overflows once the
                     // column norms pass about 1e77, and an infinite threshold would stop
                     // every rotation (heavily weighted IRLS steps reach that range).
-                    if ($gamma == 0.0 || \abs($gamma) <= PHP_FLOAT_EPSILON * \sqrt($alpha) * \sqrt($beta)) {
+                    if ($gamma == 0.0 || abs($gamma) <= PHP_FLOAT_EPSILON * sqrt($alpha) * sqrt($beta)) {
                         continue;
                     }
                     $rotated = true;
                     $zeta = ($beta - $alpha) / (2.0 * $gamma);
-                    $t = ($zeta >= 0.0 ? 1.0 : -1.0) / (\abs($zeta) + \sqrt(1.0 + $zeta * $zeta));
-                    $cs = 1.0 / \sqrt(1.0 + $t * $t);
+                    $t = ($zeta >= 0.0 ? 1.0 : -1.0) / (abs($zeta) + sqrt(1.0 + $zeta * $zeta));
+                    $cs = 1.0 / sqrt(1.0 + $t * $t);
                     $sn = $cs * $t;
-                    [$a[$i], $a[$j]] = self::jacobiRotate($a[$i], $a[$j], $p, $cs, $sn);
+                    for ($k = 0; $k < $p; $k++) {
+                        $x = $ai[$k];
+                        $y = $aj[$k];
+                        $ai[$k] = $cs * $x - $sn * $y;
+                        $aj[$k] = $sn * $x + $cs * $y;
+                    }
+                    $a[$i] = $ai;
+                    $a[$j] = $aj;
                 }
             }
             if (! $rotated) {
@@ -193,52 +209,11 @@ final class LeastSquares
             foreach ($column as $value) {
                 $norm2 += $value * $value;
             }
-            $s[] = \sqrt($norm2);
+            $s[] = sqrt($norm2);
         }
-        \rsort($s);
+        rsort($s);
 
         return $s;
-    }
-
-    /**
-     * The inner loops of the Jacobi sweep are separate functions because PHP
-     * 8.5's function JIT can lose a value of the enclosing loops when it
-     * enters them through an on-stack-replacement entry (php-src #24214; see
-     * docs/notes/function-jit.md).
-     *
-     * @param  list<float>  $ai
-     * @param  list<float>  $aj
-     * @return array{0: float, 1: float, 2: float}
-     */
-    private static function jacobiDots(array $ai, array $aj, int $p): array
-    {
-        $alpha = 0.0;
-        $beta = 0.0;
-        $gamma = 0.0;
-        for ($k = 0; $k < $p; $k++) {
-            $alpha += $ai[$k] * $ai[$k];
-            $beta += $aj[$k] * $aj[$k];
-            $gamma += $ai[$k] * $aj[$k];
-        }
-
-        return [$alpha, $beta, $gamma];
-    }
-
-    /**
-     * @param  list<float>  $ai
-     * @param  list<float>  $aj
-     * @return array{0: list<float>, 1: list<float>}
-     */
-    private static function jacobiRotate(array $ai, array $aj, int $p, float $cs, float $sn): array
-    {
-        for ($k = 0; $k < $p; $k++) {
-            $x = $ai[$k];
-            $y = $aj[$k];
-            $ai[$k] = $cs * $x - $sn * $y;
-            $aj[$k] = $sn * $x + $cs * $y;
-        }
-
-        return [$ai, $aj];
     }
 
     /** Whether any singular value is at or below the rank tolerance. */
@@ -302,7 +277,7 @@ final class LeastSquares
         // Columns of R^-1: solve R x = e_j.
         $inverse = [];
         for ($j = 0; $j < $p; $j++) {
-            $unit = \array_fill(0, $p, 0.0);
+            $unit = array_fill(0, $p, 0.0);
             $unit[$j] = 1.0;
             $column = $this->backSubstitute($unit);
             if ($column === null) {

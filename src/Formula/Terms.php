@@ -35,20 +35,20 @@ final class Terms
     /** @param list<int> $term */
     public function label(array $term): string
     {
-        return \implode(':', \array_map(fn (int $v) => $this->variables[$v][0], $term));
+        return implode(':', array_map(fn (int $v) => $this->variables[$v][0], $term));
     }
 
     /** 1 = code by contrasts, 2 = code by indicator (dummy) variables (R's TermCode). */
     public function coding(int $index, int $variable): int
     {
-        $reduced = \array_values(\array_filter($this->terms[$index], fn (int $v) => $v !== $variable));
+        $reduced = array_values(array_filter($this->terms[$index], fn (int $v) => $v !== $variable));
         if ($reduced === []) {
             return 1;
         }
         for ($t = 0; $t < $index; $t++) {
             $all = true;
             foreach ($reduced as $v) {
-                if (! \in_array($v, $this->terms[$t], true)) {
+                if (! in_array($v, $this->terms[$t], true)) {
                     $all = false;
                     break;
                 }
@@ -64,8 +64,8 @@ final class Terms
     /** @param list<int> $a  @param list<int> $b  @return list<int> */
     private static function union(array $a, array $b): array
     {
-        $t = \array_values(\array_unique([...$a, ...$b]));
-        \sort($t);
+        $t = array_values(array_unique([...$a, ...$b]));
+        sort($t);
 
         return $t;
     }
@@ -75,7 +75,7 @@ final class Terms
     {
         $out = [];
         foreach ($terms as $t) {
-            if ($t !== [] && ! \in_array($t, $out, true)) {
+            if ($t !== [] && ! in_array($t, $out, true)) {
                 $out[] = $t;
             }
         }
@@ -148,7 +148,7 @@ final class Terms
                 }
                 $out = [];
                 foreach ($this->frameNames as $name) {
-                    if (! \in_array($name, $this->excluded, true)) {
+                    if (! in_array($name, $this->excluded, true)) {
                         $out[] = [$this->install(['name', $name])];
                     }
                 }
@@ -157,7 +157,7 @@ final class Terms
             case 'call':
                 if ($expr[1] === 'offset') {
                     $v = $this->install($expr);
-                    if (! \in_array($v, $this->offsets, true)) {
+                    if (! in_array($v, $this->offsets, true)) {
                         $this->offsets[] = $v;
                     }
 
@@ -181,7 +181,7 @@ final class Terms
                 $left = $this->encode($l, $negate);
                 $right = $this->encode($r, ! $negate);
 
-                return \array_values(\array_filter($left, fn ($t) => ! \in_array($t, $right, true)));
+                return array_values(array_filter($left, fn ($t) => ! in_array($t, $right, true)));
             case ':':
                 $left = $this->encode($l, $negate);
                 $right = $this->encode($r, $negate);
@@ -200,7 +200,7 @@ final class Terms
                 foreach ($left as $t) {
                     $all = self::union($all, $t);
                 }
-                $nested = \array_map(fn ($t) => self::union($all, $t), $right);
+                $nested = array_map(fn ($t) => self::union($all, $t), $right);
 
                 return self::trim([...$left, ...$nested]);
             case '%in%':
@@ -211,9 +211,9 @@ final class Terms
                     $all = self::union($all, $t);
                 }
 
-                return self::trim(\array_map(fn ($t) => self::union($t, $all), $left));
+                return self::trim(array_map(fn ($t) => self::union($t, $all), $left));
             case '^':
-                if ($r[0] !== 'num' || \is_nan($r[1]) || $r[1] < 1.0 || \fmod($r[1], 1.0) != 0.0) {
+                if ($r[0] !== 'num' || is_nan($r[1]) || $r[1] < 1.0 || fmod($r[1], 1.0) != 0.0) {
                     throw Parser::error('invalid power in formula: use a positive integer, e.g. (a + b)^2');
                 }
                 $base = $this->encode($l, $negate);
@@ -226,7 +226,7 @@ final class Terms
                 foreach ($base as $term) {
                     $variables = self::union($variables, $term);
                 }
-                $rounds = \min($r[1], (float) \max(count($variables), 1));
+                $rounds = min($r[1], (float) max(count($variables), 1));
                 for ($k = 1.0; $k < $rounds; $k += 1.0) {
                     $acc = self::interact($acc, $base);
                     $result = self::trim([...$result, ...$acc]);
@@ -259,20 +259,20 @@ final class Terms
         foreach ($parts as [$negate, $part]) {
             $encoded = $terms->encode($part, $negate);
             if ($negate) {
-                $list = \array_values(\array_filter($list, fn ($t) => ! \in_array($t, $encoded, true)));
+                $list = array_values(array_filter($list, fn ($t) => ! in_array($t, $encoded, true)));
             } else {
                 $list = self::trim([...$list, ...$encoded]);
             }
         }
         if ($terms->response !== null) {
             foreach ($list as $t) {
-                if (\in_array($terms->response, $t, true)) {
+                if (in_array($terms->response, $t, true)) {
                     throw Parser::error('the response cannot also appear on the right-hand side of the formula');
                 }
             }
         }
         // R's default keep.order = FALSE: stable sort by interaction order.
-        \usort($list, fn ($a, $b) => count($a) <=> count($b));
+        usort($list, fn ($a, $b) => count($a) <=> count($b));
         $terms->terms = $list;
 
         return $terms;
@@ -366,7 +366,7 @@ final class Terms
             // lme4: (x | a/b) = (x | a) + (x | b:a), naming the inner factor first.
             $left = self::groupFactors($expr[2]);
             $right = self::groupFactors($expr[3]);
-            $all = \array_merge(...$left);
+            $all = array_merge(...$left);
             $out = $left;
             foreach ($right as $b) {
                 $out[] = [...$b, ...$all];
@@ -382,7 +382,7 @@ final class Terms
 
     public static function barGroupLabel(array $bar): string
     {
-        return \implode(':', \array_map(Parser::deparse(...), $bar['groups']));
+        return implode(':', array_map(Parser::deparse(...), $bar['groups']));
     }
 
     public static function barLabel(array $bar): string

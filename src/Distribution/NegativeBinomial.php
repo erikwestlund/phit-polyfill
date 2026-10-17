@@ -24,11 +24,11 @@ final class NegativeBinomial
     {
         Support::positive('size', $size);
         Support::finite('prob', $prob);
-        if (\is_nan($prob) || $prob <= 0.0 || $prob > 1.0) {
+        if (is_nan($prob) || $prob <= 0.0 || $prob > 1.0) {
             throw Support::invalid('prob must be in (0, 1]');
         }
 
-        return new self($size, $prob, 1.0 - $prob, \log($prob), \log1p(-$prob));
+        return new self($size, $prob, 1.0 - $prob, log($prob), log1p(-$prob));
     }
 
     /** @internal Mean parameterization: Var = mu + mu²/size. */
@@ -42,7 +42,7 @@ final class NegativeBinomial
         // p = size/(size + mu) and q = mu/(size + mu), each without cancellation;
         // an overflowing sum must not become p = q = 0 (a false point mass).
         $total = $size + $mu;
-        if (\is_finite($total)) {
+        if (is_finite($total)) {
             $p = $size / $total;
             $q = $mu / $total;
         } elseif ($size >= $mu) {
@@ -55,7 +55,7 @@ final class NegativeBinomial
             $q = 1.0 / (1.0 + $ratio);
         }
 
-        return new self($size, $p, $q, -\log1p($mu / $size), $mu == 0.0 ? -INF : -\log1p($size / $mu));
+        return new self($size, $p, $q, -log1p($mu / $size), $mu == 0.0 ? -INF : -log1p($size / $mu));
     }
 
     /** stats_nbinom_pmf */
@@ -153,7 +153,7 @@ final class NegativeBinomial
         if ($k < 0.0) {
             return [0.0, 1.0];
         }
-        if ($this->q == 0.0 || \is_infinite($k)) {
+        if ($this->q == 0.0 || is_infinite($k)) {
             return [1.0, 0.0];
         }
 
@@ -165,7 +165,7 @@ final class NegativeBinomial
         if (($exact = $this->exact($k)) !== null) {
             return $exact;
         }
-        $k = \floor($k);
+        $k = floor($k);
         [$lower, $upper] = Support::betaInc($this->size, $k + 1.0, $this->p, $this->q);
 
         return [
@@ -187,7 +187,7 @@ final class NegativeBinomial
     /** @internal */
     public function pmfAt(float $k): float
     {
-        return \exp($this->logpmfAt($k));
+        return exp($this->logpmfAt($k));
     }
 
     /** @internal */
@@ -204,7 +204,7 @@ final class NegativeBinomial
         }
 
         // size/(size + k) times the binomial density of size successes in size + k trials.
-        return \log($this->size / ($this->size + $k)) + Special::lnBinomialRawSplit($this->size, $k, $this->p, $this->q);
+        return log($this->size / ($this->size + $k)) + Special::lnBinomialRawSplit($this->size, $k, $this->p, $this->q);
     }
 
     /** @internal */
@@ -223,22 +223,22 @@ final class NegativeBinomial
     public function logcdfAt(float $k): float
     {
         if (($exact = $this->exact($k)) !== null) {
-            return \log($exact[0]);
+            return log($exact[0]);
         }
         [$lower, $upper] = $this->tails($k);
 
-        return Special::logTail($lower, $upper, fn (): float => $this->lnLower(\floor($k)));
+        return Special::logTail($lower, $upper, fn (): float => $this->lnLower(floor($k)));
     }
 
     /** @internal */
     public function logsfAt(float $k): float
     {
         if (($exact = $this->exact($k)) !== null) {
-            return \log($exact[1]);
+            return log($exact[1]);
         }
         [$lower, $upper] = $this->tails($k);
 
-        return Special::logTail($upper, $lower, fn (): float => $this->lnUpper(\floor($k)));
+        return Special::logTail($upper, $lower, fn (): float => $this->lnUpper(floor($k)));
     }
 
     /** @internal */
@@ -247,9 +247,9 @@ final class NegativeBinomial
         if ($this->q == 0.0) {
             return 0.0;
         }
-        $mean = \fdiv($this->size * $this->q, $this->p);
-        $sd = \sqrt(\fdiv($mean, $this->p));
-        $first = Quantile::cornishFisher($p, $mean, $sd, \fdiv(1.0 + $this->q, \sqrt($this->size * $this->q)));
+        $mean = fdiv($this->size * $this->q, $this->p);
+        $sd = sqrt(fdiv($mean, $this->p));
+        $first = Quantile::cornishFisher($p, $mean, $sd, fdiv(1.0 + $this->q, sqrt($this->size * $this->q)));
 
         return Quantile::discrete($p, $first, INF, $this->cdfAt(...), $this->sfAt(...), $this->logcdfAt(...));
     }

@@ -18,7 +18,7 @@ abstract class Binary extends Glm
     protected function prepareOutcomes(array $y, array $weights, array $offset, int $n): array
     {
         foreach ($y as $value) {
-            if (\is_nan($value) || $value < 0.0 || $value > 1.0) {
+            if (is_nan($value) || $value < 0.0 || $value > 1.0) {
                 throw self::error(ErrorCode::INVALID_INPUT, 'x must be finite and y must be finite proportions in [0,1], with integer successes under the supplied trial weights');
             }
         }
@@ -28,14 +28,14 @@ abstract class Binary extends Glm
         self::checkWeights($weights, true);
         foreach ($y as $i => $value) {
             $events = $weights[$i] * $value;
-            if (\abs($events - \round($events)) > 1e-8) {
+            if (abs($events - round($events)) > 1e-8) {
                 throw self::error(ErrorCode::INVALID_INPUT, 'binary/grouped-binomial outcomes require integer trial counts and successes');
             }
         }
         // Count-rounding tolerance is representation tolerance, not fractional events.
         $allZero = $allOne = true;
         foreach ($y as $i => $value) {
-            $value = \round($value * $weights[$i]) / $weights[$i];
+            $value = round($value * $weights[$i]) / $weights[$i];
             $y[$i] = $value;
             $allZero = $allZero && $value == 0.0;
             $allOne = $allOne && $value == 1.0;
@@ -55,7 +55,7 @@ abstract class Binary extends Glm
     {
         $extreme = false;
         foreach ($offset as $o) {
-            if (\abs($o) > $this->startThreshold()) {
+            if (abs($o) > $this->startThreshold()) {
                 $extreme = true;
                 break;
             }
@@ -73,12 +73,12 @@ abstract class Binary extends Glm
             foreach ($y as $i => $value) {
                 $num += $value * $weights[$i];
             }
-            $mean = $num / \array_sum($weights);
+            $mean = $num / array_sum($weights);
             $center = 0.0;
             foreach ($offset as $o) {
                 $center += $o / $n;
             }
-            $theta = \array_fill(0, $p, 0.0);
+            $theta = array_fill(0, $p, 0.0);
             $theta[$j] = ($this->link($mean) - $center) * $scales[$j];
 
             return $theta;
@@ -142,36 +142,36 @@ abstract class Binary extends Glm
             $null = $likelihood;
         } elseif ($intercept) {
             // With offsets, the null intercept needs its own one-coefficient fit.
-            $null = $this->fitData(\array_fill(0, $n, [1.0]), $y, $weights, $offset, $maxIterations, false)['log_likelihood'] - $constant;
+            $null = $this->fitData(array_fill(0, $n, [1.0]), $y, $weights, $offset, $maxIterations, false)['log_likelihood'] - $constant;
         } else {
             $null = $this->likelihood($offset, $y, $weights);
         }
         $saturated = 0.0;
         foreach ($y as $i => $v) {
-            $logp = $v == 0.0 ? 0.0 : $v * \log($v);
-            $logq = $v == 1.0 ? 0.0 : (1.0 - $v) * \log1p(-$v);
+            $logp = $v == 0.0 ? 0.0 : $v * log($v);
+            $logq = $v == 1.0 ? 0.0 : (1.0 - $v) * log1p(-$v);
             $saturated += $weights[$i] * ($logp + $logq);
         }
         foreach ([$constant, $likelihood + $constant, $saturated, $null] as $value) {
-            if (! \is_finite($value)) {
+            if (! is_finite($value)) {
                 throw self::error(ErrorCode::NONFINITE, 'binomial likelihood statistics exceed floating-point range');
             }
         }
-        $gap = 64.0 * PHP_FLOAT_EPSILON * (1.0 + \abs($saturated) + \abs($likelihood));
+        $gap = 64.0 * PHP_FLOAT_EPSILON * (1.0 + abs($saturated) + abs($likelihood));
         if ($saturated - $likelihood < -$gap || $saturated - $null < -$gap) {
             throw self::error(ErrorCode::INTERNAL, 'binomial likelihood exceeds saturated likelihood beyond rounding precision');
         }
         $aic = 2.0 * $p - 2.0 * ($likelihood + $constant);
         foreach ([2.0 * ($saturated - $likelihood), 2.0 * ($saturated - $null), $aic] as $value) {
-            if (! \is_finite($value)) {
+            if (! is_finite($value)) {
                 throw self::error(ErrorCode::NONFINITE, 'binomial deviance or AIC exceeds floating-point range');
             }
         }
 
         return [
             'log_likelihood' => $likelihood + $constant,
-            'deviance' => \max(2.0 * ($saturated - $likelihood), 0.0),
-            'null_deviance' => \max(2.0 * ($saturated - $null), 0.0),
+            'deviance' => max(2.0 * ($saturated - $likelihood), 0.0),
+            'null_deviance' => max(2.0 * ($saturated - $null), 0.0),
             'aic' => $aic,
         ];
     }

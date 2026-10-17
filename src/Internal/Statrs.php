@@ -80,19 +80,19 @@ final class Statrs
                 $s += $dk[$i] / ($i - $x);
             }
 
-            return self::LN_PI - \log(\sin(M_PI * $x)) - \log($s) - self::LN_2_SQRT_E_OVER_PI
-                - (0.5 - $x) * \log((0.5 - $x + self::GAMMA_R) / M_E);
+            return self::LN_PI - log(sin(M_PI * $x)) - log($s) - self::LN_2_SQRT_E_OVER_PI
+                - (0.5 - $x) * log((0.5 - $x + self::GAMMA_R) / M_E);
         }
         for ($i = 1; $i < 11; $i++) {
             $s += $dk[$i] / ($x + $i - 1.0);
         }
 
-        return \log($s) + self::LN_2_SQRT_E_OVER_PI + ($x - 0.5) * \log(($x - 0.5 + self::GAMMA_R) / M_E);
+        return log($s) + self::LN_2_SQRT_E_OVER_PI + ($x - 0.5) * log(($x - 0.5 + self::GAMMA_R) / M_E);
     }
 
     public static function erfc(float $x): float
     {
-        if (\is_nan($x)) {
+        if (is_nan($x)) {
             return NAN;
         }
         if ($x === INF) {
@@ -138,7 +138,7 @@ final class Statrs
                 default => [85.0, self::NN, self::ND, 0.5641584396],
             };
             $r = self::polynomial($z - $shift, $n) / self::polynomial($z - $shift, $d);
-            $g = \exp(-$z * $z) / $z;
+            $g = exp(-$z * $z) / $z;
             $result = $g * $b + $g * $r;
         } else {
             $result = 0.0;
@@ -162,9 +162,9 @@ final class Statrs
     /** Regularized incomplete beta I_x(a, b) (Numerical Recipes continued fraction). */
     public static function betaReg(float $a, float $b, float $x): float
     {
-        $bt = ($x == 0.0 || \abs($x - 1.0) <= 1e-15)
+        $bt = ($x == 0.0 || abs($x - 1.0) <= 1e-15)
             ? 0.0
-            : \exp(self::lnGamma($a + $b) - self::lnGamma($a) - self::lnGamma($b) + $a * \log($x) + $b * \log(1.0 - $x));
+            : exp(self::lnGamma($a + $b) - self::lnGamma($a) - self::lnGamma($b) + $a * log($x) + $b * log(1.0 - $x));
         $symmetric = $x >= ($a + 1.0) / ($a + $b + 2.0);
         $eps = self::F64_PREC;
         $fpmin = PHP_FLOAT_MIN / $eps;
@@ -177,7 +177,7 @@ final class Statrs
         $qam = $a - 1.0;
         $c = 1.0;
         $d = 1.0 - $qab * $x / $qap;
-        if (\abs($d) < $fpmin) {
+        if (abs($d) < $fpmin) {
             $d = $fpmin;
         }
         $d = 1.0 / $d;
@@ -186,28 +186,28 @@ final class Statrs
             $m2 = $m * 2.0;
             $aa = $m * ($b - $m) * $x / (($qam + $m2) * ($a + $m2));
             $d = 1.0 + $aa * $d;
-            if (\abs($d) < $fpmin) {
+            if (abs($d) < $fpmin) {
                 $d = $fpmin;
             }
             $c = 1.0 + $aa / $c;
-            if (\abs($c) < $fpmin) {
+            if (abs($c) < $fpmin) {
                 $c = $fpmin;
             }
             $d = 1.0 / $d;
             $h = $h * $d * $c;
             $aa = -($a + $m) * ($qab + $m) * $x / (($a + $m2) * ($qap + $m2));
             $d = 1.0 + $aa * $d;
-            if (\abs($d) < $fpmin) {
+            if (abs($d) < $fpmin) {
                 $d = $fpmin;
             }
             $c = 1.0 + $aa / $c;
-            if (\abs($c) < $fpmin) {
+            if (abs($c) < $fpmin) {
                 $c = $fpmin;
             }
             $d = 1.0 / $d;
             $del = $d * $c;
             $h *= $del;
-            if (\abs($del - 1.0) <= $eps) {
+            if (abs($del - 1.0) <= $eps) {
                 break;
             }
         }
@@ -282,12 +282,12 @@ final class Statrs
             $r = self::polynomial($p, self::INV_AN) / self::polynomial($p, self::INV_AD);
             $result = $g * 0.0891314744949340820313 + $g * $r;
         } elseif ($q >= 0.25) {
-            $g = \sqrt(-2.0 * \log($q));
+            $g = sqrt(-2.0 * log($q));
             $xs = $q - 0.25;
             $r = self::polynomial($xs, self::INV_BN) / self::polynomial($xs, self::INV_BD);
             $result = $g / (2.249481201171875 + $r);
         } else {
-            $x = \sqrt(-\log($q));
+            $x = sqrt(-log($q));
             [$y, $shift, $n, $d] = match (true) {
                 $x < 3.0 => [0.807220458984375, 1.125, self::INV_CN, self::INV_CD],
                 $x < 6.0 => [0.93995571136474609375, 3.0, self::INV_DN, self::INV_DD],

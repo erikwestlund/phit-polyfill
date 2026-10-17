@@ -34,7 +34,7 @@ final class Polyfill
     /** @return list<string> */
     public static function functions(): array
     {
-        return \array_keys(FunctionMap::MAP);
+        return array_keys(FunctionMap::MAP);
     }
 
     /** Whether the native php_stats extension is loaded. */

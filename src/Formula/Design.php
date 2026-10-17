@@ -87,15 +87,15 @@ final class Design
             case 'num':
                 return ['num', self::subset($value['v'], $rows)];
             case 'mat':
-                return ['mat', \array_map(fn ($c) => self::subset($c, $rows), $value['cols']), $value['names']];
+                return ['mat', array_map(fn ($c) => self::subset($c, $rows), $value['cols']), $value['names']];
             case 'lgl':
-                return ['factor', ['FALSE', 'TRUE'], \array_map(fn ($b) => (int) $b, self::subset($value['v'], $rows)), false];
+                return ['factor', ['FALSE', 'TRUE'], array_map(fn ($b) => (int) $b, self::subset($value['v'], $rows)), false];
             case 'text':
                 $kept = self::subset($value['v'], $rows);
                 $levels = Evaluator::sortedLevels($kept);
-                $index = \array_flip($levels);
+                $index = array_flip($levels);
 
-                return ['factor', $levels, \array_map(fn ($s) => $index[$s] ?? 0, $kept), false];
+                return ['factor', $levels, array_map(fn ($s) => $index[$s] ?? 0, $kept), false];
             case 'factor':
                 $kept = self::subset($value['codes'], $rows);
                 $levels = $value['levels'];
@@ -117,13 +117,13 @@ final class Design
     {
         switch ($value['t']) {
             case 'lgl':
-                $labels = \array_map(fn ($b) => $b ? 'TRUE' : 'FALSE', self::subset($value['v'], $rows));
+                $labels = array_map(fn ($b) => $b ? 'TRUE' : 'FALSE', self::subset($value['v'], $rows));
                 break;
             case 'text':
                 $labels = self::subset($value['v'], $rows);
                 break;
             case 'factor':
-                $labels = \array_map(fn ($c) => $value['levels'][$c], self::subset($value['codes'], $rows));
+                $labels = array_map(fn ($c) => $value['levels'][$c], self::subset($value['codes'], $rows));
                 break;
             default:
                 if ($levels !== null) {
@@ -145,7 +145,7 @@ final class Design
             $codes[] = $index[$label] ?? throw self::error("factor $name has new level $label");
         }
 
-        return ['factor', \array_values($levels), $codes, $ordered];
+        return ['factor', array_values($levels), $codes, $ordered];
     }
 
     /** Contrast matrix (levels x columns) and column suffixes. */
@@ -166,7 +166,7 @@ final class Design
             throw self::error("contrasts can be applied only to factors with 2 or more levels ('$name' has $k after deletion)");
         }
         if ($ordered) {
-            $basis = Evaluator::orthonormalPoly(\array_map('floatval', \range(1, $k)), $k - 1);
+            $basis = Evaluator::orthonormalPoly(array_map('floatval', range(1, $k)), $k - 1);
             $m = [];
             for ($i = 0; $i < $k; $i++) {
                 foreach ($basis as $j => $c) {
@@ -193,7 +193,7 @@ final class Design
             }
         }
 
-        return [$m, \array_slice($levels, 1)];
+        return [$m, array_slice($levels, 1)];
     }
 
     private static function isFactor(?array $coded): bool
@@ -210,7 +210,7 @@ final class Design
     {
         $codes = [];
         foreach ($terms->terms as $t => $term) {
-            $codes[$t] = \array_map(fn ($v) => $terms->coding($t, $v), $term);
+            $codes[$t] = array_map(fn ($v) => $terms->coding($t, $v), $term);
         }
         if (! $terms->intercept) {
             // First factor (by term, then variable order) is coded by indicators.
@@ -227,15 +227,15 @@ final class Design
             'columns' => [],
             'names' => [],
             'assign' => [],
-            'labels' => \array_map(fn ($t) => $terms->label($t), $terms->terms),
+            'labels' => array_map(fn ($t) => $terms->label($t), $terms->terms),
         ];
         if ($terms->intercept) {
-            $block['columns'][] = \array_fill(0, $m, 1.0);
+            $block['columns'][] = array_fill(0, $m, 1.0);
             $block['names'][] = '(Intercept)';
             $block['assign'][] = 0;
         }
         foreach ($terms->terms as $t => $term) {
-            $current = [['', \array_fill(0, $m, 1.0)]];
+            $current = [['', array_fill(0, $m, 1.0)]];
             foreach ($term as $k => $v) {
                 $name = $terms->variables[$v][0];
                 $value = $coded[$v];
@@ -249,7 +249,7 @@ final class Design
                 } else {
                     [$matrix, $suffixes] = self::contrasts($name, $value[1], $value[3], $codes[$t][$k] === 2);
                     foreach ($suffixes as $j => $suffix) {
-                        $parts[] = [$name.$suffix, \array_map(fn ($c) => $matrix[$c][$j], $value[2])];
+                        $parts[] = [$name.$suffix, array_map(fn ($c) => $matrix[$c][$j], $value[2])];
                     }
                 }
                 $next = [];
@@ -288,7 +288,7 @@ final class Design
     private static function checkFinite(iterable $values, string $what): void
     {
         foreach ($values as $v) {
-            if (! \is_finite($v)) {
+            if (! is_finite($v)) {
                 throw ErrorCode::exception(ErrorCode::NONFINITE, "formula produced infinite values in the $what (for example log(0))");
             }
         }
@@ -386,7 +386,7 @@ final class Design
             if ($terms->terms === [] && ! $terms->intercept) {
                 throw self::error("random-effect term '".Terms::barLabel($bar)."' has no columns");
             }
-            $groups = \array_map(fn ($g) => Evaluator::evaluate($g, $data), $bar['groups']);
+            $groups = array_map(fn ($g) => Evaluator::evaluate($g, $data), $bar['groups']);
             foreach ($groups as $g) {
                 if ($g['t'] === 'mat' || $g['t'] === 'str') {
                     throw self::error('grouping variables must be single columns');
@@ -407,11 +407,11 @@ final class Design
         foreach ($fixed->variables as $v => [, $expr]) {
             // predict() does not need the response; it may be absent.
             $values[$v] = $predict && $v === $fixed->response
-                ? ['t' => 'num', 'v' => \array_fill(0, $n, 0.0)]
+                ? ['t' => 'num', 'v' => array_fill(0, $n, 0.0)]
                 : Evaluator::evaluate($expr, $data);
         }
-        $barValues = \array_map(
-            fn ($s) => \array_map(fn ($v) => Evaluator::evaluate($v[1], $data), $s['terms']->variables),
+        $barValues = array_map(
+            fn ($s) => array_map(fn ($v) => Evaluator::evaluate($v[1], $data), $s['terms']->variables),
             $specs,
         );
         $retained = [];
@@ -464,7 +464,7 @@ final class Design
         self::checkFinite(self::flatten($x), 'design matrix');
         $offset = null;
         if ($fixed->offsets !== []) {
-            $offset = \array_fill(0, $m, 0.0);
+            $offset = array_fill(0, $m, 0.0);
             foreach ($fixed->offsets as $v) {
                 foreach ($coded[$v][1] as $i => $o) {
                     $offset[$i] += $o;
@@ -478,7 +478,7 @@ final class Design
             if ($value['t'] === 'num') {
                 $response = ['numeric', self::subset($value['v'], $retained)];
             } elseif ($value['t'] === 'lgl') {
-                $response = ['numeric', \array_map(fn ($b) => $b ? 1.0 : 0.0, self::subset($value['v'], $retained))];
+                $response = ['numeric', array_map(fn ($b) => $b ? 1.0 : 0.0, self::subset($value['v'], $retained))];
             } elseif ($value['t'] === 'mat') {
                 if (count($value['cols']) !== 2) {
                     throw self::error('a matrix response must be cbind(successes, failures)');
@@ -501,7 +501,7 @@ final class Design
         $record = function (array $variables, array $coded) use (&$levels): void {
             foreach ($variables as $v => [$name]) {
                 $value = $coded[$v] ?? null;
-                if ($value !== null && $value[0] === 'factor' && ! \array_key_exists($name, $levels)) {
+                if ($value !== null && $value[0] === 'factor' && ! array_key_exists($name, $levels)) {
                     $levels[$name] = $value[1];
                 }
             }
@@ -525,7 +525,7 @@ final class Design
                 $singleInteger = true;
                 foreach ($retained as $i) {
                     $g = $spec['groups'][0]['v'][$i];
-                    if ($g === null || \fmod($g, 1.0) != 0.0 || \is_nan($g) || \abs($g) >= 9.0e15) {
+                    if ($g === null || fmod($g, 1.0) != 0.0 || is_nan($g) || abs($g) >= 9.0e15) {
                         $singleInteger = false;
                         break;
                     }
@@ -536,7 +536,7 @@ final class Design
                 if ($singleInteger) {
                     $groups[] = (int) $spec['groups'][0]['v'][$i];
                 } else {
-                    $groups[] = \implode(':', \array_map(fn ($g) => self::groupLabel($g, $i), $spec['groups']));
+                    $groups[] = implode(':', array_map(fn ($g) => self::groupLabel($g, $i), $spec['groups']));
                 }
             }
             $random[] = [
@@ -548,7 +548,7 @@ final class Design
                 'groups' => $groups,
             ];
         }
-        $extraKept = \array_map(fn ($e) => self::subset($e, $retained), $extra);
+        $extraKept = array_map(fn ($e) => self::subset($e, $retained), $extra);
         foreach ($extraKept as $e) {
             self::checkFinite($e, 'weights');
         }

@@ -115,7 +115,7 @@ final class Poisson
         if ($k < 0.0) {
             return [0.0, 1.0];
         }
-        if ($this->lambda == 0.0 || \is_infinite($k)) {
+        if ($this->lambda == 0.0 || is_infinite($k)) {
             return [1.0, 0.0];
         }
 
@@ -127,7 +127,7 @@ final class Poisson
         if (($exact = $this->exact($k)) !== null) {
             return $exact;
         }
-        $a = \floor($k) + 1.0;
+        $a = floor($k) + 1.0;
         [$lowerGamma, $upperGamma] = Support::gammaInc($a, $this->lambda);
 
         return [
@@ -139,7 +139,7 @@ final class Poisson
     /** @internal */
     public function pmfAt(float $k): float
     {
-        return \exp($this->logpmfAt($k));
+        return exp($this->logpmfAt($k));
     }
 
     /** @internal */
@@ -168,22 +168,22 @@ final class Poisson
     public function logcdfAt(float $k): float
     {
         if (($exact = $this->exact($k)) !== null) {
-            return \log($exact[0]);
+            return log($exact[0]);
         }
         [$lower, $upper] = $this->tails($k);
 
-        return Special::logTail($lower, $upper, fn (): float => Special::lnGammaUpperFraction(\floor($k) + 1.0, $this->lambda));
+        return Special::logTail($lower, $upper, fn (): float => Special::lnGammaUpperFraction(floor($k) + 1.0, $this->lambda));
     }
 
     /** @internal */
     public function logsfAt(float $k): float
     {
         if (($exact = $this->exact($k)) !== null) {
-            return \log($exact[1]);
+            return log($exact[1]);
         }
         [$lower, $upper] = $this->tails($k);
 
-        return Special::logTail($upper, $lower, fn (): float => Special::lnGammaLowerSeries(\floor($k) + 1.0, $this->lambda));
+        return Special::logTail($upper, $lower, fn (): float => Special::lnGammaLowerSeries(floor($k) + 1.0, $this->lambda));
     }
 
     /** @internal */
@@ -192,7 +192,7 @@ final class Poisson
         if ($this->lambda == 0.0) {
             return 0.0;
         }
-        $sd = \sqrt($this->lambda);
+        $sd = sqrt($this->lambda);
         $first = Quantile::cornishFisher($p, $this->lambda, $sd, 1.0 / $sd);
 
         return Quantile::discrete($p, $first, INF, $this->cdfAt(...), $this->sfAt(...), $this->logcdfAt(...));

@@ -61,7 +61,7 @@ final class LogisticRandomIntercept
             throw ErrorCode::exception(ErrorCode::DIMENSION_MISMATCH, 'require rectangular finite x, proportions y in [0,1], aligned groups and n > p');
         }
         foreach ($y as $v) {
-            if (\is_nan($v) || $v < 0.0 || $v > 1.0) {
+            if (is_nan($v) || $v < 0.0 || $v > 1.0) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'binomial y must be proportions in [0,1]');
             }
         }
@@ -70,13 +70,13 @@ final class LogisticRandomIntercept
             throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'quadrature_points must be 1 (Laplace) or 2..61 (adaptive quadrature)');
         }
         $tolerance = $options['tolerance'];
-        if (\is_nan($tolerance) || \is_infinite($tolerance) || $tolerance <= 0.0 || $tolerance > 0.1) {
+        if (is_nan($tolerance) || is_infinite($tolerance) || $tolerance <= 0.0 || $tolerance > 0.1) {
             throw ErrorCode::exception(ErrorCode::NONFINITE, 'tolerance must be finite in (0,0.1]');
         }
         [$weights, $offset] = self::observations($n, $options['weights'], $options['offset']);
         foreach ($y as $i => $v) {
             $events = $v * $weights[$i];
-            if ($weights[$i] > Limits::MAX_TRIALS || \abs($events - self::round($events)) > 1e-8) {
+            if ($weights[$i] > Limits::MAX_TRIALS || abs($events - self::round($events)) > 1e-8) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'require integer trials <= 1000000 and integer success counts');
             }
         }
@@ -108,11 +108,11 @@ final class LogisticRandomIntercept
         // RMS scaling keeps the optimizer's coefficient units manageable.
         $scales = [];
         for ($j = 0; $j < $p; $j++) {
-            $column = \array_column($x, $j);
-            $scales[] = \sqrt(LeastSquares::dot($column, $column, 0, $n)) / \sqrt($n);
+            $column = array_column($x, $j);
+            $scales[] = sqrt(LeastSquares::dot($column, $column, 0, $n)) / sqrt($n);
         }
         foreach ($scales as $s) {
-            if (\is_nan($s) || \is_infinite($s) || $s == 0.0) {
+            if (is_nan($s) || is_infinite($s) || $s == 0.0) {
                 throw ErrorCode::exception(ErrorCode::RANK_DEFICIENCY, 'fixed design is rank deficient or has invalid scale');
             }
         }
@@ -124,10 +124,10 @@ final class LogisticRandomIntercept
         }
         $columns = [];
         for ($j = 0; $j < $p; $j++) {
-            $columns[$j] = \array_column($scaled, $j);
+            $columns[$j] = array_column($scaled, $j);
         }
         $singular = (new Svd($columns, false, false))->singularValues;
-        $rankTolerance = PHP_FLOAT_EPSILON * \max($n, $p) * $singular[0];
+        $rankTolerance = PHP_FLOAT_EPSILON * max($n, $p) * $singular[0];
         foreach ($singular as $s) {
             if ($s <= $rankTolerance) {
                 throw ErrorCode::exception(ErrorCode::RANK_DEFICIENCY, 'fixed design is numerically rank deficient');
@@ -144,7 +144,7 @@ final class LogisticRandomIntercept
             }
             $constant += $term;
         }
-        if (\is_nan($constant) || \is_infinite($constant)) {
+        if (is_nan($constant) || is_infinite($constant)) {
             throw ErrorCode::exception(ErrorCode::NONFINITE, 'binomial likelihood constant exceeds floating-point range');
         }
         // Separation in the fixed design also prevents a finite unpenalized GLMM MLE.
@@ -165,9 +165,9 @@ final class LogisticRandomIntercept
             $parameters[] = $glm['coefficients'][$j] * $scales[$j];
         }
         $parameters[] = 1.0;
-        $lower = \array_fill(0, $p + 1, -100.0);
+        $lower = array_fill(0, $p + 1, -100.0);
         $lower[$p] = 0.0;
-        $upper = \array_fill(0, $p + 1, 100.0);
+        $upper = array_fill(0, $p + 1, 100.0);
         $upper[$p] = 20.0;
         foreach ($parameters as $j => $v) {
             if ($v <= $lower[$j] || $v >= $upper[$j]) {
@@ -194,7 +194,7 @@ final class LogisticRandomIntercept
             throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'binomial mixed optimizer failed: '.$outcome->status->label());
         }
         foreach ($parameters as $j => $v) {
-            if ($j < $p && \abs($v) >= 99.9) {
+            if ($j < $p && abs($v) >= 99.9) {
                 throw ErrorCode::exception(ErrorCode::NONCONVERGENCE, 'binomial mixed fit reaches search bound; separation/weak identification may be present');
             }
         }
@@ -203,7 +203,7 @@ final class LogisticRandomIntercept
         }
         $likelihood = $data->logLikelihood($parameters);
         if ($glm['log_likelihood'] >= $likelihood
-            || ($parameters[$p] < 1e-4 && $likelihood - $glm['log_likelihood'] <= 64.0 * PHP_FLOAT_EPSILON * (1.0 + \abs($likelihood)))) {
+            || ($parameters[$p] < 1e-4 && $likelihood - $glm['log_likelihood'] <= 64.0 * PHP_FLOAT_EPSILON * (1.0 + abs($likelihood)))) {
             for ($j = 0; $j < $p; $j++) {
                 $parameters[$j] = $glm['coefficients'][$j] * $scales[$j];
             }
@@ -256,7 +256,7 @@ final class LogisticRandomIntercept
         $stdErrors = [];
         $z = [];
         for ($j = 0; $j < $p; $j++) {
-            $stdErrors[] = \sqrt($covariance[$j][$j]);
+            $stdErrors[] = sqrt($covariance[$j][$j]);
             $z[] = $beta[$j] / $stdErrors[$j];
         }
         $gradientMax = 0.0;
@@ -264,24 +264,24 @@ final class LogisticRandomIntercept
             if ($boundary && $j === $p) {
                 continue;
             }
-            $h = 1e-5 * (1.0 + \abs($parameters[$j]));
+            $h = 1e-5 * (1.0 + abs($parameters[$j]));
             $a = $parameters;
             $b = $parameters;
             $a[$j] += $h;
             $b[$j] -= $h;
-            $gradient = \abs(($data->logLikelihood($a) - $data->logLikelihood($b)) / (2.0 * $h));
+            $gradient = abs(($data->logLikelihood($a) - $data->logLikelihood($b)) / (2.0 * $h));
             // f64::max: a NaN argument loses.
-            if (\is_nan($gradientMax) || $gradient > $gradientMax) {
+            if (is_nan($gradientMax) || $gradient > $gradientMax) {
                 $gradientMax = $gradient;
             }
         }
-        if (\is_nan($gradientMax) || \is_infinite($gradientMax) || $gradientMax > 1e-3) {
+        if (is_nan($gradientMax) || is_infinite($gradientMax) || $gradientMax > 1e-3) {
             throw ErrorCode::exception(ErrorCode::NONCONVERGENCE, 'binomial mixed optimizer stopped with a nonstationary likelihood score');
         }
         $pValues = [];
         $confInt = [];
         for ($j = 0; $j < $p; $j++) {
-            $pValues[] = 2.0 * Statrs::normalSf(\abs($z[$j]));
+            $pValues[] = 2.0 * Statrs::normalSf(abs($z[$j]));
             $confInt[] = [$beta[$j] - Statrs::Z_975 * $stdErrors[$j], $beta[$j] + Statrs::Z_975 * $stdErrors[$j]];
         }
         $fixedFitted = [];
@@ -294,7 +294,7 @@ final class LogisticRandomIntercept
         $finite = true;
         foreach ([$beta, ...$covariance, $stdErrors, $z, $fitted, $effects, $condVar] as $values) {
             foreach ($values as $v) {
-                $finite = $finite && \is_finite($v);
+                $finite = $finite && is_finite($v);
             }
         }
         if ($finite === false) {
@@ -314,13 +314,13 @@ final class LogisticRandomIntercept
             'residuals' => $residuals,
             'random_effects' => $effects,
             'random_effects_cond_var' => $condVar,
-            'group_sizes' => \array_map('count', $data->members),
+            'group_sizes' => array_map('count', $data->members),
             'random_intercept_variance' => $tau * $tau,
             'random_intercept_sd' => $tau,
             'log_likelihood' => $likelihood,
             'neg2_log_likelihood' => -2.0 * $likelihood,
             'aic' => 2.0 * $nParameters - 2.0 * $likelihood,
-            'bic' => $nParameters * \log($n) - 2.0 * $likelihood,
+            'bic' => $nParameters * log($n) - 2.0 * $likelihood,
             'n_parameters' => $nParameters,
             'df_residual' => $n - $nParameters,
             'quadrature_points' => $points,
@@ -334,18 +334,18 @@ final class LogisticRandomIntercept
     /** stats-core observations::prepare for binary outcomes. */
     private static function observations(int $n, array $weights, array $offset): array
     {
-        $weights = $weights === [] ? \array_fill(0, $n, 1.0) : $weights;
-        $offset = $offset === [] ? \array_fill(0, $n, 0.0) : $offset;
+        $weights = $weights === [] ? array_fill(0, $n, 1.0) : $weights;
+        $offset = $offset === [] ? array_fill(0, $n, 0.0) : $offset;
         if (count($weights) !== $n || count($offset) !== $n) {
             throw ErrorCode::exception(ErrorCode::DIMENSION_MISMATCH, 'weights and offset must have one value per row');
         }
         foreach ([...$weights, ...$offset] as $v) {
-            if (\is_nan($v) || \is_infinite($v)) {
+            if (is_nan($v) || is_infinite($v)) {
                 throw ErrorCode::exception(ErrorCode::NONFINITE, 'weights and offset must be finite');
             }
         }
         foreach ($weights as $v) {
-            if ($v <= 0.0 || \fmod($v, 1.0) != 0.0) {
+            if ($v <= 0.0 || fmod($v, 1.0) != 0.0) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'weights must be positive (integer trials for binary outcomes)');
             }
         }
@@ -361,22 +361,22 @@ final class LogisticRandomIntercept
     /** Rust's f64::round: halves away from zero. */
     private static function round(float $v): float
     {
-        return \round($v, 0, PHP_ROUND_HALF_UP);
+        return round($v, 0, PHP_ROUND_HALF_UP);
     }
 
     private static function sigmoid(float $v): float
     {
         if ($v >= 0.0) {
-            return 1.0 / (1.0 + \exp(-$v));
+            return 1.0 / (1.0 + exp(-$v));
         }
-        $e = \exp($v);
+        $e = exp($v);
 
         return $e / (1.0 + $e);
     }
 
     private static function softplus(float $v): float
     {
-        return ($v > 0.0 ? $v : 0.0) + \log1p(\exp(-\abs($v)));
+        return ($v > 0.0 ? $v : 0.0) + log1p(exp(-abs($v)));
     }
 
     /**
@@ -387,10 +387,10 @@ final class LogisticRandomIntercept
      */
     private static function normalQuadrature(int $points): array
     {
-        $jacobi = \array_fill(0, $points, \array_fill(0, $points, 0.0));
+        $jacobi = array_fill(0, $points, array_fill(0, $points, 0.0));
         for ($j = 1; $j < $points; $j++) {
-            $jacobi[$j - 1][$j] = \sqrt($j);
-            $jacobi[$j][$j - 1] = \sqrt($j);
+            $jacobi[$j - 1][$j] = sqrt($j);
+            $jacobi[$j][$j - 1] = sqrt($j);
         }
         $eigenvalues = (new SymmetricEigen($jacobi))->eigenvalues;
         $result = [];
@@ -399,7 +399,7 @@ final class LogisticRandomIntercept
             $current = 1.0;
             $sum = 1.0;
             for ($k = 1; $k < $points; $k++) {
-                $next = ($z * $current - \sqrt($k - 1) * $previous) / \sqrt($k);
+                $next = ($z * $current - sqrt($k - 1) * $previous) / sqrt($k);
                 $sum += $next * $next;
                 $previous = $current;
                 $current = $next;
@@ -407,7 +407,7 @@ final class LogisticRandomIntercept
             $result[] = [$z, 1.0 / $sum];
         }
         // total_cmp ordering; the nodes are finite and distinct.
-        \usort($result, fn (array $a, array $b) => $a[0] <=> $b[0]);
+        usort($result, fn (array $a, array $b) => $a[0] <=> $b[0]);
 
         return $result;
     }
@@ -446,7 +446,7 @@ final class LogisticRandomIntercept
         foreach ($rows as $i) {
             $e = $eta[$i] + $tau * $u;
             $score += $tau * $this->weights[$i] * ($this->y[$i] * self::sigmoid(-$e) - (1.0 - $this->y[$i]) * self::sigmoid($e));
-            $tail = \exp(-\abs($e));
+            $tail = exp(-abs($e));
             $denominator = 1.0 + $tail;
             $precision += $tau * $tau * $this->weights[$i] * $tail / ($denominator * $denominator);
         }
@@ -465,16 +465,16 @@ final class LogisticRandomIntercept
         foreach ($rows as $i) {
             $total += $this->weights[$i];
         }
-        $bound = \abs($tau) * $total + 1.0;
+        $bound = abs($tau) * $total + 1.0;
         $lower = -$bound;
         $upper = $bound;
         $u = 0.0;
         for ($iteration = 0; $iteration < 100; $iteration++) {
             [$score, $precision] = $this->scorePrecision($rows, $eta, $tau, $u);
-            if (\is_nan($score) || \is_infinite($score) || \is_nan($precision) || \is_infinite($precision)) {
+            if (is_nan($score) || is_infinite($score) || is_nan($precision) || is_infinite($precision)) {
                 throw ErrorCode::exception(ErrorCode::NONFINITE, 'binomial mixed inner calculation overflowed');
             }
-            if (\abs($score) <= 1e-11 * (1.0 + \abs($u)) || \abs($score) / $precision <= 1e-12 * (1.0 + \abs($u))) {
+            if (abs($score) <= 1e-11 * (1.0 + abs($u)) || abs($score) / $precision <= 1e-12 * (1.0 + abs($u))) {
                 return [$u, $precision];
             }
             if ($score > 0.0) {
@@ -493,32 +493,32 @@ final class LogisticRandomIntercept
         $tau = $parameters[$this->p];
         $eta = $this->eta($parameters);
         foreach ($eta as $e) {
-            if (\is_nan($e) || \is_infinite($e)) {
+            if (is_nan($e) || is_infinite($e)) {
                 throw ErrorCode::exception(ErrorCode::NONFINITE, 'linear predictor exceeds floating-point range');
             }
         }
         $ll = $this->constant;
         foreach ($this->members as $rows) {
             [$mode, $precision] = $this->mode($rows, $eta, $tau);
-            $root = \sqrt($precision);
+            $root = sqrt($precision);
             $logs = [];
             $maximum = -INF;
             foreach ($this->quadrature as [$z, $w]) {
-                $value = \log($w) + $this->groupKernel($rows, $eta, $tau, $mode + $z / $root) + 0.5 * $z * $z;
+                $value = log($w) + $this->groupKernel($rows, $eta, $tau, $mode + $z / $root) + 0.5 * $z * $z;
                 $logs[] = $value;
                 // f64::max: NaN loses.
-                if ($value > $maximum || \is_nan($maximum)) {
+                if ($value > $maximum || is_nan($maximum)) {
                     $maximum = $value;
                 }
             }
             $sum = 0.0;
             foreach ($logs as $v) {
-                $sum += \exp($v - $maximum);
+                $sum += exp($v - $maximum);
             }
             // Laplace is exactly the one-node case: kernel(mode) - log(h)/2.
-            $ll += $maximum + \log($sum) - 0.5 * \log($precision);
+            $ll += $maximum + log($sum) - 0.5 * log($precision);
         }
-        if (\is_nan($ll) || \is_infinite($ll)) {
+        if (is_nan($ll) || is_infinite($ll)) {
             throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'binomial mixed likelihood is not finite');
         }
 
@@ -536,9 +536,9 @@ final class LogisticRandomIntercept
         $f0 = -$data->logLikelihood($parameters);
         $steps = [];
         foreach ($parameters as $v) {
-            $steps[] = $step * (1.0 + \abs($v));
+            $steps[] = $step * (1.0 + abs($v));
         }
-        $h = \array_fill(0, $m, \array_fill(0, $m, 0.0));
+        $h = array_fill(0, $m, array_fill(0, $m, 0.0));
         for ($i = 0; $i < $m; $i++) {
             $a = $parameters;
             $b = $parameters;
@@ -581,7 +581,7 @@ final class LogisticRandomIntercept
         // Column-major working copy: $c[$col][$row].
         $c = [];
         for ($j = 0; $j < $m; $j++) {
-            $c[$j] = \array_column($h, $j);
+            $c[$j] = array_column($h, $j);
         }
         for ($j = 0; $j < $m; $j++) {
             for ($k = 0; $k < $j; $k++) {
@@ -591,10 +591,10 @@ final class LogisticRandomIntercept
                 }
             }
             $diagonal = $c[$j][$j];
-            if ($diagonal == 0.0 || \is_nan($diagonal) || $diagonal < 0.0) {
+            if ($diagonal == 0.0 || is_nan($diagonal) || $diagonal < 0.0) {
                 return null;
             }
-            $root = \sqrt($diagonal);
+            $root = sqrt($diagonal);
             $c[$j][$j] = $root;
             for ($i = $j + 1; $i < $m; $i++) {
                 $c[$j][$i] /= $root;
@@ -602,7 +602,7 @@ final class LogisticRandomIntercept
         }
         $inverse = [];
         for ($col = 0; $col < $m; $col++) {
-            $b = \array_fill(0, $m, 0.0);
+            $b = array_fill(0, $m, 0.0);
             $b[$col] = 1.0;
             // L y = b: forward, subtracting each solved coefficient times its column.
             for ($i = 0; $i < $m; $i++) {
@@ -614,8 +614,8 @@ final class LogisticRandomIntercept
             }
             // L' x = y: backward, with dot products of the column below the diagonal.
             for ($i = $m - 1; $i >= 0; $i--) {
-                $below = \array_slice($c[$i], $i + 1);
-                $tail = \array_slice($b, $i + 1);
+                $below = array_slice($c[$i], $i + 1);
+                $tail = array_slice($b, $i + 1);
                 $dot = LeastSquares::dot($below, $tail, 0, count($below));
                 $b[$i] = ($b[$i] - $dot) / $c[$i][$i];
             }

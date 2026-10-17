@@ -56,8 +56,8 @@ final class Rescue
         $info = Util::INFO_DFT;
 
         if ($nf >= $maxfun) {
-            $bmat = \array_fill(0, $n * ($npt + $n), 0.0);
-            $zmat = \array_fill(0, $npt * $nz, 0.0);
+            $bmat = array_fill(0, $n * ($npt + $n), 0.0);
+            $zmat = array_fill(0, $npt * $nz, 0.0);
 
             return Util::MAXFUN_REACHED;
         }
@@ -100,16 +100,16 @@ final class Rescue
             }
         }
         for ($i = 0; $i < $n; $i++) {
-            if (\abs($ptsaux2[$i]) < 0.5 * \abs($ptsaux1[$i])) {
+            if (abs($ptsaux2[$i]) < 0.5 * abs($ptsaux1[$i])) {
                 $ptsaux2[$i] = 0.5 * $ptsaux1[$i];
             }
         }
 
         $sfrac = 0.5 / ((float) $n + 1.0);
-        $ptsid = \array_fill(0, $npt, 0.0);
+        $ptsid = array_fill(0, $npt, 0.0);
         $ptsid[0] = $sfrac;
-        $bmat = \array_fill(0, $n * ($npt + $n), 0.0);
-        $zmat = \array_fill(0, $npt * $nz, 0.0);
+        $bmat = array_fill(0, $n * ($npt + $n), 0.0);
+        $zmat = array_fill(0, $npt * $nz, 0.0);
         for ($k = 0; $k < $n; $k++) {
             $ptsid[$k + 1] = (float) ($k + 1) + $sfrac;
             if ($k + 1 <= $nz) {
@@ -118,7 +118,7 @@ final class Rescue
                 $bmat[$k + ($k + 1) * $n] = -$temp + 1.0 / $ptsaux1[$k];
                 $bmat[$k + ($k + $n + 1) * $n] = $temp + 1.0 / $ptsaux2[$k];
                 $bmat[$k] = -$bmat[$k + ($k + 1) * $n] - $bmat[$k + ($k + $n + 1) * $n];
-                $zmat[$k * $npt] = \sqrt(2.0) / \abs($ptsaux1[$k] * $ptsaux2[$k]);
+                $zmat[$k * $npt] = sqrt(2.0) / abs($ptsaux1[$k] * $ptsaux2[$k]);
                 $zmat[$k + 1 + $k * $npt] = $zmat[$k * $npt] * $ptsaux2[$k] * $temp;
                 $zmat[$k + $n + 1 + $k * $npt] = -$zmat[$k * $npt] * $ptsaux1[$k] * $temp;
             } else {
@@ -163,7 +163,7 @@ final class Rescue
             for ($i = 0; $i < $n; $i++) {
                 $s += $xpt[$i + $k * $n] * $xpt[$i + $k * $n];
             }
-            $score[] = \sqrt($s);
+            $score[] = sqrt($s);
         }
         $score[$kopt] = 0.0;
         $scoreinc = 0.0;
@@ -173,11 +173,11 @@ final class Rescue
 
         $nprov = $npt - 1;
         $maxiter = $npt * $npt;
-        $vlag = \array_fill(0, $npt + $n, 0.0);
+        $vlag = array_fill(0, $npt + $n, 0.0);
         for ($iter = 0; $iter < $maxiter; $iter++) {
             $allNonPositive = true;
             foreach ($score as $s) {
-                if (\is_nan($s) || $s > 0.0) {
+                if (is_nan($s) || $s > 0.0) {
                     $allNonPositive = false;
                     break;
                 }
@@ -222,8 +222,8 @@ final class Rescue
             for ($i = 0; $i < $n; $i++) {
                 $wmv[] = $xpt[$korigOff + $i];
             }
-            $wmvHead = \array_slice($wmv, 0, $npt);
-            $wmvTail = \array_slice($wmv, $npt, $n);
+            $wmvHead = array_slice($wmv, 0, $npt);
+            $wmvTail = array_slice($wmv, $npt, $n);
 
             $wmvZ = Linalg::matprod12($wmvHead, $zmat, $npt, $nz);
             $zWmvZ = Linalg::matprod21($zmat, $npt, $nz, $wmvZ);
@@ -239,7 +239,7 @@ final class Rescue
                 $vlag[$npt + $i] = $bmatWmv[$i];
             }
 
-            $t = \array_fill(0, $n, 0.0);
+            $t = array_fill(0, $n, 0.0);
             for ($j = 0; $j < $npt; $j++) {
                 for ($i = 0; $i < $n; $i++) {
                     $t[$i] += $bmat[$i + $j * $n] * $wmv[$j];
@@ -249,7 +249,7 @@ final class Rescue
                 $t[$i] += $bmatWmv[$i];
             }
             // wmv(1:n) is PRIMA's literal (asymmetric-looking) operand.
-            $bsum = Linalg::inprod(\array_slice($wmv, 0, $n), $t);
+            $bsum = Linalg::inprod(array_slice($wmv, 0, $n), $t);
             $s = 0.0;
             for ($i = 0; $i < $n; $i++) {
                 $s += $xpt[$korigOff + $i] * $xpt[$korigOff + $i];
@@ -262,7 +262,7 @@ final class Rescue
 
             $vlag[$kopt] += 1.0;
 
-            $den = \array_fill(0, $npt, 0.0);
+            $den = array_fill(0, $npt, 0.0);
             for ($k = 0; $k < $npt; $k++) {
                 if ($ptsid[$k] > 0.0) {
                     $hdiag = 0.0;
@@ -287,7 +287,7 @@ final class Rescue
                     break;
                 }
             }
-            if (! \is_finite($vlagAbsSum) || ! $anyDen) {
+            if (! is_finite($vlagAbsSum) || ! $anyDen) {
                 $score[$korig] = -$score[$korig] - $scoreinc;
 
                 continue;
@@ -296,7 +296,7 @@ final class Rescue
             $kprov = 0;
             $kfound = false;
             for ($k = 0; $k < $npt; $k++) {
-                if (! \is_nan($den[$k]) && (! $kfound || $den[$k] > $den[$kprov])) {
+                if (! is_nan($den[$k]) && (! $kfound || $den[$k] > $den[$kprov])) {
                     $kprov = $k;
                     $kfound = true;
                 }
@@ -319,7 +319,7 @@ final class Rescue
             $ptsid[$korig] = 0.0;
             $score[$korig] = 0.0;
             foreach ($score as $k => $s) {
-                $score[$k] = \abs($s);
+                $score[$k] = abs($s);
             }
 
             self::updatehRsc($korig, $beta, $vlag, $bmat, $zmat, $n, $npt);
@@ -342,7 +342,7 @@ final class Rescue
 
                 $xp = 0.0;
                 $xq = 0.0;
-                $xnew = \array_fill(0, $n, 0.0);
+                $xnew = array_fill(0, $n, 0.0);
                 if ($ip > 0 && $iq > 0) {
                     $xp = $ptsaux1[$ip - 1];
                     $xnew[$ip - 1] = $xp;
@@ -359,10 +359,10 @@ final class Rescue
                 $diffAbsSum = 0.0;
                 $xnewAbsSum = 0.0;
                 for ($i = 0; $i < $n; $i++) {
-                    $diffAbsSum += \abs($xnew[$i] - $xpt[$i + $kpt * $n]);
-                    $xnewAbsSum += \abs($xnew[$i]);
+                    $diffAbsSum += abs($xnew[$i] - $xpt[$i + $kpt * $n]);
+                    $xnewAbsSum += abs($xnew[$i]);
                 }
-                if ($diffAbsSum <= Util::F32_1E_2 * $delta || ! \is_finite($xnewAbsSum)) {
+                if ($diffAbsSum <= Util::F32_1E_2 * $delta || ! is_finite($xnewAbsSum)) {
                     continue;
                 }
                 for ($i = 0; $i < $n; $i++) {
@@ -385,7 +385,7 @@ final class Rescue
                 }
 
                 $vquad = $fbase;
-                $xxpt = \array_fill(0, $npt, 0.0);
+                $xxpt = array_fill(0, $npt, 0.0);
                 if ($ip > 0 && $iq > 0) {
                     $vquad += $xp * ($gopt[$ip - 1] + 0.5 * $xp * $hq[$ip - 1 + ($ip - 1) * $n]);
                     $vquad += $xq * ($gopt[$iq - 1] + 0.5 * $xq * $hq[$iq - 1 + ($iq - 1) * $n]);
@@ -468,8 +468,8 @@ final class Rescue
      */
     private static function decode(float $ptsid, int $n): array
     {
-        $ip = (int) \floor($ptsid);
-        $iq = (int) \floor(((float) $n + 1.0) * $ptsid - (float) (($n + 1) * $ip));
+        $ip = (int) floor($ptsid);
+        $iq = (int) floor(((float) $n + 1.0) * $ptsid - (float) (($n + 1) * $ip));
 
         return [$ip, $iq];
     }
@@ -493,8 +493,8 @@ final class Rescue
         }
         $denom = $zknewSq * $beta + $tau * $tau;
 
-        $guard = Linalg::sumAbs($vlag) + \abs($beta);
-        if (! \is_finite($guard) || \is_nan($denom) || $denom <= 0.0) {
+        $guard = Linalg::sumAbs($vlag) + abs($beta);
+        if (! is_finite($guard) || is_nan($denom) || $denom <= 0.0) {
             return Util::DAMAGING_ROUNDING;
         }
 
@@ -511,7 +511,7 @@ final class Rescue
             $hcol[] = $bmat[$i + $knew * $n];
         }
 
-        $sqrtdn = \sqrt($denom);
+        $sqrtdn = sqrt($denom);
         $zknew1 = $zmat[$knew] / $sqrtdn;
         $tauSqrtdn = $tau / $sqrtdn;
         for ($k = 0; $k < $npt; $k++) {

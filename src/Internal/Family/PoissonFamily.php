@@ -25,7 +25,7 @@ final class PoissonFamily extends Glm
     {
         $allZero = true;
         foreach ($y as $value) {
-            if ($value < 0.0 || \fmod($value, 1.0) != 0.0) {
+            if ($value < 0.0 || fmod($value, 1.0) != 0.0) {
                 throw self::error(ErrorCode::INVALID_INPUT, 'x must be finite and y must contain nonnegative integer counts');
             }
             $allZero = $allZero && $value == 0.0;
@@ -46,14 +46,14 @@ final class PoissonFamily extends Glm
     {
         $max = -INF;
         foreach ($values as $v) {
-            $max = \max($max, $v);
+            $max = max($max, $v);
         }
         $sum = 0.0;
         foreach ($values as $v) {
-            $sum += \exp($v - $max);
+            $sum += exp($v - $max);
         }
 
-        return $max + \log($sum);
+        return $max + log($sum);
     }
 
     private static function nullIntercept(array $y, array $weights, array $offset): float
@@ -61,12 +61,12 @@ final class PoissonFamily extends Glm
         $events = [];
         foreach ($y as $i => $v) {
             if ($v > 0.0) {
-                $events[] = \log($v) + \log($weights[$i]);
+                $events[] = log($v) + log($weights[$i]);
             }
         }
         $exposure = [];
         foreach ($offset as $i => $o) {
-            $exposure[] = $o + \log($weights[$i]);
+            $exposure[] = $o + log($weights[$i]);
         }
 
         return self::logSumExp($events) - self::logSumExp($exposure);
@@ -76,7 +76,7 @@ final class PoissonFamily extends Glm
     {
         $extreme = false;
         foreach ($offset as $o) {
-            $extreme = $extreme || \abs($o) > 20.0;
+            $extreme = $extreme || abs($o) > 20.0;
         }
         foreach ($y as $v) {
             $extreme = $extreme || $v > 1e8;
@@ -90,7 +90,7 @@ final class PoissonFamily extends Glm
                     continue 2;
                 }
             }
-            $theta = \array_fill(0, $p, 0.0);
+            $theta = array_fill(0, $p, 0.0);
             $theta[$j] = self::nullIntercept($y, $weights, $offset) * $scales[$j];
 
             return $theta;
@@ -105,22 +105,22 @@ final class PoissonFamily extends Glm
         $sum = 0.0;
         $compensation = 0.0;
         $half = 0.5;
-        $ln2pi = \log(2.0 * M_PI);
+        $ln2pi = log(2.0 * M_PI);
         foreach ($eta as $i => $e) {
             $v = $y[$i];
             if ($v >= 16.0) {
                 // Deviance + Stirling error avoids subtracting O(y log y) terms.
-                $d = $e - \log($v);
+                $d = $e - log($v);
                 $inv = 1.0 / $v;
                 $inv2 = $inv * $inv;
                 $correction = $inv * (1.0 / 12.0 + $inv2 * (-1.0 / 360.0 + $inv2 * (1.0 / 1260.0 + $inv2 * (-1.0 / 1680.0 + $inv2 / 1188.0))));
-                $term = -$v * (\expm1($d) - $d) - $half * ($ln2pi + \log($v)) - $correction;
+                $term = -$v * (expm1($d) - $d) - $half * ($ln2pi + log($v)) - $correction;
             } else {
-                $term = $v * $e - \exp($e) - Statrs::lnGamma($v + 1.0);
+                $term = $v * $e - exp($e) - Statrs::lnGamma($v + 1.0);
             }
             $term = $weights[$i] * $term;
             $total = $sum + $term;
-            $compensation += \abs($sum) >= \abs($term) ? ($sum - $total) + $term : ($term - $total) + $sum;
+            $compensation += abs($sum) >= abs($term) ? ($sum - $total) + $term : ($term - $total) + $sum;
             $sum = $total;
         }
 
@@ -133,10 +133,10 @@ final class PoissonFamily extends Glm
         foreach ($eta as $i => $e) {
             $v = $y[$i];
             if ($v == 0.0) {
-                $term = \exp($e);
+                $term = exp($e);
             } else {
-                $d = $e - \log($v);
-                $term = $v * (\expm1($d) - $d);
+                $d = $e - log($v);
+                $term = $v * (expm1($d) - $d);
             }
             $sum += $weights[$i] * $term;
         }
@@ -148,8 +148,8 @@ final class PoissonFamily extends Glm
     {
         $out = [];
         foreach ($eta as $i => $e) {
-            $w = \exp(0.5 * $e);
-            if (! \is_finite($w)) {
+            $w = exp(0.5 * $e);
+            if (! is_finite($w)) {
                 throw self::error(ErrorCode::NONFINITE, 'Poisson information exceeds floating-point range');
             }
             $out[$i] = $w;
@@ -162,7 +162,7 @@ final class PoissonFamily extends Glm
     {
         $out = [];
         foreach ($eta as $i => $e) {
-            $out[$i] = \exp(0.5 * $e);
+            $out[$i] = exp(0.5 * $e);
         }
 
         return $out;
@@ -172,7 +172,7 @@ final class PoissonFamily extends Glm
     {
         $out = [];
         foreach ($eta as $i => $e) {
-            $out[$i] = $y[$i] - \exp($e);
+            $out[$i] = $y[$i] - exp($e);
         }
 
         return $out;
@@ -200,7 +200,7 @@ final class PoissonFamily extends Glm
 
     protected function fittedValues(array $eta): array
     {
-        return \array_map(\exp(...), $eta);
+        return array_map(exp(...), $eta);
     }
 
     protected function statistics(
@@ -217,9 +217,9 @@ final class PoissonFamily extends Glm
         $deviance = self::deviance($eta, $y, $weights);
         $nullDeviance = self::deviance($nullEta, $y, $weights);
         $aic = 2.0 * $p - 2.0 * $likelihood;
-        $finite = \is_finite($deviance) && \is_finite($nullDeviance) && \is_finite($aic);
+        $finite = is_finite($deviance) && is_finite($nullDeviance) && is_finite($aic);
         foreach ($eta as $e) {
-            $finite = $finite && \is_finite(\exp($e));
+            $finite = $finite && is_finite(exp($e));
         }
         if (! $finite) {
             throw self::error(ErrorCode::NONFINITE, 'Poisson statistics exceed floating-point range');

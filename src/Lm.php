@@ -18,7 +18,7 @@ final class Lm
         [$design, $w] = Frontend::prepare($formula, $data, $missing, $weights, true);
         Frontend::rejectRandom($design, 'stats_lm');
         $y = Frontend::numericResponse($design, 'stats_lm');
-        $offset = $design->offset ?? \array_fill(0, count($y), 0.0);
+        $offset = $design->offset ?? array_fill(0, count($y), 0.0);
         $output = Ols::fitWithData($design->x, $y, $w, $offset);
         $output = Frontend::addNames($output, $design);
 

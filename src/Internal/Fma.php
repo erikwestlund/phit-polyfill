@@ -30,12 +30,12 @@ final class Fma
 
     public static function fma(float $a, float $b, float $c): float
     {
-        if (\is_infinite($c) && \is_finite($a) && \is_finite($b)) {
+        if (is_infinite($c) && is_finite($a) && is_finite($b)) {
             return $c; // the exact product is finite even when a * b overflows
         }
         $product = $a * $b;
-        if (\is_nan($product) || \is_infinite($product) || \is_infinite($c) || \is_nan($c)
-            || \abs($a) > self::SPLIT_LIMIT || \abs($b) > self::SPLIT_LIMIT) {
+        if (is_nan($product) || is_infinite($product) || is_infinite($c) || is_nan($c)
+            || abs($a) > self::SPLIT_LIMIT || abs($b) > self::SPLIT_LIMIT) {
             return $product + $c;
         }
         // Dekker: $product + $error == $a * $b exactly.
@@ -49,7 +49,7 @@ final class Fma
         if ($error == 0.0) {
             return $product + $c;
         }
-        if (\abs($error) < self::TINY) {
+        if (abs($error) < self::TINY) {
             return $product + $c;
         }
         // TwoSum: $high + $low == $c + $product exactly.
@@ -69,7 +69,7 @@ final class Fma
         if ($error == 0.0) {
             return $sum;
         }
-        $bits = \unpack('q', \pack('e', $sum))[1];
+        $bits = unpack('q', pack('e', $sum))[1];
         if (($bits & 1) === 1) {
             return $sum;
         }
@@ -77,6 +77,6 @@ final class Fma
         $towardLarger = ($error > 0.0) === ($sum > 0.0);
         $bits += $towardLarger ? 1 : -1;
 
-        return \unpack('e', \pack('q', $bits))[1];
+        return unpack('e', pack('q', $bits))[1];
     }
 }

@@ -23,7 +23,7 @@ final class Frontend
     /** ext-php-rs rejects &str arguments that are not valid UTF-8 before the function runs. */
     public static function stringArgument(string $value, string $name): void
     {
-        if (! \mb_check_encoding($value, 'UTF-8')) {
+        if (! mb_check_encoding($value, 'UTF-8')) {
             throw new \Exception("Invalid value given for argument `$name`.", 0);
         }
     }
@@ -52,7 +52,7 @@ final class Frontend
                 throw self::invalid("weights column '$weights' must be numeric");
             }
             $values = $column['v'];
-        } elseif (\is_array($weights)) {
+        } elseif (is_array($weights)) {
             $values = [];
             foreach ($weights as $w) {
                 $values[] = ModelData::number($w);
@@ -80,7 +80,7 @@ final class Frontend
         $weights = self::weights($weights, $frame);
         $design = Design::build($formula, $frame, $dropMissing, $dropUnusedLevels, $weights === null ? [] : [$weights]);
 
-        return [$design, $design->extra[0] ?? \array_fill(0, count($design->x), 1.0)];
+        return [$design, $design->extra[0] ?? array_fill(0, count($design->x), 1.0)];
     }
 
     public static function rejectRandom(Design $design, string $function): void
@@ -117,7 +117,7 @@ final class Frontend
         $output['intercept'] = $design->intercept;
         $named = [];
         foreach ($design->columns as $j => $name) {
-            if (! \array_key_exists($j, $output['coefficients'] ?? [])) {
+            if (! array_key_exists($j, $output['coefficients'] ?? [])) {
                 break;
             }
             $named[$name] = $output['coefficients'][$j];

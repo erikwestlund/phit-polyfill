@@ -108,25 +108,25 @@ final class Exponential
     /** @internal */
     public function pdfAt(float $x): float
     {
-        return $x < 0.0 ? 0.0 : $this->rate * \exp(-$this->rate * $x);
+        return $x < 0.0 ? 0.0 : $this->rate * exp(-$this->rate * $x);
     }
 
     /** @internal */
     public function logpdfAt(float $x): float
     {
-        return $x < 0.0 ? -INF : \log($this->rate) - $this->rate * $x;
+        return $x < 0.0 ? -INF : log($this->rate) - $this->rate * $x;
     }
 
     /** @internal */
     public function cdfAt(float $x): float
     {
-        return $x <= 0.0 ? 0.0 : -\expm1(-$this->rate * $x);
+        return $x <= 0.0 ? 0.0 : -expm1(-$this->rate * $x);
     }
 
     /** @internal */
     public function sfAt(float $x): float
     {
-        return $x <= 0.0 ? 1.0 : \exp(-$this->rate * $x);
+        return $x <= 0.0 ? 1.0 : exp(-$this->rate * $x);
     }
 
     /** @internal */
@@ -144,6 +144,6 @@ final class Exponential
     /** @internal */
     public function quantileAt(float $p): float
     {
-        return $p <= 0.5 ? -\log1p(-$p) / $this->rate : -\log(1.0 - $p) / $this->rate;
+        return $p <= 0.5 ? -log1p(-$p) / $this->rate : -log(1.0 - $p) / $this->rate;
     }
 }

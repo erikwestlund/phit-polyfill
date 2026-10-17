@@ -59,8 +59,8 @@ final class Update
 
         $vlag[$knew] -= 1.0;
 
-        $guard = Linalg::sumAbs($hcol) + Linalg::sumAbs($vlag) + \abs($beta);
-        if (! \is_finite($guard) || \is_nan($denom) || $denom <= 0.0) {
+        $guard = Linalg::sumAbs($hcol) + Linalg::sumAbs($vlag) + abs($beta);
+        if (! is_finite($guard) || is_nan($denom) || $denom <= 0.0) {
             return Util::DAMAGING_ROUNDING;
         }
 
@@ -89,7 +89,7 @@ final class Update
 
         self::rotateZmatRow($zmat, $knew, $npt, $nz);
 
-        $sqrtdn = \sqrt($denom);
+        $sqrtdn = sqrt($denom);
         $tauQ = $tau / $sqrtdn;
         $zkQ = $zmat[$knew] / $sqrtdn;
         for ($i = 0; $i < $npt; $i++) {
@@ -109,10 +109,10 @@ final class Update
         for ($j = 1; $j < $nz; $j++) {
             $maxAbs = 0.0;
             foreach ($zmat as $v) {
-                $maxAbs = Linalg::max($maxAbs, \abs($v));
+                $maxAbs = Linalg::max($maxAbs, abs($v));
             }
             $joff = $j * $npt;
-            if (\abs($zmat[$knew + $joff]) > Util::F32_1E_20 * $maxAbs) {
+            if (abs($zmat[$knew + $joff]) > Util::F32_1E_20 * $maxAbs) {
                 [$c, $s] = Linalg::planerot($zmat[$knew], $zmat[$knew + $joff]);
                 for ($i = 0; $i < $npt; $i++) {
                     $a = $zmat[$i];
@@ -264,7 +264,7 @@ final class Update
         $inner = Linalg::matprod12($fval, $zmat, $npt, $nz);
         $pqalt = Linalg::matprod21($zmat, $npt, $nz, $inner);
 
-        $galt = \array_fill(0, $n, 0.0);
+        $galt = array_fill(0, $n, 0.0);
         for ($j = 0; $j < $npt; $j++) {
             $fvalj = $fval[$j];
             $offset = $j * $n;
@@ -298,7 +298,7 @@ final class Update
         if ($itest >= 3) {
             $gopt = $galt;
             $pq = $pqalt;
-            $hq = \array_fill(0, $n * $n, 0.0);
+            $hq = array_fill(0, $n * $n, 0.0);
             $itest = 0;
         }
     }

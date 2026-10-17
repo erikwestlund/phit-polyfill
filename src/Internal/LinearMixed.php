@@ -63,20 +63,20 @@ final class LinearMixed
         if ($terms === []) {
             throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'supply at least one random term');
         }
-        $weights = $options['weights'] === [] ? \array_fill(0, $n, 1.0) : $options['weights'];
-        $offset = $options['offset'] === [] ? \array_fill(0, $n, 0.0) : $options['offset'];
+        $weights = $options['weights'] === [] ? array_fill(0, $n, 1.0) : $options['weights'];
+        $offset = $options['offset'] === [] ? array_fill(0, $n, 0.0) : $options['offset'];
         $valid = count($weights) === $n && count($offset) === $n;
         foreach ($weights as $v) {
-            $valid = $valid && \is_finite($v) && $v > 0.0;
+            $valid = $valid && is_finite($v) && $v > 0.0;
         }
         foreach ($offset as $v) {
-            $valid = $valid && \is_finite($v);
+            $valid = $valid && is_finite($v);
         }
         if ($valid === false) {
             throw ErrorCode::exception(ErrorCode::NONFINITE, 'weights must be positive finite and offset finite, one value per row');
         }
         $tolerance = $options['tolerance'];
-        if (\is_nan($tolerance) || \is_infinite($tolerance) || $tolerance <= 0.0 || $tolerance > 0.1) {
+        if (is_nan($tolerance) || is_infinite($tolerance) || $tolerance <= 0.0 || $tolerance > 0.1) {
             throw ErrorCode::exception(ErrorCode::NONFINITE, 'tolerance must be finite in (0, 0.1]');
         }
         $metadata = [];
@@ -93,7 +93,7 @@ final class LinearMixed
             foreach ($term['z'] as $row) {
                 $zValid = $zValid && count($row) === $k;
                 foreach ($row as $v) {
-                    $zValid = $zValid && \is_finite($v);
+                    $zValid = $zValid && is_finite($v);
                 }
             }
             if ($zValid === false) {
@@ -142,16 +142,16 @@ final class LinearMixed
             for ($i = 0; $i < $n; $i++) {
                 $sum += $weights[$i] * ($x[$i][$j] * $x[$i][$j]);
             }
-            $scale = \sqrt($sum);
-            if (\is_nan($scale) || \is_infinite($scale) || $scale == 0.0) {
+            $scale = sqrt($sum);
+            if (is_nan($scale) || is_infinite($scale) || $scale == 0.0) {
                 throw ErrorCode::exception(ErrorCode::RANK_DEFICIENCY, 'fixed design is rank deficient or has invalid scale');
             }
             $scales[] = $scale;
         }
         $width = $q + $p + 1;
-        $augmented = \array_fill(0, $width, \array_fill(0, $n, 0.0));
+        $augmented = array_fill(0, $width, array_fill(0, $n, 0.0));
         for ($i = 0; $i < $n; $i++) {
-            $w = \sqrt($weights[$i]);
+            $w = sqrt($weights[$i]);
             foreach ($terms as $t => $term) {
                 $meta = $metadata[$t];
                 for ($j = 0; $j < $meta['k']; $j++) {
@@ -165,14 +165,14 @@ final class LinearMixed
         }
         foreach ($augmented as $column) {
             foreach ($column as $v) {
-                if (\is_nan($v) || \is_infinite($v)) {
+                if (is_nan($v) || is_infinite($v)) {
                     throw ErrorCode::exception(ErrorCode::NONFINITE, 'weighted design exceeds floating-point range');
                 }
             }
         }
         $data = new self;
         [$data->r] = LeastSquares::householder($augmented, $n, $width);
-        $data->rRows = \min($n, $width);
+        $data->rRows = min($n, $width);
         $data->terms = $metadata;
         $data->n = $n;
         $data->p = $p;
@@ -180,13 +180,13 @@ final class LinearMixed
         $data->scales = $scales;
         $logWeights = 0.0;
         foreach ($weights as $w) {
-            $logWeights += \log($w);
+            $logWeights += log($w);
         }
         $data->logWeights = $logWeights;
         $data->reml = $options['reml'];
 
         // Validate rank and positive variance before any objective reaches the optimizer.
-        $zero = \array_fill(0, $nt, 0.0);
+        $zero = array_fill(0, $nt, 0.0);
         $zeroFit = $data->profile($zero);
         $outcomeScale = 0.0;
         for ($i = 0; $i < $n; $i++) {
@@ -199,13 +199,13 @@ final class LinearMixed
         $theta = $options['start'] ?? $initial;
         $startValid = count($theta) === $nt;
         foreach ($theta as $j => $v) {
-            $startValid = $startValid && \is_finite($v) && $v >= $lower[$j] && $v <= 1e4;
+            $startValid = $startValid && is_finite($v) && $v >= $lower[$j] && $v <= 1e4;
         }
         if ($startValid === false) {
             throw ErrorCode::exception(ErrorCode::DIMENSION_MISMATCH, 'start must match theta length and bounds');
         }
         $objectiveTolerance = $options['objective_tolerance'];
-        if (\is_nan($objectiveTolerance) || \is_infinite($objectiveTolerance) || $objectiveTolerance <= 0.0) {
+        if (is_nan($objectiveTolerance) || is_infinite($objectiveTolerance) || $objectiveTolerance <= 0.0) {
             throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'objective_tolerance must be positive finite');
         }
         $objective = function (array $t) use ($data): float {
@@ -225,7 +225,7 @@ final class LinearMixed
             } catch (Bobyqa\BobyqaException $e) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'invalid BOBYQA control: '.$e->getMessage());
             }
-            $outcome = $optimizer->minimize($objective, $theta, $lower, \array_fill(0, $nt, 1e4));
+            $outcome = $optimizer->minimize($objective, $theta, $lower, array_fill(0, $nt, 1e4));
             if ($outcome->status !== Bobyqa\Status::Converged || $outcome->foundFinite() === false) {
                 throw ErrorCode::exception(ErrorCode::NONCONVERGENCE, 'mixed-model BOBYQA failed: '.$outcome->status->label());
             }
@@ -250,7 +250,7 @@ final class LinearMixed
                 }
                 $evaluations++;
                 foreach ($t as $j => $v) {
-                    if (\is_nan($v) || \is_infinite($v) || $v < $lower[$j] || $v > 1e4) {
+                    if (is_nan($v) || is_infinite($v) || $v < $lower[$j] || $v > 1e4) {
                         return INF;
                     }
                 }
@@ -265,7 +265,7 @@ final class LinearMixed
             } catch (NelderMeadError $e) {
                 throw ErrorCode::exception(ErrorCode::NONCONVERGENCE, 'mixed-model Nelder-Mead failed: '.$e->getMessage());
             }
-            if ($result->termination !== NelderMeadTermination::SolverConverged || \is_nan($result->bestCost) || \is_infinite($result->bestCost)) {
+            if ($result->termination !== NelderMeadTermination::SolverConverged || is_nan($result->bestCost) || is_infinite($result->bestCost)) {
                 throw ErrorCode::exception(ErrorCode::NONCONVERGENCE, 'mixed-model Nelder-Mead did not converge');
             }
             if ($result->bestParam === null) {
@@ -274,7 +274,7 @@ final class LinearMixed
             $theta = $result->bestParam;
         }
         foreach ($theta as $v) {
-            if (\abs($v) >= 9999.0) {
+            if (abs($v) >= 9999.0) {
                 throw ErrorCode::exception(ErrorCode::NONCONVERGENCE, 'optimum reaches theta search bound');
             }
         }
@@ -312,11 +312,11 @@ final class LinearMixed
             }
         }
         for ($j = 0; $j < $p; $j++) {
-            $stdErrors[] = \sqrt($covariance[$j][$j]);
+            $stdErrors[] = sqrt($covariance[$j][$j]);
             $z[] = $beta[$j] / $stdErrors[$j];
         }
         // effects = Lambda * u, as a matrix-vector product (gemv).
-        $u = \array_slice($fit['solution'], 0, $q);
+        $u = array_slice($fit['solution'], 0, $q);
         $effects = Dense::multiplyVector($fit['lambda'], $u);
         $fixed = [];
         for ($i = 0; $i < $n; $i++) {
@@ -349,7 +349,7 @@ final class LinearMixed
         $termResults = [];
         foreach ($this->terms as $m) {
             $k = $m['k'];
-            $l = \array_fill(0, $k, \array_fill(0, $k, 0.0));
+            $l = array_fill(0, $k, array_fill(0, $k, 0.0));
             foreach ($m['parameters'] as [$i, $j, $t]) {
                 $l[$j][$i] = $theta[$t];
             }
@@ -393,8 +393,8 @@ final class LinearMixed
         $pValues = [];
         $confInt = [];
         for ($j = 0; $j < $p; $j++) {
-            $pValues[] = 2.0 * Statrs::normalSf(\abs($z[$j]));
-            $confInt[] = [$beta[$j] - Statrs::Z_975 * \sqrt($covariance[$j][$j]), $beta[$j] + Statrs::Z_975 * \sqrt($covariance[$j][$j])];
+            $pValues[] = 2.0 * Statrs::normalSf(abs($z[$j]));
+            $confInt[] = [$beta[$j] - Statrs::Z_975 * sqrt($covariance[$j][$j]), $beta[$j] + Statrs::Z_975 * sqrt($covariance[$j][$j])];
         }
         $residuals = [];
         $marginal = [];
@@ -413,7 +413,7 @@ final class LinearMixed
         }
         foreach ($check as $values) {
             foreach ($values as $v) {
-                $finite = $finite && \is_finite($v);
+                $finite = $finite && is_finite($v);
             }
         }
         if ($finite === false) {
@@ -434,10 +434,10 @@ final class LinearMixed
             'terms' => $termResults,
             'theta' => $theta,
             'residual_variance' => $fit['variance'],
-            'sigma' => \sqrt($fit['variance']),
+            'sigma' => sqrt($fit['variance']),
             'log_likelihood' => -$fit['objective'],
             'aic' => 2.0 * $nParameters + 2.0 * $fit['objective'],
-            'bic' => $nParameters * \log($n) + 2.0 * $fit['objective'],
+            'bic' => $nParameters * log($n) + 2.0 * $fit['objective'],
             'df_residual' => $n - $nParameters,
             'n_parameters' => $nParameters,
             'evaluations' => $evaluations + 2,
@@ -458,7 +458,7 @@ final class LinearMixed
         $m = count($r);
         $out = [];
         for ($c = 0; $c < $m; $c++) {
-            $b = \array_fill(0, $m, 0.0);
+            $b = array_fill(0, $m, 0.0);
             $b[$c] = 1.0;
             for ($i = $m - 1; $i >= 0; $i--) {
                 if ($r[$i][$i] == 0.0) {
@@ -509,7 +509,7 @@ final class LinearMixed
     /** Lambda: the block-diagonal relative covariance factor for theta (q×q, columns). */
     private function lambda(array $theta): array
     {
-        $l = \array_fill(0, $this->q, \array_fill(0, $this->q, 0.0));
+        $l = array_fill(0, $this->q, array_fill(0, $this->q, 0.0));
         foreach ($this->terms as $term) {
             foreach ($term['ids'] as $g => $id) {
                 $offset = $term['base'] + $g * $term['k'];
@@ -533,11 +533,11 @@ final class LinearMixed
         $p = $this->p;
         $nr = $this->rRows;
         $lambda = $this->lambda($theta);
-        $u = Dense::multiply(\array_slice($this->r, 0, $q), $lambda, $nr);
+        $u = Dense::multiply(array_slice($this->r, 0, $q), $lambda, $nr);
         $rows = $nr + $q;
         $a = [];
         for ($j = 0; $j < $q; $j++) {
-            $column = \array_fill(0, $rows, 0.0);
+            $column = array_fill(0, $rows, 0.0);
             for ($i = 0; $i < $nr; $i++) {
                 $column[$i] = $u[$j][$i];
             }
@@ -545,20 +545,20 @@ final class LinearMixed
             $a[] = $column;
         }
         for ($j = 0; $j < $p; $j++) {
-            $column = \array_fill(0, $rows, 0.0);
+            $column = array_fill(0, $rows, 0.0);
             for ($i = 0; $i < $nr; $i++) {
                 $column[$i] = $this->r[$q + $j][$i];
             }
             $a[] = $column;
         }
-        $b = \array_fill(0, $rows, 0.0);
+        $b = array_fill(0, $rows, 0.0);
         for ($i = 0; $i < $nr; $i++) {
             $b[$i] = $this->r[$q + $p][$i];
         }
         $m = $q + $p;
         [$r, $qtb] = LeastSquares::householder($a, $rows, $m, $b);
         // Solve the leading (q+p)×(q+p) triangle by nalgebra's back-substitution.
-        $solution = \array_slice($qtb, 0, $m);
+        $solution = array_slice($qtb, 0, $m);
         for ($i = $m - 1; $i >= 0; $i--) {
             $diagonal = $r[$i][$i];
             if ($diagonal == 0.0) {
@@ -579,45 +579,45 @@ final class LinearMixed
         $rss = LeastSquares::dot($residual, $residual, 0, $rows);
         $df = $this->n - ($this->reml ? $p : 0);
         $variance = $rss / $df;
-        if (\is_nan($variance) || \is_infinite($variance) || $variance <= 0.0) {
+        if (is_nan($variance) || is_infinite($variance) || $variance <= 0.0) {
             throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'no positive finite residual variance');
         }
         $fixedR = [];
         for ($j = 0; $j < $p; $j++) {
-            $fixedR[] = \array_slice($r[$q + $j], $q, $p);
+            $fixedR[] = array_slice($r[$q + $j], $q, $p);
         }
         $singular = (new Svd($fixedR, false, false))->singularValues;
-        $cutoff = PHP_FLOAT_EPSILON * \max($this->n, $p) * $singular[0];
+        $cutoff = PHP_FLOAT_EPSILON * max($this->n, $p) * $singular[0];
         foreach ($singular as $s) {
-            if (\is_nan($s) || \is_infinite($s) || $s <= $cutoff) {
+            if (is_nan($s) || is_infinite($s) || $s <= $cutoff) {
                 throw ErrorCode::exception(ErrorCode::RANK_DEFICIENCY, 'mixed-model fixed design/information is numerically rank deficient');
             }
         }
         // The random block of R satisfies R_U'R_U = I + U'U.
         $sum = 0.0;
         for ($j = 0; $j < $q; $j++) {
-            $sum += \log(\abs($r[$j][$j]));
+            $sum += log(abs($r[$j][$j]));
         }
         $logdetV = 2.0 * $sum - $this->logWeights;
         $logdetX = 0.0;
         if ($this->reml) {
             $fixedSum = 0.0;
             for ($j = 0; $j < $p; $j++) {
-                $fixedSum += \log(\abs($fixedR[$j][$j]));
+                $fixedSum += log(abs($fixedR[$j][$j]));
             }
             $scaleSum = 0.0;
             foreach ($this->scales as $s) {
-                $scaleSum += \log($s);
+                $scaleSum += log($s);
             }
             $logdetX = 2.0 * ($fixedSum + $scaleSum);
         }
-        $objective = 0.5 * ($df * (\log(2.0 * M_PI) + \log($variance) + 1.0) + $logdetV + $logdetX);
-        if (\is_nan($objective) || \is_infinite($objective)) {
+        $objective = 0.5 * ($df * (log(2.0 * M_PI) + log($variance) + 1.0) + $logdetV + $logdetX);
+        if (is_nan($objective) || is_infinite($objective)) {
             throw ErrorCode::exception(ErrorCode::NONFINITE, 'mixed likelihood exceeds floating-point range');
         }
         $randomR = [];
         for ($j = 0; $j < $q; $j++) {
-            $randomR[] = \array_slice($r[$j], 0, $q);
+            $randomR[] = array_slice($r[$j], 0, $q);
         }
 
         return ['solution' => $solution, 'randomR' => $randomR, 'fixedR' => $fixedR, 'variance' => $variance, 'objective' => $objective, 'lambda' => $lambda];

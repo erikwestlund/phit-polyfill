@@ -57,12 +57,6 @@ php-stats has no tagged release yet.
 - `bin/fetch-fixtures`, `bin/generate-bootstrap`, `bin/accuracy-report`, and
   `benchmarks/run.php` with recorded results in `benchmarks/results.json`.
 - ACCURACY.md with the largest observed errors per function and reference.
-- CI runs the suite without OPcache, with the optimizer alone, with the
-  tracing JIT, and with the function JIT (`opcache.jit=1235`) on Linux and
-  macOS. The function-JIT job fails if PHP reports a value it cannot restore
-  at an entry point (php-src #24214). Code under `src/` avoids the shapes
-  that trigger that bug: internal functions other than `count()` are called
-  fully qualified (`\abs()`), and a test enforces it.
 
 ### Extension-only
 

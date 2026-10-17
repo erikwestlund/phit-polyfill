@@ -40,17 +40,17 @@ final class Cdflib
             if ($mu >= 0) {
                 $w = $mu + $x;
                 if ($w <= 0.0) {
-                    return \exp($w);
+                    return exp($w);
                 }
             }
         } elseif ($mu <= 0) {
             $w = $mu + $x;
             if ($w >= 0.0) {
-                return \exp($w);
+                return exp($w);
             }
         }
 
-        return \exp((float) $mu) * \exp($x);
+        return exp((float) $mu) * exp($x);
     }
 
     /** ln(Γ(b) / Γ(a + b)) for b ≥ 8. */
@@ -88,7 +88,7 @@ final class Cdflib
         $w *= ($c / $b);
 
         $u = $d * self::alnrel($a / $b);
-        $v = $a * (\log($b) - 1.0);
+        $v = $a * (log($b) - 1.0);
 
         return $v < $u ? $w - $v - $u : $w - $u - $v;
     }
@@ -105,12 +105,12 @@ final class Cdflib
             $w = self::bcorr($a, $b);
             $h = $a / $b;
             $c = $h / (1.0 + $h);
-            $u = -(($a - 0.5) * \log($c));
+            $u = -(($a - 0.5) * log($c));
             $v = $b * self::alnrel($h);
 
             return $v < $u
-                ? -(0.5 * \log($b)) + $E + $w - $v - $u
-                : -(0.5 * \log($b)) + $E + $w - $u - $v;
+                ? -(0.5 * log($b)) + $E + $w - $v - $u
+                : -(0.5 * log($b)) + $E + $w - $u - $v;
         }
 
         if ($a < 1.0) {
@@ -140,7 +140,7 @@ final class Cdflib
                 $w *= $a / (1.0 + $a / $b);
             }
 
-            return \log($w) - $n * \log($b) + (self::gammaLog($a) + self::algdiv($a, $b));
+            return log($w) - $n * log($b) + (self::gammaLog($a) + self::algdiv($a, $b));
         }
 
         $n = (int) ($a - 1.0);
@@ -150,7 +150,7 @@ final class Cdflib
             $h = $a / $b;
             $w *= $h / (1.0 + $h);
         }
-        $w = \log($w);
+        $w = log($w);
         if ($b >= 8.0) {
             return $w + self::gammaLog($a) + self::algdiv($a, $b);
         }
@@ -167,7 +167,7 @@ final class Cdflib
             $z *= $b / ($a + $b);
         }
 
-        return $w + \log($z) + (self::gammaLog($a) + (self::gammaLog($b) - self::gsumln($a, $b)));
+        return $w + log($z) + (self::gammaLog($a) + (self::gammaLog($b) - self::gsumln($a, $b)));
     }
 
     /** Δ(a) + Δ(b) − Δ(a + b) for a, b ≥ 8. */
@@ -208,11 +208,11 @@ final class Cdflib
         $result = 1.0;
         if ($a > 1e-3 * $eps) {
             $result = 0.0;
-            $t = $a * \log($x);
+            $t = $a * log($x);
             if ($t < self::NEG_EXPARG) {
                 return $result;
             }
-            $result = \exp($t);
+            $result = exp($t);
         }
         $result *= $b / $a;
         $tol = $eps / $a;
@@ -224,7 +224,7 @@ final class Cdflib
             $t *= $x;
             $c = $t / $an;
             $s += $c;
-            if (\abs($c) <= $tol || \is_nan($c)) {
+            if (abs($c) <= $tol || is_nan($c)) {
                 break;
             }
         }
@@ -238,9 +238,9 @@ final class Cdflib
         $bx = $b * $x;
         $t = $x - $bx;
         $c = $b * $eps <= 2e-2
-            ? \log($x) + self::psi($b) + $G + $t
-            : \log($bx) + $G + $t;
-        $tol = 5.0 * $eps * \abs($c);
+            ? log($x) + self::psi($b) + $G + $t
+            : log($bx) + $G + $t;
+        $tol = 5.0 * $eps * abs($c);
         $j = 1.0;
         $s = 0.0;
         while (true) {
@@ -248,7 +248,7 @@ final class Cdflib
             $t *= $x - $bx / $j;
             $aj = $t / $j;
             $s += $aj;
-            if (\abs($aj) <= $tol || \is_nan($aj)) {
+            if (abs($aj) <= $tol || is_nan($aj)) {
                 break;
             }
         }
@@ -264,8 +264,8 @@ final class Cdflib
 
         $a0 = $a < $b ? $a : $b;
         if ($a0 >= 1.0) {
-            $z = $a * \log($x) - self::betaLog($a, $b);
-            $result = \exp($z) / $a;
+            $z = $a * log($x) - self::betaLog($a, $b);
+            $result = exp($z) / $a;
         } else {
             $b0 = $a < $b ? $b : $a;
             if ($b0 <= 1.0) {
@@ -290,8 +290,8 @@ final class Cdflib
                     $b0 -= 1.0;
                     $c *= $b0 / ($a0 + $b0);
                 }
-                $u += \log($c);
-                $z = $a * \log($x) - $u;
+                $u += log($c);
+                $z = $a * log($x) - $u;
                 $b0 -= 1.0;
                 $apb = $a0 + $b0;
                 if ($apb <= 1.0) {
@@ -300,11 +300,11 @@ final class Cdflib
                     $u = $a0 + $b0 - 1.0;
                     $t = (1.0 + self::gam1($u)) / $apb;
                 }
-                $result = \exp($z) * ($a0 / $a) * (1.0 + self::gam1($b0)) / $t;
+                $result = exp($z) * ($a0 / $a) * (1.0 + self::gam1($b0)) / $t;
             } else {
                 $u = self::gammaLn1($a0) + self::algdiv($a0, $b0);
-                $z = $a * \log($x) - $u;
-                $result = ($a0 / $a) * \exp($z);
+                $z = $a * log($x) - $u;
+                $result = ($a0 / $a) * exp($z);
             }
         }
 
@@ -321,7 +321,7 @@ final class Cdflib
             $c = $c * (0.5 + (0.5 - $b / $n)) * $x;
             $w = $c / ($a + $n);
             $sum += $w;
-            if (\abs($w) <= $tol || \is_nan($w)) {
+            if (abs($w) <= $tol || is_nan($w)) {
                 break;
             }
         }
@@ -339,22 +339,22 @@ final class Cdflib
         $a0 = $a < $b ? $a : $b;
         if ($a0 < 8.0) {
             if ($x <= 0.375) {
-                $lnx = \log($x);
+                $lnx = log($x);
                 $lny = self::alnrel(-$x);
             } elseif ($y <= 0.375) {
                 $lnx = self::alnrel(-$y);
-                $lny = \log($y);
+                $lny = log($y);
             } else {
-                $lnx = \log($x);
-                $lny = \log($y);
+                $lnx = log($x);
+                $lny = log($y);
             }
             $z = $a * $lnx + $b * $lny;
             if ($a0 >= 1.0) {
-                return \exp($z - self::betaLog($a, $b));
+                return exp($z - self::betaLog($a, $b));
             }
             $b0 = $a < $b ? $b : $a;
             if ($b0 <= 1.0) {
-                $result = \exp($z);
+                $result = exp($z);
                 if ($result == 0.0) {
                     return 0.0;
                 }
@@ -377,7 +377,7 @@ final class Cdflib
                     $b0 -= 1.0;
                     $c *= $b0 / ($a0 + $b0);
                 }
-                $u += \log($c);
+                $u += log($c);
                 $z -= $u;
                 $b0 -= 1.0;
                 $apb = $a0 + $b0;
@@ -388,11 +388,11 @@ final class Cdflib
                     $t = (1.0 + self::gam1($u)) / $apb;
                 }
 
-                return $a0 * \exp($z) * (1.0 + self::gam1($b0)) / $t;
+                return $a0 * exp($z) * (1.0 + self::gam1($b0)) / $t;
             }
             $u = self::gammaLn1($a0) + self::algdiv($a0, $b0);
 
-            return $a0 * \exp($z - $u);
+            return $a0 * exp($z - $u);
         }
         if ($a <= $b) {
             $h = $a / $b;
@@ -406,12 +406,12 @@ final class Cdflib
             $lambda = ($a + $b) * $y - $b;
         }
         $e = -($lambda / $a);
-        $u = \abs($e) <= 0.6 ? self::rlog1($e) : $e - \log($x / $x0);
+        $u = abs($e) <= 0.6 ? self::rlog1($e) : $e - log($x / $x0);
         $e = $lambda / $b;
-        $v = \abs($e) <= 0.6 ? self::rlog1($e) : $e - \log($y / $y0);
-        $z = \exp(-($a * $u + $b * $v));
+        $v = abs($e) <= 0.6 ? self::rlog1($e) : $e - log($y / $y0);
+        $z = exp(-($a * $u + $b * $v));
 
-        return $CONST * \sqrt($b * $x0) * $z * \exp(-self::bcorr($a, $b));
+        return $CONST * sqrt($b * $x0) * $z * exp(-self::bcorr($a, $b));
     }
 
     /** exp(mu) x^a y^b / B(a, b). */
@@ -432,24 +432,24 @@ final class Cdflib
                 $lambda = ($a + $b) * $y - $b;
             }
             $e = -($lambda / $a);
-            $u = \abs($e) <= 0.6 ? self::rlog1($e) : $e - \log($x / $x0);
+            $u = abs($e) <= 0.6 ? self::rlog1($e) : $e - log($x / $x0);
             $e = $lambda / $b;
-            $v = \abs($e) <= 0.6 ? self::rlog1($e) : $e - \log($y / $y0);
+            $v = abs($e) <= 0.6 ? self::rlog1($e) : $e - log($y / $y0);
             $t4 = -($a * $u + $b * $v);
             $z = self::esum($mu, $t4);
 
-            return $CONST * \sqrt($b * $x0) * $z * \exp(-self::bcorr($a, $b));
+            return $CONST * sqrt($b * $x0) * $z * exp(-self::bcorr($a, $b));
         }
 
         if ($x <= 0.375) {
-            $lnx = \log($x);
+            $lnx = log($x);
             $lny = self::alnrel(-$x);
         } elseif ($y <= 0.375) {
             $lnx = self::alnrel(-$y);
-            $lny = \log($y);
+            $lny = log($y);
         } else {
-            $lnx = \log($x);
-            $lny = \log($y);
+            $lnx = log($x);
+            $lny = log($y);
         }
         $z = $a * $lnx + $b * $lny;
         if ($a0 >= 1.0) {
@@ -469,7 +469,7 @@ final class Cdflib
                 $b0 -= 1.0;
                 $c *= $b0 / ($a0 + $b0);
             }
-            $u += \log($c);
+            $u += log($c);
             $z -= $u;
             $b0 -= 1.0;
             $apb = $a0 + $b0;
@@ -506,12 +506,12 @@ final class Cdflib
         $mu = 0;
         $d = 1.0;
         if ($n != 1 && $a >= 1.0 && $apb >= 1.1 * $ap1) {
-            $mu = (int) \abs(self::NEG_EXPARG);
+            $mu = (int) abs(self::NEG_EXPARG);
             $k = (int) self::POS_EXPARG;
             if ($k < $mu) {
                 $mu = $k;
             }
-            $d = \exp(-(float) $mu);
+            $d = exp(-(float) $mu);
         }
         $bup = self::betaRcomp1($mu, $a, $b, $x, $y) / $a;
         if ($n == 1 || $bup == 0.0) {
@@ -559,7 +559,7 @@ final class Cdflib
             return $x <= $a ? [0.0, 1.0] : [1.0, 0.0];
         }
         if ($a == 0.5) {
-            $rtx = \sqrt($x);
+            $rtx = sqrt($x);
             if ($x < 0.25) {
                 $p = self::errorF($rtx);
 
@@ -580,12 +580,12 @@ final class Cdflib
                 $c = -($c * ($x / $an));
                 $t = $c / ($a + $an);
                 $sum += $t;
-                if (\abs($t) <= $tol || \is_nan($t)) {
+                if (abs($t) <= $tol || is_nan($t)) {
                     break;
                 }
             }
             $j = $a * $x * (($sum / 6.0 - 0.5 / ($a + 2.0)) * $x + 1.0 / ($a + 1.0));
-            $z = $a * \log($x);
+            $z = $a * log($x);
             $h = self::gam1($a);
             $g = 1.0 + $h;
             $useLabel50 = $x < 0.25 ? $z > -0.13394 : $a < $x / 2.59;
@@ -599,7 +599,7 @@ final class Cdflib
 
                 return [0.5 + (0.5 - $q), $q];
             }
-            $w = \exp($z);
+            $w = exp($z);
             $p = $w * $g * (0.5 + (0.5 - $j));
 
             return [$p, 0.5 + (0.5 - $p)];
@@ -619,7 +619,7 @@ final class Cdflib
             $a2n = $a2nm1 + $cma * $a2n;
             $b2n = $b2nm1 + $cma * $b2n;
             $an0 = $a2n / $b2n;
-            if (\abs($an0 - $am0) < $eps * $an0 || \is_nan($an0)) {
+            if (abs($an0 - $am0) < $eps * $an0 || is_nan($an0)) {
                 $q = $r * $an0;
 
                 return [0.5 + (0.5 - $q), $q];
@@ -635,16 +635,16 @@ final class Cdflib
     {
         $bm1 = $b - 0.5 - 0.5;
         $nu = $a + 0.5 * $bm1;
-        $lnx = $y > 0.375 ? \log($x) : self::alnrel(-$y);
+        $lnx = $y > 0.375 ? log($x) : self::alnrel(-$y);
         $z = -($nu * $lnx);
         if ($b * $z == 0.0) {
             return null;
         }
 
-        $r = $b * (1.0 + self::gam1($b)) * \exp($b * \log($z));
-        $r = $r * \exp($a * $lnx) * \exp(0.5 * $bm1 * $lnx);
-        $u = self::algdiv($b, $a) + $b * \log($nu);
-        $u = $r * \exp(-$u);
+        $r = $b * (1.0 + self::gam1($b)) * exp($b * log($z));
+        $r = $r * exp($a * $lnx) * exp(0.5 * $bm1 * $lnx);
+        $u = self::algdiv($b, $a) + $b * log($nu);
+        $u = $r * exp(-$u);
         if ($u == 0.0) {
             return null;
         }
@@ -659,8 +659,8 @@ final class Cdflib
         $t = 1.0;
         $cn = 1.0;
         $n2 = 0.0;
-        $c = \array_fill(0, 30, 0.0);
-        $d = \array_fill(0, 30, 0.0);
+        $c = array_fill(0, 30, 0.0);
+        $d = array_fill(0, 30, 0.0);
 
         for ($n = 1; $n <= 30; $n++) {
             $bp2n = $b + $n2;
@@ -683,7 +683,7 @@ final class Cdflib
             if ($sum <= 0.0) {
                 return null;
             }
-            if (\abs($dj) <= $eps * ($sum + $l)) {
+            if (abs($dj) <= $eps * ($sum + $l)) {
                 return $wIn + $u * $sum;
             }
         }
@@ -702,27 +702,27 @@ final class Cdflib
             $h = $a / $b;
             $r0 = 1.0 / (1.0 + $h);
             $r1 = ($b - $a) / $b;
-            $w0 = 1.0 / \sqrt($a * (1.0 + $h));
+            $w0 = 1.0 / sqrt($a * (1.0 + $h));
         } else {
             $h = $b / $a;
             $r0 = 1.0 / (1.0 + $h);
             $r1 = ($b - $a) / $a;
-            $w0 = 1.0 / \sqrt($b * (1.0 + $h));
+            $w0 = 1.0 / sqrt($b * (1.0 + $h));
         }
 
         $f = $a * self::rlog1(-($lambda / $a)) + $b * self::rlog1($lambda / $b);
-        $t = \exp(-$f);
+        $t = exp(-$f);
         if ($t == 0.0) {
             return 0.0;
         }
-        $z0 = \sqrt($f);
+        $z0 = sqrt($f);
         $z = 0.5 * ($z0 / $E1);
         $z2 = $f + $f;
 
-        $a0 = \array_fill(0, 21, 0.0);
-        $b0 = \array_fill(0, 21, 0.0);
-        $c = \array_fill(0, 21, 0.0);
-        $d = \array_fill(0, 21, 0.0);
+        $a0 = array_fill(0, 21, 0.0);
+        $b0 = array_fill(0, 21, 0.0);
+        $c = array_fill(0, 21, 0.0);
+        $d = array_fill(0, 21, 0.0);
 
         $a0[0] = 2.0 / 3.0 * $r1;
         $c[0] = -(0.5 * $a0[0]);
@@ -773,13 +773,13 @@ final class Cdflib
             $w *= $w0;
             $t1 = $d[$np1 - 1] * $w * $j1;
             $sum += $t0 + $t1;
-            if (\abs($t0) + \abs($t1) <= $eps * $sum) {
+            if (abs($t0) + abs($t1) <= $eps * $sum) {
                 break;
             }
             $n += 2;
         }
 
-        $u = \exp(-self::bcorr($a, $b));
+        $u = exp(-self::bcorr($a, $b));
 
         return $E0 * $t * $u * $sum;
     }
@@ -821,18 +821,15 @@ final class Cdflib
             $tn = $alpha * $bn + $beta * $bnp1;
             $bn = $bnp1;
             $bnp1 = $tn;
-            // Computed before $r0 = $r: PHP 8.5's function JIT can let the copy
-            // see the call result written into $r (docs/notes/function-jit.md).
-            $next = \fdiv($anp1, $bnp1);
             $r0 = $r;
-            $r = $next;
+            $r = fdiv($anp1, $bnp1);
 
-            if (\abs($r - $r0) <= $eps * $r || \is_nan($r)) {
+            if (abs($r - $r0) <= $eps * $r || is_nan($r)) {
                 return $init * $r;
             }
 
-            $an = \fdiv($an, $bnp1);
-            $bn = \fdiv($bn, $bnp1);
+            $an = fdiv($an, $bnp1);
+            $bn = fdiv($bn, $bnp1);
             $anp1 = $r;
             $bnp1 = 1.0;
         }
@@ -861,7 +858,7 @@ final class Cdflib
             $fail('y must be in [0..1]');
         }
         $z = $x + $y - 0.5 - 0.5;
-        if (\abs($z) > 3.0 * $eps) {
+        if (abs($z) > 3.0 * $eps) {
             $fail('x + y must equal 1');
         }
         if ($x == 0.0) {
@@ -884,7 +881,7 @@ final class Cdflib
         if ($b == 0.0) {
             return [0.0, 1.0];
         }
-        if (\is_nan($a) || \is_nan($b) || \is_nan($x) || \is_nan($y)) {
+        if (is_nan($a) || is_nan($b) || is_nan($x) || is_nan($y)) {
             return [NAN, NAN];
         }
 
@@ -911,7 +908,7 @@ final class Cdflib
         } else {
             $lambda = $a > $b ? ($a + $b) * $y - $b : $a - ($a + $b) * $x;
             if ($lambda < 0.0) {
-                $lambda = \abs($lambda);
+                $lambda = abs($lambda);
                 $ind = true;
                 $a0 = $b;
                 $b0 = $a;
@@ -1037,7 +1034,7 @@ final class Cdflib
     /** ln(1 + a). */
     public static function alnrel(float $a): float
     {
-        if (\abs($a) <= 0.375) {
+        if (abs($a) <= 0.375) {
             $t = $a / ($a + 2.0);
             $t2 = $t * $t;
             $num = ((-0.178874546012214e-1 * $t2 + 0.405303492862024) * $t2 + -0.129418923021993e1) * $t2 + 1.0;
@@ -1046,19 +1043,19 @@ final class Cdflib
             return 2.0 * $t * ($num / $den);
         }
 
-        return \log(1.0 + $a);
+        return log(1.0 + $a);
     }
 
     /** exp(x) − 1. */
     public static function rexp(float $x): float
     {
-        if (\abs($x) <= 0.15) {
+        if (abs($x) <= 0.15) {
             $num = (0.238082361044469e-1 * $x + 0.914041914819518e-9) * $x + 1.0;
             $den = (((0.595130811860248e-3 * $x + -0.119041179760821e-1) * $x + 0.107141568980644) * $x + -0.499999999085958) * $x + 1.0;
 
             return $x * ($num / $den);
         }
-        $w = \exp($x);
+        $w = exp($x);
 
         return $x <= 0.0 ? ($w - 0.5) - 0.5 : $w * (0.5 + (0.5 - 1.0 / $w));
     }
@@ -1077,7 +1074,7 @@ final class Cdflib
         if ($x < 0.61) {
             $r = $x - 0.5 - 0.5;
 
-            return $r - \log($x);
+            return $r - log($x);
         }
         if ($x < 1.57) {
             if ($x < 0.82) {
@@ -1098,7 +1095,7 @@ final class Cdflib
         }
         $r = $x - 0.5 - 0.5;
 
-        return $r - \log($x);
+        return $r - log($x);
     }
 
     /** x − ln(1 + x). */
@@ -1112,10 +1109,10 @@ final class Cdflib
         $Q1 = -0.127408923933623e1;
         $Q2 = 0.354508718369557;
 
-        if (\is_nan($x) || $x < -0.39 || $x > 0.57) {
+        if (is_nan($x) || $x < -0.39 || $x > 0.57) {
             $w = $x + 0.5 + 0.5;
 
-            return $x - \log($w);
+            return $x - log($w);
         }
         if ($x < -0.18) {
             $h = ($x + 0.3) / 0.7;
@@ -1172,7 +1169,7 @@ final class Cdflib
     /** Γ(a); poles and overflow panic as in the crate. */
     public static function gamma(float $a): float
     {
-        if (\is_nan($a)) {
+        if (is_nan($a)) {
             return NAN;
         }
         $D = 0.41893853320467274178;
@@ -1188,7 +1185,7 @@ final class Cdflib
         $R5 = 0.833333333333333e-1;
 
         $x = $a;
-        if (\abs($a) < 15.0) {
+        if (abs($a) < 15.0) {
             $t = 1.0;
             $m = ((int) $a) - 1;
             if ($m >= 0) {
@@ -1211,10 +1208,10 @@ final class Cdflib
                         Support::panic("gamma($a): Γ has a pole at $a");
                     }
                 }
-                if (\abs($t) < 1e-30 && \abs($t) * PHP_FLOAT_MAX <= 1.0001) {
+                if (abs($t) < 1e-30 && abs($t) * PHP_FLOAT_MAX <= 1.0001) {
                     Support::panic("gamma($a): Γ($a) overflows f64");
                 }
-                if (\abs($t) < 1e-30) {
+                if (abs($t) < 1e-30) {
                     return 1.0 / $t;
                 }
             }
@@ -1243,7 +1240,7 @@ final class Cdflib
             if ($t > 0.9) {
                 $t = 1.0 - $t;
             }
-            $s = \sin($PI * $t) / $PI;
+            $s = sin($PI * $t) / $PI;
             if ($n % 2 == 0) {
                 $s = -$s;
             }
@@ -1253,14 +1250,14 @@ final class Cdflib
         }
         $t = 1.0 / ($x * $x);
         $g = (((($R1 * $t + $R2) * $t + $R3) * $t + $R4) * $t + $R5) / $x;
-        $lnx = \log($x);
+        $lnx = log($x);
         $g = $D + $g + ($x - 0.5) * ($lnx - 1.0);
         $w = $g;
         $t = $g - $w;
         if ($w > 0.99999 * self::POS_EXPARG) {
             Support::panic("gamma($a): Γ($a) overflows f64");
         }
-        $result = \exp($w) * (1.0 + $t);
+        $result = exp($w) * (1.0 + $t);
         if ($a < 0.0) {
             $result = (1.0 / ($result * $s)) / $x;
         }
@@ -1291,7 +1288,7 @@ final class Cdflib
     /** Digamma ψ(x). */
     public static function psi(float $xx): float
     {
-        if (\is_nan($xx)) {
+        if (is_nan($xx)) {
             return NAN;
         }
         $DX0 = 1.461632144968362341262659542325721325;
@@ -1312,7 +1309,7 @@ final class Cdflib
             Support::panic("psi($xx): ψ has a pole at $xx");
         }
         if ($x < 0.5) {
-            if (\abs($x) <= $xsmall) {
+            if (abs($x) <= $xsmall) {
                 $aug = -1.0 / $x;
             } else {
                 $w = -$x;
@@ -1328,24 +1325,24 @@ final class Cdflib
                 $w -= $nq;
                 $nq = (int) ($w * 4.0);
                 $w = 4.0 * ($w - $nq * 0.25);
-                $n = \intdiv($nq, 2);
+                $n = intdiv($nq, 2);
                 if ($n + $n != $nq) {
                     $w = 1.0 - $w;
                 }
                 $z = $PIOV4 * $w;
-                $m = \intdiv($n, 2);
+                $m = intdiv($n, 2);
                 if ($m + $m != $n) {
                     $sgn = -$sgn;
                 }
-                $n = \intdiv($nq + 1, 2);
-                $m2 = \intdiv($n, 2);
+                $n = intdiv($nq + 1, 2);
+                $m2 = intdiv($n, 2);
                 if ($m2 + $m2 == $n) {
                     if ($z == 0.0) {
                         Support::panic("psi($xx): ψ has a pole at $xx");
                     }
-                    $aug = 4.0 * $sgn * (\cos($z) / \sin($z));
+                    $aug = 4.0 * $sgn * (cos($z) / sin($z));
                 } else {
-                    $aug = 4.0 * $sgn * (\sin($z) / \cos($z));
+                    $aug = 4.0 * $sgn * (sin($z) / cos($z));
                 }
             }
             $x = 1.0 - $x;
@@ -1372,17 +1369,17 @@ final class Cdflib
             }
             $aug = $upper / ($den + $Q2[3]) - 0.5 / $x + $aug;
 
-            return $aug + \log($x);
+            return $aug + log($x);
         }
 
-        return $aug + \log($x);
+        return $aug + log($x);
     }
 
     /** ln Γ(a) for a > 0. */
     public static function gammaLog(float $a): float
     {
         if ($a <= 0.8) {
-            return self::gammaLn1($a) - \log($a);
+            return self::gammaLn1($a) - log($a);
         }
         if ($a <= 2.25) {
             $t = $a - 0.5 - 0.5;
@@ -1398,14 +1395,14 @@ final class Cdflib
                 $w *= $t;
             }
 
-            return self::gammaLn1($t - 1.0) + \log($w);
+            return self::gammaLn1($t - 1.0) + log($w);
         }
         $t = 1.0 / $a;
         $t *= $t;
         $w = ((((( -0.165322962780713e-2 * $t + 0.837308034031215e-3) * $t + -0.595202931351870e-3) * $t
             + 0.793650666825390e-3) * $t + -0.277777777760991e-2) * $t + 0.833333333333333e-1) / $a;
 
-        return 0.418938533204673 + $w + ($a - 0.5) * (\log($a) - 1.0);
+        return 0.418938533204673 + $w + ($a - 0.5) * (log($a) - 1.0);
     }
 
     /** ln Γ(a + b) for 1 ≤ a, b ≤ 2. */
@@ -1419,7 +1416,7 @@ final class Cdflib
             return self::gammaLn1($x) + self::alnrel($x);
         }
 
-        return self::gammaLn1($x - 1.0) + \log($x * (1.0 + $x));
+        return self::gammaLn1($x - 1.0) + log($x * (1.0 + $x));
     }
 
     // ------------------------------------------------------------ incomplete gamma (TOMS 654, max accuracy)
@@ -1482,7 +1479,7 @@ final class Cdflib
      */
     public static function gammaInc(float $a, float $x): array
     {
-        if (\is_nan($a) || \is_nan($x)) {
+        if (is_nan($a) || is_nan($x)) {
             return [NAN, NAN];
         }
         if ($a < 0.0) {
@@ -1517,7 +1514,7 @@ final class Cdflib
 
         if ($a < 1.0) {
             if ($a == 0.5) {
-                $rtx = \sqrt($x);
+                $rtx = sqrt($x);
                 if ($x < 0.25) {
                     $ans = self::errorF($rtx);
 
@@ -1530,8 +1527,8 @@ final class Cdflib
             if ($x < 1.1) {
                 return self::taylorPOverXa($a, $x, $acc);
             }
-            $t1 = $a * \log($x) - $x;
-            $u = $a * \exp($t1);
+            $t1 = $a * log($x) - $x;
+            $u = $a * exp($t1);
             if ($u == 0.0) {
                 return [1.0, 0.0];
             }
@@ -1545,13 +1542,13 @@ final class Cdflib
                 $twoa = $a + $a;
                 $m = (int) $twoa;
                 if ($twoa == (float) $m) {
-                    $ii = \intdiv($m, 2);
+                    $ii = intdiv($m, 2);
 
                     return self::finiteQHalfInteger($x, $ii, $a == (float) $ii);
                 }
             }
-            $t1 = $a * \log($x) - $x;
-            $r = \exp($t1) / self::gamma($a);
+            $t1 = $a * log($x) - $x;
+            $r = exp($t1) / self::gamma($a);
         } else {
             $l = $x / $a;
             if ($l == 0.0) {
@@ -1560,25 +1557,25 @@ final class Cdflib
             $s = 0.5 + (0.5 - $l);
             $z = self::rlog($l);
             if ($z >= 700.0 / $a) {
-                if (\abs($s) <= 2.0 * $e) {
+                if (abs($s) <= 2.0 * $e) {
                     return [2.0, 0.0];
                 }
 
                 return $x <= $a ? [0.0, 1.0] : [1.0, 0.0];
             }
             $y = $a * $z;
-            $rta = \sqrt($a);
-            if (\abs($s) <= $e0 / $rta) {
+            $rta = sqrt($a);
+            if (abs($s) <= $e0 / $rta) {
                 return self::temmeForLEq1($a, $l, $z, $y, $e);
             }
-            if (\abs($s) <= 0.4) {
+            if (abs($s) <= 0.4) {
                 return self::temmeGeneral($a, $l, $z, $y, $rta, $e);
             }
             $t = 1.0 / $a;
             $t *= $t;
             $t1 = (((0.75 * $t - 1.0) * $t + 3.5) * $t - 105.0) / ($a * 1260.0);
             $t1 -= $y;
-            $r = self::RT2PIN * $rta * \exp($t1);
+            $r = self::RT2PIN * $rta * exp($t1);
         }
 
         if ($r == 0.0) {
@@ -1605,12 +1602,12 @@ final class Cdflib
             $c = -($c * ($x / $an));
             $t = $c / ($a + $an);
             $sum += $t;
-            if (\abs($t) <= $tol || \is_nan($t)) {
+            if (abs($t) <= $tol || is_nan($t)) {
                 break;
             }
         }
         $j = $a * $x * (($sum / 6.0 - 0.5 / ($a + 2.0)) * $x + 1.0 / ($a + 1.0));
-        $z = $a * \log($x);
+        $z = $a * log($x);
         $h = self::gam1($a);
         $g = 1.0 + $h;
         $use200 = $x < 0.25 ? $z > -0.13394 : $a < $x / 2.59;
@@ -1624,7 +1621,7 @@ final class Cdflib
 
             return [0.5 + (0.5 - $qans), $qans];
         }
-        $w = \exp($z);
+        $w = exp($z);
         $ans = $w * $g * (0.5 + (0.5 - $j));
 
         return [$ans, 0.5 + (0.5 - $ans)];
@@ -1632,7 +1629,7 @@ final class Cdflib
 
     private static function taylorPOverR(float $a, float $x, float $r, float $acc): array
     {
-        $wk = \array_fill(0, 20, 0.0);
+        $wk = array_fill(0, 20, 0.0);
         $apn = $a + 1.0;
         $t = $x / $apn;
         $wk[0] = $t;
@@ -1652,7 +1649,7 @@ final class Cdflib
             $apn += 1.0;
             $t *= $x / $apn;
             $sum += $t;
-            if ($t <= $tol || \is_nan($t)) {
+            if ($t <= $tol || is_nan($t)) {
                 break;
             }
         }
@@ -1681,7 +1678,7 @@ final class Cdflib
             $a2n = $a2nm1 + $cma * $a2n;
             $b2n = $b2nm1 + $cma * $b2n;
             $an0 = $a2n / $b2n;
-            if (\abs($an0 - $am0) < $tol * $an0 || \is_nan($an0)) {
+            if (abs($an0 - $am0) < $tol * $an0 || is_nan($an0)) {
                 $qans = $r * $an0;
 
                 return [0.5 + (0.5 - $qans), $qans];
@@ -1691,7 +1688,7 @@ final class Cdflib
 
     private static function asymptoticExpansionQ(float $a, float $x, float $r, float $acc): array
     {
-        $wk = \array_fill(0, 20, 0.0);
+        $wk = array_fill(0, 20, 0.0);
         $amn = $a - 1.0;
         $t = $amn / $x;
         $wk[0] = $t;
@@ -1699,14 +1696,14 @@ final class Cdflib
         for ($n = 2; $n <= 20; $n++) {
             $amn -= 1.0;
             $t *= $amn / $x;
-            if (\abs($t) <= 1e-3) {
+            if (abs($t) <= 1e-3) {
                 $filled = $n;
                 break;
             }
             $wk[$n - 1] = $t;
         }
         $sum = $t;
-        while (\abs($t) > $acc) {
+        while (abs($t) > $acc) {
             $amn -= 1.0;
             $t *= $amn / $x;
             $sum += $t;
@@ -1722,14 +1719,14 @@ final class Cdflib
     private static function finiteQHalfInteger(float $x, int $i, bool $aEqI): array
     {
         if ($aEqI) {
-            $sum = \exp(-$x);
+            $sum = exp(-$x);
             $t = $sum;
             $n = 1;
             $c = 0.0;
         } else {
-            $rtx = \sqrt($x);
+            $rtx = sqrt($x);
             $sum = self::errorFc($rtx);
-            $t = \exp(-$x) / (1.77245385090552 * $rtx);
+            $t = exp(-$x) / (1.77245385090552 * $rtx);
             $n = 0;
             $c = -0.5;
         }
@@ -1767,17 +1764,17 @@ final class Cdflib
     private static function temmeGeneral(float $a, float $l, float $zIn, float $y, float $rta, float $e): array
     {
         $s = 0.5 + (0.5 - $l);
-        if (\abs($s) <= 2.0 * $e && 3.28e-3 < $a * $e * $e) {
+        if (abs($s) <= 2.0 * $e && 3.28e-3 < $a * $e * $e) {
             return [2.0, 0.0];
         }
-        $c = \exp(-$y);
-        $w = 0.5 * self::errorFcScaled(\sqrt($y));
+        $c = exp(-$y);
+        $w = 0.5 * self::errorFcScaled(sqrt($y));
         $u = 1.0 / $a;
-        $z = \sqrt($zIn + $zIn);
+        $z = sqrt($zIn + $zIn);
         if ($l < 1.0) {
             $z = -$z;
         }
-        if (\abs($s) <= 1.0e-3) {
+        if (abs($s) <= 1.0e-3) {
             $t = self::temmeShort($z, $u);
         } else {
             $D0 = self::TEMME_D0;
@@ -1818,14 +1815,14 @@ final class Cdflib
         }
         $RTPI = 1.77245385090552;
         $c = 0.5 + (0.5 - $y);
-        $w = (0.5 - \sqrt($y) * (0.5 + (0.5 - $y / 3.0)) / $RTPI) / $c;
+        $w = (0.5 - sqrt($y) * (0.5 + (0.5 - $y / 3.0)) / $RTPI) / $c;
         $u = 1.0 / $a;
-        $z = \sqrt($zIn + $zIn);
+        $z = sqrt($zIn + $zIn);
         if ($l < 1.0) {
             $z = -$z;
         }
         $t = self::temmeShort($z, $u);
-        $rta = \sqrt($a);
+        $rta = sqrt($a);
         if ($l < 1.0) {
             $ans = $c * ($w - self::RT2PIN * $t / $rta);
 
@@ -1867,7 +1864,7 @@ final class Cdflib
         $Q = self::ERF_Q;
         $R = self::ERF_R;
         $S = self::ERF_S;
-        $ax = \abs($x);
+        $ax = abs($x);
         if ($ax <= 0.5) {
             $t = $x * $x;
             $top = (((($A[0] * $t + $A[1]) * $t + $A[2]) * $t + $A[3]) * $t) + $A[4] + 1.0;
@@ -1876,14 +1873,14 @@ final class Cdflib
         } elseif ($ax <= 4.0) {
             $top = ((((((($P[0] * $ax + $P[1]) * $ax + $P[2]) * $ax + $P[3]) * $ax + $P[4]) * $ax + $P[5]) * $ax + $P[6]) * $ax) + $P[7];
             $bot = ((((((($Q[0] * $ax + $Q[1]) * $ax + $Q[2]) * $ax + $Q[3]) * $ax + $Q[4]) * $ax + $Q[5]) * $ax + $Q[6]) * $ax) + $Q[7];
-            $erf = 0.5 + (0.5 - \exp(-($x * $x)) * $top / $bot);
+            $erf = 0.5 + (0.5 - exp(-($x * $x)) * $top / $bot);
         } elseif ($ax < 5.8) {
             $x2 = $x * $x;
             $t = 1.0 / $x2;
             $top = ((($R[0] * $t + $R[1]) * $t + $R[2]) * $t + $R[3]) * $t + $R[4];
             $bot = ((($S[0] * $t + $S[1]) * $t + $S[2]) * $t + $S[3]) * $t + 1.0;
             $erf = (self::ERF_C - $top / ($x2 * $bot)) / $ax;
-            $erf = 0.5 + (0.5 - \exp(-$x2) * $erf);
+            $erf = 0.5 + (0.5 - exp(-$x2) * $erf);
         } else {
             $erf = 1.0;
         }
@@ -1912,14 +1909,14 @@ final class Cdflib
         $Q = self::ERF_Q;
         $R = self::ERF_R;
         $S = self::ERF_S;
-        $ax = \abs($x);
+        $ax = abs($x);
         if ($ax <= 0.5) {
             $t = $x * $x;
             $top = (((($A[0] * $t + $A[1]) * $t + $A[2]) * $t + $A[3]) * $t) + $A[4] + 1.0;
             $bot = (($B[0] * $t + $B[1]) * $t + $B[2]) * $t + 1.0;
             $erfc = 0.5 + (0.5 - $x * ($top / $bot));
             if ($scaled) {
-                $erfc *= \exp($t);
+                $erfc *= exp($t);
             }
 
             return $erfc;
@@ -1930,7 +1927,7 @@ final class Cdflib
             $erfc = $top / $bot;
         } else {
             if ($x <= -5.6) {
-                return $scaled ? 2.0 * \exp($x * $x) : 2.0;
+                return $scaled ? 2.0 * exp($x * $x) : 2.0;
             }
             if (! $scaled && ($x > 100.0 || $x * $x > -self::NEG_EXPARG)) {
                 return 0.0;
@@ -1943,10 +1940,10 @@ final class Cdflib
         }
         if ($scaled) {
             if ($x < 0.0) {
-                $erfc = 2.0 * \exp($x * $x) - $erfc;
+                $erfc = 2.0 * exp($x * $x) - $erfc;
             }
         } else {
-            $erfc *= \exp(-($x * $x));
+            $erfc *= exp(-($x * $x));
             if ($x < 0.0) {
                 $erfc = 2.0 - $erfc;
             }
@@ -1985,7 +1982,7 @@ final class Cdflib
         $eps = 0.5 * PHP_FLOAT_EPSILON;
         $min = PHP_FLOAT_MIN;
 
-        $y = \abs($x);
+        $y = abs($x);
         if ($y <= $THRSH) {
             $xsq = $y > $eps ? $x * $x : 0.0;
             $xnum = $A[4] * $xsq;
@@ -2005,9 +2002,9 @@ final class Cdflib
                 $xden = ($xden + $D[$i]) * $y;
             }
             $r = ($xnum + $C[7]) / ($xden + $D[7]);
-            $xsq = \floor($y * 16.0) / 16.0;
+            $xsq = floor($y * 16.0) / 16.0;
             $del = ($y - $xsq) * ($y + $xsq);
-            $result = \exp(-0.5 * $xsq * $xsq) * \exp(-0.5 * $del) * $r;
+            $result = exp(-0.5 * $xsq * $xsq) * exp(-0.5 * $del) * $r;
             $ccum = 1.0 - $result;
             if ($x > 0.0) {
                 [$result, $ccum] = [$ccum, $result];
@@ -2023,9 +2020,9 @@ final class Cdflib
             $r = $xsq * ($xnum + $P[4]) / ($xden + $Q[4]);
             $r = ($SQRPI - $r) / $y;
             $v = $x * 16.0;
-            $xsq = ($v < 0.0 ? \ceil($v) : \floor($v)) / 16.0;
+            $xsq = ($v < 0.0 ? ceil($v) : floor($v)) / 16.0;
             $del = ($x - $xsq) * ($x + $xsq);
-            $result = \exp(-0.5 * $xsq * $xsq) * \exp(-0.5 * $del) * $r;
+            $result = exp(-0.5 * $xsq * $xsq) * exp(-0.5 * $del) * $r;
             $ccum = 1.0 - $result;
             if ($x > 0.0) {
                 [$result, $ccum] = [$ccum, $result];
@@ -2051,9 +2048,9 @@ final class Cdflib
         $xcur = $strtx;
         for ($i = 1; $i <= 100; $i++) {
             $cum = self::cumnor($xcur)[0];
-            $dx = \fdiv($cum - $pp, $R2PI * \exp(-0.5 * $xcur * $xcur));
+            $dx = fdiv($cum - $pp, $R2PI * exp(-0.5 * $xcur * $xcur));
             $xcur -= $dx;
-            if (\abs(\fdiv($dx, $xcur)) < 1.0e-13) {
+            if (abs(fdiv($dx, $xcur)) < 1.0e-13) {
                 return $p <= $q ? $xcur : -$xcur;
             }
         }
@@ -2072,7 +2069,7 @@ final class Cdflib
             $sign = 1.0;
             $z = 1.0 - $p;
         }
-        $y = \sqrt(-2.0 * \log($z));
+        $y = sqrt(-2.0 * log($z));
 
         return $sign * ($y + self::evalPol($XNUM, $y) / self::evalPol($XDEN, $y));
     }
@@ -2082,14 +2079,14 @@ final class Cdflib
     {
         static $COEF = [[1.0, 1.0], [3.0, 16.0, 5.0], [-15.0, 17.0, 19.0, 3.0], [-945.0, -1920.0, 1482.0, 776.0, 79.0]];
         static $DENOM = [4.0, 96.0, 384.0, 92160.0];
-        $x = \abs(self::dinvnr($p, $q));
+        $x = abs(self::dinvnr($p, $q));
         $xx = $x * $x;
         $sum1 = $x;
         $denpow = 1.0;
         for ($i = 0; $i < 4; $i++) {
             $term = self::evalPol($COEF[$i], $xx) * $x;
             $denpow *= $df;
-            $sum1 += \fdiv($term, $denpow * $DENOM[$i]);
+            $sum1 += fdiv($term, $denpow * $DENOM[$i]);
         }
 
         return $p >= 0.5 ? $sum1 : -$sum1;

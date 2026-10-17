@@ -68,7 +68,7 @@ final class NelderMead
     {
         $vertices = [];
         foreach ($simplex as $vertex) {
-            $vertices[] = \array_map(static fn (int|float $v): float => (float) $v, \array_values($vertex));
+            $vertices[] = array_map(static fn (int|float $v): float => (float) $v, array_values($vertex));
         }
 
         return new self($vertices, PHP_FLOAT_EPSILON);
@@ -147,7 +147,7 @@ final class NelderMead
      */
     private static function update(array $param, float $cost, ?array $bestParam, float $bestCost): array
     {
-        if ($cost < $bestCost || (\is_infinite($cost) && \is_infinite($bestCost) && ($cost > 0.0) === ($bestCost > 0.0))) {
+        if ($cost < $bestCost || (is_infinite($cost) && is_infinite($bestCost) && ($cost > 0.0) === ($bestCost > 0.0))) {
             return [$param, $cost];
         }
 
@@ -169,7 +169,7 @@ final class NelderMead
             $d = $c - $c0;
             $squares += $d * $d;
         }
-        $s = \sqrt(\fdiv(1.0, $n - 1.0) * $squares);
+        $s = sqrt(fdiv(1.0, $n - 1.0) * $squares);
 
         return $s < $this->sdTolerance;
     }
@@ -249,7 +249,7 @@ final class NelderMead
             $acc = self::add($acc, $this->params[$k]);
         }
 
-        return self::scale($acc, \fdiv(1.0, (float) $count));
+        return self::scale($acc, fdiv(1.0, (float) $count));
     }
 
     private function shrink(): void
@@ -354,6 +354,6 @@ final class NelderMead
     /** Display of ArgminError::InvalidParameter: the text is Debug-quoted. */
     private static function invalidParameter(string $text): string
     {
-        return 'Invalid parameter: "'.\addcslashes($text, '"\\').'"';
+        return 'Invalid parameter: "'.addcslashes($text, '"\\').'"';
     }
 }

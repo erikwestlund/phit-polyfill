@@ -82,13 +82,13 @@ final class Ols
         // magnitude unless the heavy rows come first (Powell and Reid), so the
         // whitened rows are factored in decreasing-weight order, as in the
         // extension. fitted and residuals are rebuilt in the original order below.
-        $order = \array_keys($weights);
-        \usort($order, fn (int $a, int $b): int => $weights[$b] <=> $weights[$a]);
+        $order = array_keys($weights);
+        usort($order, fn (int $a, int $b): int => $weights[$b] <=> $weights[$a]);
         $wx = [];
         $wy = [];
         foreach ($order as $i) {
             $row = $x[$i];
-            $root = \sqrt($weights[$i]);
+            $root = sqrt($weights[$i]);
             $scaled = [];
             foreach ($row as $value) {
                 $scaled[] = $value * $root;
@@ -116,30 +116,30 @@ final class Ols
             foreach ($fitted as $i => $f) {
                 $num += ($f - $offset[$i]) * $weights[$i];
             }
-            $mean = $num / \array_sum($weights);
+            $mean = $num / array_sum($weights);
         }
         $mss = 0.0;
         foreach ($fitted as $i => $f) {
             $d = $f - $offset[$i] - $mean;
             $mss += $weights[$i] * ($d * $d);
         }
-        if (! \is_finite($mss)) {
+        if (! is_finite($mss)) {
             throw self::error(ErrorCode::NONFINITE, 'weighted fitted variation exceeds floating-point range; rescale the outcome');
         }
         if ($p === 1 && $intercept) {
             $result['r_squared'] = 0.0;
             $result['adj_r_squared'] = 0.0;
         } else {
-            $result['r_squared'] = \fdiv($mss, $mss + $result['rss']);
+            $result['r_squared'] = fdiv($mss, $mss + $result['rss']);
             $result['adj_r_squared'] = 1.0 - (1.0 - $result['r_squared']) * ($n - (int) $intercept) / ($n - $p);
         }
         $logWeights = 0.0;
         foreach ($weights as $w) {
-            $logWeights += \log($w);
+            $logWeights += log($w);
         }
         $result['log_likelihood'] += 0.5 * $logWeights;
         foreach ([...$fitted, ...$residuals] as $value) {
-            if (! \is_finite($value)) {
+            if (! is_finite($value)) {
                 throw self::error(ErrorCode::NONFINITE, 'unweighted response-scale results exceed floating-point range');
             }
         }
@@ -176,13 +176,13 @@ final class Ols
         $p = count($x[0]);
         foreach ($x as $row) {
             foreach ($row as $value) {
-                if (! \is_finite($value)) {
+                if (! is_finite($value)) {
                     throw self::error(ErrorCode::NONFINITE, 'x and y must contain only finite numbers');
                 }
             }
         }
         foreach ($y as $value) {
-            if (! \is_finite($value)) {
+            if (! is_finite($value)) {
                 throw self::error(ErrorCode::NONFINITE, 'x and y must contain only finite numbers');
             }
         }
@@ -194,10 +194,10 @@ final class Ols
         $columns = [];
         $scales = [];
         for ($j = 0; $j < $p; $j++) {
-            $column = \array_column($x, $j);
+            $column = array_column($x, $j);
             // nalgebra's column norm, summed the same way.
-            $scale = \sqrt(LeastSquares::dot($column, $column, 0, $n));
-            if (! \is_finite($scale) || $scale == 0.0) {
+            $scale = sqrt(LeastSquares::dot($column, $column, 0, $n));
+            if (! is_finite($scale) || $scale == 0.0) {
                 throw self::error(ErrorCode::RANK_DEFICIENCY, 'design is rank deficient or its scale exceeds floating-point range');
             }
             foreach ($column as $i => $value) {
@@ -245,41 +245,41 @@ final class Ols
         $pValues = [];
         $confInt = [];
         for ($j = 0; $j < $p; $j++) {
-            $se = \sqrt($covariance[$j][$j]);
-            $t = \fdiv($beta[$j], $se);
+            $se = sqrt($covariance[$j][$j]);
+            $t = fdiv($beta[$j], $se);
             $stdErrors[$j] = $se;
             $tStatistics[$j] = $t;
             $pValues[$j] = match (true) {
-                \is_nan($t) => NAN,
-                \is_infinite($t) => 0.0,
-                default => 2.0 * Statrs::tSf(\abs($t), (float) $df),
+                is_nan($t) => NAN,
+                is_infinite($t) => 0.0,
+                default => 2.0 * Statrs::tSf(abs($t), (float) $df),
             };
             $confInt[$j] = [$beta[$j] - $critical * $se, $beta[$j] + $critical * $se];
         }
-        $mean = $intercept ? \array_sum($y) / $n : 0.0;
+        $mean = $intercept ? array_sum($y) / $n : 0.0;
         $tss = 0.0;
         foreach ($y as $value) {
             $tss += ($value - $mean) * ($value - $mean);
         }
-        if (! \is_finite($tss)) {
+        if (! is_finite($tss)) {
             throw self::error(ErrorCode::NONFINITE, 'total outcome variation exceeds floating-point range; rescale the outcome');
         }
         if ($p === 1 && $intercept) {
             $rSquared = 0.0;
             $adjRSquared = 0.0;
         } else {
-            $rSquared = 1.0 - \fdiv($rss, $tss);
+            $rSquared = 1.0 - fdiv($rss, $tss);
             $adjRSquared = 1.0 - (1.0 - $rSquared) * ($n - (int) $intercept) / $df;
         }
         // Gaussian likelihood uses the ML variance RSS/n, unlike the inference variance RSS/(n-p).
-        $logLikelihood = -0.5 * $n * (\log(2.0 * M_PI) + \log($rss / $n) + 1.0);
-        $finite = \is_finite($rss);
+        $logLikelihood = -0.5 * $n * (log(2.0 * M_PI) + log($rss / $n) + 1.0);
+        $finite = is_finite($rss);
         foreach ([...$beta, ...$fitted, ...$residuals] as $value) {
-            $finite = $finite && \is_finite($value);
+            $finite = $finite && is_finite($value);
         }
         foreach ($covariance as $row) {
             foreach ($row as $value) {
-                $finite = $finite && \is_finite($value);
+                $finite = $finite && is_finite($value);
             }
         }
         if (! $finite) {
@@ -297,7 +297,7 @@ final class Ols
             'residuals' => $residuals,
             'rss' => $rss,
             'residual_variance' => $variance,
-            'sigma' => \sqrt($variance),
+            'sigma' => sqrt($variance),
             'r_squared' => $rSquared,
             'adj_r_squared' => $adjRSquared,
             'df_residual' => $df,

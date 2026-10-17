@@ -57,23 +57,23 @@ final class Bobyqa
         $c = $this->config;
         if ($n <= 0
             || $c->npt < $n + 2
-            || $c->npt > \intdiv(($n + 1) * ($n + 2), 2)
-            || ! \is_finite($c->rhoBegin) || \is_nan($c->rhoBegin) || $c->rhoBegin <= 0.0
-            || \is_nan($c->rhoEnd) || $c->rhoEnd <= 0.0 || $c->rhoEnd > $c->rhoBegin
+            || $c->npt > intdiv(($n + 1) * ($n + 2), 2)
+            || ! is_finite($c->rhoBegin) || is_nan($c->rhoBegin) || $c->rhoBegin <= 0.0
+            || is_nan($c->rhoEnd) || $c->rhoEnd <= 0.0 || $c->rhoEnd > $c->rhoBegin
             || $c->maxFun < $c->npt + 1
-            || \is_nan($c->fTarget) || $c->fTarget === INF) {
+            || is_nan($c->fTarget) || $c->fTarget === INF) {
             throw new BobyqaException(Status::InvalidArgs);
         }
         foreach ([$c->ftolRel, $c->ftolAbs] as $tol) {
-            if ($tol !== null && (! \is_finite($tol) || $tol < 0.0)) {
+            if ($tol !== null && (! is_finite($tol) || $tol < 0.0)) {
                 throw new BobyqaException(Status::InvalidArgs);
             }
         }
         $restart = $c->restart;
         if ($restart !== null) {
             if ($restart->maxRestarts < 1 || $restart->maxRestarts > self::MAX_RESTARTS_CAP
-                || \is_nan($restart->improveRelTol) || $restart->improveRelTol < 0.0
-                || \is_nan($restart->cycleBudgetFrac) || $restart->cycleBudgetFrac < 0.0 || $restart->cycleBudgetFrac > 1.0) {
+                || is_nan($restart->improveRelTol) || $restart->improveRelTol < 0.0
+                || is_nan($restart->cycleBudgetFrac) || $restart->cycleBudgetFrac < 0.0 || $restart->cycleBudgetFrac > 1.0) {
                 throw new BobyqaException(Status::InvalidArgs);
             }
         }
@@ -93,9 +93,9 @@ final class Bobyqa
         $this->cycleBoundaries = [];
         $n = $this->n;
         $c = $this->config;
-        $x = \array_map(\floatval(...), \array_values($x));
-        $lower = \array_map(\floatval(...), \array_values($lower));
-        $upper = \array_map(\floatval(...), \array_values($upper));
+        $x = array_map(floatval(...), array_values($x));
+        $lower = array_map(floatval(...), array_values($lower));
+        $upper = array_map(floatval(...), array_values($upper));
         if (! $this->argsAreValid($x, $lower, $upper)) {
             return new Outcome(NAN, 0, Status::InvalidArgs);
         }
@@ -128,7 +128,7 @@ final class Bobyqa
             $xl,
             $xu,
             $restart,
-            ! $c->primaParity && $c->npt === \intdiv(($n + 1) * ($n + 2), 2),
+            ! $c->primaParity && $c->npt === intdiv(($n + 1) * ($n + 2), 2),
         );
         if ($restart !== null) {
             $this->cycleBoundaries = $restart->cycleBoundaries;
@@ -168,7 +168,7 @@ final class Bobyqa
             return false;
         }
         for ($i = 0; $i < $n; $i++) {
-            if (\is_nan($lower[$i]) || \is_nan($upper[$i]) || \is_nan($x[$i])) {
+            if (is_nan($lower[$i]) || is_nan($upper[$i]) || is_nan($x[$i])) {
                 return false;
             }
         }

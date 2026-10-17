@@ -48,23 +48,20 @@ $solve = static function (array $spec) use ($bits, $float): array {
             $c = -INF;
         } else {
             $y = $plateau === null ? $x : array_map(static fn (float $v): float => floor($v / $plateau) * $plateau, $x);
-            // PHP 8.5.11's function JIT loses `$n = count($y)` when it enters
-            // the loop through an OSR entry (php-src #24214), so the bound is
-            // computed without a plain assignment and the quad loop uses foreach.
-            $last = count($y) - 1;
+            $n = count($y);
             $c = 0.0;
             if ($spec['kind'] === 'quad') {
-                foreach ($y as $i => $v) {
-                    $d = $v - $centre[$i];
+                for ($i = 0; $i < $n; $i++) {
+                    $d = $y[$i] - $centre[$i];
                     $c += $weights[$i] * $d * $d;
                 }
             } else {
-                for ($i = 0; $i < $last; $i++) {
+                for ($i = 0; $i < $n - 1; $i++) {
                     $a = $y[$i + 1] - $y[$i] * $y[$i];
                     $b = 1.0 - $y[$i];
                     $c += 100.0 * $a * $a + $b * $b;
                 }
-                $b = $centre[0] - $y[$last];
+                $b = $centre[0] - $y[$n - 1];
                 $c += $b * $b;
             }
         }

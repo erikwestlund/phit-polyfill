@@ -112,14 +112,14 @@ final class StudentT
      */
     private function args(float $x): array
     {
-        $u = \abs($x) / \sqrt($this->df);
+        $u = abs($x) / sqrt($this->df);
         $r = $u * $u;
-        if (\is_finite($r)) {
-            return [1.0 / (1.0 + $r), $r / (1.0 + $r), -\log1p($r), -\log1p(\fdiv(1.0, $r))];
+        if (is_finite($r)) {
+            return [1.0 / (1.0 + $r), $r / (1.0 + $r), -log1p($r), -log1p(fdiv(1.0, $r))];
         }
         // |x|/√df beyond 1e154: work with ln(|x|/√df) to avoid overflow.
-        $lnU = \log(\abs($x)) - 0.5 * \log($this->df);
-        $h = \exp(-2.0 * $lnU);
+        $lnU = log(abs($x)) - 0.5 * log($this->df);
+        $h = exp(-2.0 * $lnU);
 
         return [$h, 1.0, -2.0 * $lnU, -$h];
     }
@@ -143,7 +143,7 @@ final class StudentT
     /** @internal */
     public function pdfAt(float $x): float
     {
-        return \exp($this->logpdfAt($x));
+        return exp($this->logpdfAt($x));
     }
 
     /** @internal */
@@ -156,7 +156,7 @@ final class StudentT
             : Cdflib::gammaLog($half + 0.5) - Cdflib::gammaLog($half);
         $a = $this->args($x);
 
-        return $ratio - 0.5 * \log(M_PI * $this->df) + ($half + 0.5) * $a[2];
+        return $ratio - 0.5 * log(M_PI * $this->df) + ($half + 0.5) * $a[2];
     }
 
     /** @internal */

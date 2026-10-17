@@ -46,16 +46,16 @@ final class ModelData
         if ($value === null) {
             return null;
         }
-        if (\is_int($value)) {
+        if (is_int($value)) {
             return (float) $value;
         }
-        if (! \is_float($value)) {
+        if (! is_float($value)) {
             throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'inputs must contain integers, floats, or null');
         }
-        if (\is_nan($value)) {
+        if (is_nan($value)) {
             return null;
         }
-        if (\is_infinite($value)) {
+        if (is_infinite($value)) {
             throw ErrorCode::exception(ErrorCode::NONFINITE, 'infinite input values are not allowed');
         }
 
@@ -66,7 +66,7 @@ final class ModelData
     private static function vector(?array $values, int $n, float $default): array
     {
         if ($values === null) {
-            return \array_fill(0, $n, $default);
+            return array_fill(0, $n, $default);
         }
         $out = [];
         foreach ($values as $value) {
@@ -88,7 +88,7 @@ final class ModelData
     {
         $out = [];
         foreach ($values as $value) {
-            if ($value === null || \is_int($value) || \is_string($value)) {
+            if ($value === null || is_int($value) || is_string($value)) {
                 $out[] = $value;
             } else {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'group IDs must be integers, strings, or null');
@@ -111,7 +111,7 @@ final class ModelData
         $distinct = [];
         $indices = [];
         foreach ($labels as $label) {
-            $key = (\is_int($label) ? 'i:' : 's:').$label;
+            $key = (is_int($label) ? 'i:' : 's:').$label;
             if (! isset($seen[$key])) {
                 $seen[$key] = count($distinct);
                 $distinct[] = $label;
@@ -140,14 +140,14 @@ final class ModelData
         $rows = [];
         $complete = [];
         foreach ($x as $row) {
-            if (! \is_array($row)) {
+            if (! is_array($row)) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'each x row must be an array');
             }
             $values = $intercept ? [1.0] : [];
             $full = true;
             foreach ($row as $value) {
                 // Fast path for finite floats; everything else goes through number().
-                if (\is_float($value) && \is_finite($value)) {
+                if (is_float($value) && is_finite($value)) {
                     $values[] = $value;
                 } else {
                     $value = self::number($value);
@@ -161,10 +161,10 @@ final class ModelData
         $outcomes = [];
         foreach ($y as $value) {
             $value = self::number($value);
-            if ($value !== null && $outcome === 'binary' && (\is_nan($value) || $value < 0.0 || $value > 1.0)) {
+            if ($value !== null && $outcome === 'binary' && (is_nan($value) || $value < 0.0 || $value > 1.0)) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'binary/grouped-binomial y must be in [0,1]');
             }
-            if ($value !== null && $outcome === 'count' && ($value < 0.0 || \fmod($value, 1.0) != 0.0)) {
+            if ($value !== null && $outcome === 'count' && ($value < 0.0 || fmod($value, 1.0) != 0.0)) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'Poisson y must contain nonnegative integer counts');
             }
             $outcomes[] = $value;
@@ -190,7 +190,7 @@ final class ModelData
         $o = self::vector($offset, $n, 0.0);
         $binary = $outcome === 'binary';
         foreach ($w as $value) {
-            if ($value !== null && ($value <= 0.0 || ($binary && \fmod($value, 1.0) != 0.0))) {
+            if ($value !== null && ($value <= 0.0 || ($binary && fmod($value, 1.0) != 0.0))) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'weights must be positive; binary weights must be integer trial counts');
             }
         }
@@ -203,7 +203,7 @@ final class ModelData
             foreach ($outcomes as $i => $value) {
                 if ($value !== null && $w[$i] !== null) {
                     $events = $value * $w[$i];
-                    if (\abs($events - \round($events)) > 1e-8) {
+                    if (abs($events - round($events)) > 1e-8) {
                         throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'binary/grouped-binomial outcomes require integer trial counts and successes');
                     }
                 }
@@ -242,7 +242,7 @@ final class ModelData
     {
         $diagnostics = ['converged' => true, 'solver' => $solver];
         foreach (['iterations', 'evaluations', 'gradient_max', 'boundary', 'singular'] as $key) {
-            if (\array_key_exists($key, $output)) {
+            if (array_key_exists($key, $output)) {
                 $diagnostics[$key] = $output[$key];
             }
         }
@@ -254,7 +254,7 @@ final class ModelData
         if (($output['singular'] ?? null) === true) {
             $warnings[] = 'random-effect covariance is singular or near singular';
         }
-        if (\in_array($function, ['stats_logistic_mixed', 'stats_glmer'], true) && ($output['quadrature_points'] ?? null) === 1) {
+        if (in_array($function, ['stats_logistic_mixed', 'stats_glmer'], true) && ($output['quadrature_points'] ?? null) === 1) {
             $warnings[] = 'Laplace integration is approximate; assess quadrature sensitivity for rare events or small groups';
         }
         $diagnostics['warnings'] = $warnings;
@@ -267,7 +267,7 @@ final class ModelData
         if ($dropped > 0) {
             // Userland code cannot raise E_WARNING itself; E_USER_WARNING is the closest
             // equivalent. The "fn(): " prefix matches what PHP adds to native warnings.
-            \trigger_error(
+            trigger_error(
                 "$function(): $function dropped $dropped of {$this->nInput} observations with missing values (listwise deletion)",
                 E_USER_WARNING,
             );
