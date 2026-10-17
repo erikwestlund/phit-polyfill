@@ -104,25 +104,5 @@ seconds of editing a file used the unoptimized code.
   with the tracing JIT. Source files must be at least two seconds old for the
   OPcache runs to exercise the optimizer.
 
-## CI note: setup-php enables the function JIT
-
-setup-php's php.ini sets `opcache.jit=1235`, so a CI job that only passes
-`-d opcache.enable_cli=1` runs the function JIT, not the optimizer alone.
-With that setting PHP 8.5.11 prints `ENTRY n (block b start s) - live var v`
-while compiling large functions, and on 2026-10-16 two such jobs on commit
-04110a9 hung after `NanSafetyTest`. The hang did not recur on the next commit,
-and it could not be reproduced locally with the official Docker image, the
-ondrej/php build, or Homebrew's 8.5.10, with or without `opcache.jit=1235`.
-The workflow now disables the JIT in the `opcache` job, tests `opcache.jit=1235`
-in a separate `function-jit` job, and times every job out after 20 minutes.
-
-The `function-jit` job on commit 298cdb0 hung at the same point, after printing
-`ENTRY 102 (block 580 start 3111) - live var 2930`. The message appears to come
-from the JIT's register allocator, which counts IR instructions, so the
-function being compiled is probably one of the four large BOBYQA routines
-(`Bobyqb::solve`, `Rescue::rescue`, `TrustRegion::trsbox`, and
-`Geometry::geostep`, each with 1,000 to 1,400 opcodes). With
-`opcache.jit=1235` the JIT compiles functions once they become hot, which
-would explain why the hang is intermittent. The optimizer alone
-(`opcache.jit=disable`) and the tracing JIT pass. The job is non-blocking until
-the cause is confirmed. Nothing has been reported upstream.
+A separate function-JIT problem found while setting up CI is described in
+[function-jit.md](function-jit.md).

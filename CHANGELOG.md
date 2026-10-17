@@ -57,6 +57,9 @@ php-stats has no tagged release yet.
 - `bin/fetch-fixtures`, `bin/generate-bootstrap`, `bin/accuracy-report`, and
   `benchmarks/run.php` with recorded results in `benchmarks/results.json`.
 - ACCURACY.md with the largest observed errors per function and reference.
+- CI runs the suite without OPcache, with the optimizer alone, with the
+  tracing JIT, and with `opcache.jit=function` on Linux and macOS, and fails
+  if PHP reports a value it cannot restore at a JIT entry point.
 
 ### Extension-only
 
@@ -68,5 +71,8 @@ php-stats has no tagged release yet.
   raise `E_WARNING`. The text is identical.
 - Scalar arguments of the wrong type follow PHP's rules for userland
   functions.
+- On PHP 8.5, a function JIT with hot-counter triggers
+  (`opcache.jit=1235`) can miscompile the polyfill (php-src #24214). Use the
+  tracing JIT, `opcache.jit=function`, or no JIT.
 
 [0.1.0]: https://github.com/erikwestlund/php-stats-polyfill/releases/tag/v0.1.0

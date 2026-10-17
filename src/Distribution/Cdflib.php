@@ -821,15 +821,20 @@ final class Cdflib
             $tn = $alpha * $bn + $beta * $bnp1;
             $bn = $bnp1;
             $bnp1 = $tn;
+            // Fully qualified calls, and the new value stored before $r0 = $r: PHP
+            // 8.5's function JIT adds an entry point after each by-name call and
+            // can let the copy $r0 see a call result written into $r. See
+            // docs/notes/function-jit.md.
+            $next = \fdiv($anp1, $bnp1);
             $r0 = $r;
-            $r = fdiv($anp1, $bnp1);
+            $r = $next;
 
-            if (abs($r - $r0) <= $eps * $r || is_nan($r)) {
+            if (\abs($r - $r0) <= $eps * $r || \is_nan($r)) {
                 return $init * $r;
             }
 
-            $an = fdiv($an, $bnp1);
-            $bn = fdiv($bn, $bnp1);
+            $an = \fdiv($an, $bnp1);
+            $bn = \fdiv($bn, $bnp1);
             $anp1 = $r;
             $bnp1 = 1.0;
         }

@@ -266,29 +266,49 @@ final class Svd
         if ($toRow <= $fromRow) {
             return;
         }
-        $work = [];
-        $column = $m[$firstCol];
-        $value = $axis[0];
-        for ($r = $fromRow; $r < $toRow; $r++) {
-            $work[$r] = $column[$r] * $value;
-        }
+        // The loops over rows are separate functions: PHP 8.5's function JIT can
+        // lose a value of the loop over $k when it enters an inner loop through
+        // an on-stack-replacement entry (docs/notes/function-jit.md).
+        $work = self::scaledRows($m[$firstCol], $axis[0], $fromRow, $toRow);
         for ($k = 1; $k < $length; $k++) {
-            $column = $m[$firstCol + $k];
-            $value = $axis[$k];
-            for ($r = $fromRow; $r < $toRow; $r++) {
-                $work[$r] = $column[$r] * $value + $work[$r];
-            }
+            $work = self::accumulateRows($work, $m[$firstCol + $k], $axis[$k], $fromRow, $toRow);
         }
         $scale = $sign * -2.0;
         for ($k = 0; $k < $length; $k++) {
             $c = $firstCol + $k;
-            $column = $m[$c];
-            $coefficient = $scale * $axis[$k];
-            for ($r = $fromRow; $r < $toRow; $r++) {
-                $column[$r] = $coefficient * $work[$r] + $sign * $column[$r];
-            }
-            $m[$c] = $column;
+            $m[$c] = self::reflectRowsOf($m[$c], $work, $scale * $axis[$k], $sign, $fromRow, $toRow);
         }
+    }
+
+    /** @return array<int, float> */
+    private static function scaledRows(array $column, float $value, int $fromRow, int $toRow): array
+    {
+        $work = [];
+        for ($r = $fromRow; $r < $toRow; $r++) {
+            $work[$r] = $column[$r] * $value;
+        }
+
+        return $work;
+    }
+
+    /** @return array<int, float> */
+    private static function accumulateRows(array $work, array $column, float $value, int $fromRow, int $toRow): array
+    {
+        for ($r = $fromRow; $r < $toRow; $r++) {
+            $work[$r] = $column[$r] * $value + $work[$r];
+        }
+
+        return $work;
+    }
+
+    /** @return list<float> */
+    private static function reflectRowsOf(array $column, array $work, float $coefficient, float $sign, int $fromRow, int $toRow): array
+    {
+        for ($r = $fromRow; $r < $toRow; $r++) {
+            $column[$r] = $coefficient * $work[$r] + $sign * $column[$r];
+        }
+
+        return $column;
     }
 
     /** Bidiagonal::u. */
@@ -695,8 +715,11 @@ final class Svd
                     $swaps[] = [$index1, $index2];
                 }
                 $pairs[$index1][1] = $processed;
+                // Read into $next before copying: PHP 8.5's function JIT can let
+                // the copy $index1 see the new $index2 (docs/notes/function-jit.md).
+                $next = $pairs[$index2][1];
                 $index1 = $index2;
-                $index2 = $pairs[$index1][1];
+                $index2 = $next;
             }
         }
         foreach ($swaps as [$a, $b]) {
