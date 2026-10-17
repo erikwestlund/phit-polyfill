@@ -45,7 +45,7 @@ final class Util
 
     public static function moderatex1(float $v): float
     {
-        if (is_nan($v)) {
+        if (\is_nan($v)) {
             $v = 0.0;
         }
 
@@ -54,7 +54,7 @@ final class Util
 
     public static function moderatef(float $f): float
     {
-        if (is_nan($f)) {
+        if (\is_nan($f)) {
             $f = self::FUNCMAX;
         }
 
@@ -70,7 +70,7 @@ final class Util
     public static function evaluate(callable $calfun, array $x): float
     {
         foreach ($x as $v) {
-            if (is_nan($v)) {
+            if (\is_nan($v)) {
                 return Linalg::sum($x);
             }
         }
@@ -113,12 +113,12 @@ final class Util
     {
         $info = self::INFO_DFT;
         foreach ($x as $v) {
-            if (is_nan($v) || is_infinite($v)) {
+            if (\is_nan($v) || \is_infinite($v)) {
                 $info = self::NAN_INF_X;
                 break;
             }
         }
-        if (is_nan($f) || (is_infinite($f) && $f > 0.0)) {
+        if (\is_nan($f) || (\is_infinite($f) && $f > 0.0)) {
             $info = self::NAN_INF_F;
         }
         if ($f <= $ftarget) {
@@ -178,7 +178,7 @@ final class Util
         foreach ($xgrid as $xg) {
             $fg = self::intervalFunTrsbox($xg, $args);
             $fgrid[] = $fg;
-            if (! is_nan($fg)) {
+            if (! \is_nan($fg)) {
                 $allNan = false;
             }
         }
@@ -190,7 +190,7 @@ final class Util
         $fopt = NAN;
         $found = false;
         foreach ($fgrid as $k => $f) {
-            if (! is_nan($f) && (! $found || $f > $fopt)) {
+            if (! \is_nan($f) && (! $found || $f > $fopt)) {
                 $kopt = $k;
                 $fopt = $f;
                 $found = true;
@@ -206,10 +206,10 @@ final class Util
         $fprev = $fgrid[$kopt - 1];
         $fnext = $fgrid[$kopt + 1];
         $step = 0.0;
-        if (abs($fprev - $fnext) > 0.0) {
+        if (\abs($fprev - $fnext) > 0.0) {
             $step = 0.5 * (($fnext - $fprev) / ($fopt + $fopt - $fprev - $fnext));
         }
-        if (is_finite($step) && abs($step) > 0.0) {
+        if (\is_finite($step) && \abs($step) > 0.0) {
             return $lb + ($ub - $lb) * ((float) $kopt + $step) / (float) ($gridSize - 1);
         }
 
@@ -224,7 +224,7 @@ final class Util
     public static function intervalFunTrsbox(float $hangt, array $args): float
     {
         $f = 0.0;
-        if (abs($hangt) > 0.0) {
+        if (\abs($hangt) > 0.0) {
             $sth = ($hangt + $hangt) / (1.0 + $hangt * $hangt);
             $f = $args[0] + $hangt * ($hangt * $args[1] - $args[2] - $args[2]);
             $f = $sth * ($hangt * $args[3] - $args[4] - 0.5 * $sth * $f);
@@ -242,14 +242,14 @@ final class Util
         $nm = $n - 1;
         $x = [];
         if ($n === 1 || ($xstart <= $xstop && $xstop <= $xstart)) {
-            $x = array_fill(0, $n, $xstop);
-        } elseif (abs($xstart) <= abs($xstop) && abs($xstop) <= abs($xstart)) {
+            $x = \array_fill(0, $n, $xstop);
+        } elseif (\abs($xstart) <= \abs($xstop) && \abs($xstop) <= \abs($xstart)) {
             $xunit = $xstop / (float) $nm;
             for ($idx = 0; $idx < $n; $idx++) {
                 $x[] = $xunit * (2.0 * (float) $idx - (float) $nm);
             }
             if ($nm % 2 === 0) {
-                $x[intdiv($nm, 2)] = 0.0;
+                $x[\intdiv($nm, 2)] = 0.0;
             }
         } else {
             $xunit = ($xstop - $xstart) / (float) $nm;

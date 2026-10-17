@@ -107,27 +107,27 @@ final class LogNormal
 
     private function z(float $x): float
     {
-        return $x <= 0.0 ? -INF : (log($x) - $this->meanlog) / $this->sdlog;
+        return $x <= 0.0 ? -INF : (\log($x) - $this->meanlog) / $this->sdlog;
     }
 
     /** @internal */
     public function pdfAt(float $x): float
     {
-        if ($x <= 0.0 || is_infinite($x)) {
+        if ($x <= 0.0 || \is_infinite($x)) {
             return 0.0;
         }
 
-        return exp($this->logpdfAt($x));
+        return \exp($this->logpdfAt($x));
     }
 
     /** @internal */
     public function logpdfAt(float $x): float
     {
-        if ($x <= 0.0 || is_infinite($x)) {
+        if ($x <= 0.0 || \is_infinite($x)) {
             return -INF;
         }
 
-        return Normal::stdLogpdf($this->z($x)) - log($this->sdlog) - log($x);
+        return Normal::stdLogpdf($this->z($x)) - \log($this->sdlog) - \log($x);
     }
 
     /** @internal */
@@ -157,6 +157,6 @@ final class LogNormal
     /** @internal */
     public function quantileAt(float $p): float
     {
-        return exp($this->meanlog + $this->sdlog * Normal::stdQuantile($p));
+        return \exp($this->meanlog + $this->sdlog * Normal::stdQuantile($p));
     }
 }

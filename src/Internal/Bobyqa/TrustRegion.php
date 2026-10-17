@@ -41,7 +41,7 @@ final class TrustRegion
     ): float {
         $maxAbsGopt = 0.0;
         foreach ($goptIn as $v) {
-            $maxAbsGopt = Linalg::max($maxAbsGopt, abs($v));
+            $maxAbsGopt = Linalg::max($maxAbsGopt, \abs($v));
         }
         if ($maxAbsGopt > 1.0e12) {
             $modscal = Linalg::max(2.0 * Linalg::REALMIN, 1.0 / $maxAbsGopt);
@@ -69,7 +69,7 @@ final class TrustRegion
         $dredsq = 0.0;
         $ggsav = 0.0;
 
-        $xbdi = array_fill(0, $n, 0);
+        $xbdi = \array_fill(0, $n, 0);
         for ($i = 0; $i < $n; $i++) {
             if ($xopt[$i] >= $su[$i] && $gopt[$i] <= 0.0) {
                 $xbdi[$i] = 1;
@@ -82,7 +82,7 @@ final class TrustRegion
         }
         $nact = self::countActive($xbdi);
 
-        $d = array_fill(0, $n, 0.0);
+        $d = \array_fill(0, $n, 0.0);
         $crvmin = -Linalg::REALMAX;
 
         $gnew = $gopt;
@@ -92,10 +92,10 @@ final class TrustRegion
         $beta = 0.0;
         $itercg = 0;
         $twodSearch = false;
-        $s = array_fill(0, $n, 0.0);
+        $s = \array_fill(0, $n, 0.0);
         $hs = [];
 
-        $maxiter = min(10000, ($n - $nact) * ($n - $nact));
+        $maxiter = \min(10000, ($n - $nact) * ($n - $nact));
 
         for ($iter = 0; $iter < $maxiter; $iter++) {
             $resid = $delsq - self::maskedSumsq($d, $xbdi);
@@ -125,19 +125,19 @@ final class TrustRegion
             $thresholdA = Linalg::EPS * $delsq;
             $lhsB = $gredsq * $delsq;
             $rhsB = ($tol * $qred) * ($tol * $qred);
-            if (is_nan($ds) || is_nan($stepsq) || is_nan($thresholdA) || is_nan($lhsB) || is_nan($rhsB)
+            if (\is_nan($ds) || \is_nan($stepsq) || \is_nan($thresholdA) || \is_nan($lhsB) || \is_nan($rhsB)
                 || $stepsq <= $thresholdA || $lhsB <= $rhsB) {
                 break;
             }
 
-            $sqrtd = Linalg::max(Linalg::max(sqrt($stepsq * $resid + $ds * $ds), sqrt($stepsq * $resid)), abs($ds));
+            $sqrtd = Linalg::max(Linalg::max(\sqrt($stepsq * $resid + $ds * $ds), \sqrt($stepsq * $resid)), \abs($ds));
 
             if ($ds >= 0.0) {
                 $bstep = $resid / ($sqrtd + $ds);
             } else {
                 $bstep = ($sqrtd - $ds) / $stepsq;
             }
-            if ($bstep <= 0.0 || ! is_finite($bstep)) {
+            if ($bstep <= 0.0 || ! \is_finite($bstep)) {
                 break;
             }
 
@@ -156,7 +156,7 @@ final class TrustRegion
             for ($i = 0; $i < $n; $i++) {
                 $xtest[] = $xnew[$i] + $stplen * $s[$i];
             }
-            $sbound = array_fill(0, $n, $stplen);
+            $sbound = \array_fill(0, $n, $stplen);
             for ($i = 0; $i < $n; $i++) {
                 if ($s[$i] > 0.0 && $xtest[$i] > $su[$i]) {
                     $sbound[$i] = ($su[$i] - $xnew[$i]) / $s[$i];
@@ -169,7 +169,7 @@ final class TrustRegion
             }
             $anyBelow = false;
             for ($i = 0; $i < $n; $i++) {
-                if (is_nan($sbound[$i])) {
+                if (\is_nan($sbound[$i])) {
                     $sbound[$i] = $stplen;
                 }
                 if ($sbound[$i] < $stplen) {
@@ -199,16 +199,20 @@ final class TrustRegion
                         $crvmin = Linalg::min($crvmin, $rayleighq);
                     }
                 }
-                $ggsav = $gredsq;
                 for ($i = 0; $i < $n; $i++) {
                     $gnew[$i] += $stplen * $hs[$i];
                 }
-                $gredsq = self::maskedSumsq($gnew, $xbdi);
+                // The call result goes through $next because PHP 8.5's function
+                // JIT can let a copy ($ggsav) see a variable that a call result
+                // overwrites; see docs/notes/function-jit.md.
+                $next = self::maskedSumsq($gnew, $xbdi);
+                $ggsav = $gredsq;
+                $gredsq = $next;
                 $dold = $d;
                 for ($i = 0; $i < $n; $i++) {
                     $d[$i] += $stplen * $s[$i];
                 }
-                if (! is_finite(Linalg::sumAbs($d))) {
+                if (! \is_finite(Linalg::sumAbs($d))) {
                     $d = $dold;
                     break;
                 }
@@ -231,9 +235,10 @@ final class TrustRegion
                 }
                 $beta = 0.0;
                 $itercg = 0;
-                $gredsq = self::maskedSumsq($gnew, $xbdi);
+                $restart = self::maskedSumsq($gnew, $xbdi);
+                $gredsq = $restart;
             } elseif ($stplen < $bstep) {
-                if ($itercg >= $n - $nact || $sdec <= $tol * $qred || is_nan($sdec) || is_nan($qred)) {
+                if ($itercg >= $n - $nact || $sdec <= $tol * $qred || \is_nan($sdec) || \is_nan($qred)) {
                     break;
                 }
                 $beta = $gredsq / $ggsav;
@@ -289,10 +294,10 @@ final class TrustRegion
 
             $temp = $gredsq * $dredsq - $dredg * $dredg;
             $bound = $tol * $tol * Linalg::max($gredsq * $dredsq, $qred * $qred);
-            if (is_nan($temp) || is_nan($bound) || $temp <= $bound) {
+            if (\is_nan($temp) || \is_nan($bound) || $temp <= $bound) {
                 break;
             }
-            $temp = sqrt($temp);
+            $temp = \sqrt($temp);
             for ($i = 0; $i < $n; $i++) {
                 $s[$i] = ($dredg * $d[$i] - $dredsq * $gnew[$i]) / $temp;
             }
@@ -307,11 +312,11 @@ final class TrustRegion
             for ($i = 0; $i < $n; $i++) {
                 $ssq[] = $d[$i] * $d[$i] + $s[$i] * $s[$i];
             }
-            $tanbd = array_fill(0, $n, 1.0);
-            $sqdscr = array_fill(0, $n, -Linalg::REALMAX);
+            $tanbd = \array_fill(0, $n, 1.0);
+            $sqdscr = \array_fill(0, $n, -Linalg::REALMAX);
             for ($i = 0; $i < $n; $i++) {
-                if ($xbdi[$i] === 0 && $xopt[$i] - $sl[$i] < sqrt($ssq[$i])) {
-                    $sqdscr[$i] = sqrt(Linalg::max(0.0, $ssq[$i] - ($xopt[$i] - $sl[$i]) * ($xopt[$i] - $sl[$i])));
+                if ($xbdi[$i] === 0 && $xopt[$i] - $sl[$i] < \sqrt($ssq[$i])) {
+                    $sqdscr[$i] = \sqrt(Linalg::max(0.0, $ssq[$i] - ($xopt[$i] - $sl[$i]) * ($xopt[$i] - $sl[$i])));
                 }
             }
             for ($i = 0; $i < $n; $i++) {
@@ -319,10 +324,10 @@ final class TrustRegion
                     $tanbd[$i] = Linalg::min($tanbd[$i], ($xnew[$i] - $sl[$i]) / ($sqdscr[$i] - $s[$i]));
                 }
             }
-            $sqdscr = array_fill(0, $n, -Linalg::REALMAX);
+            $sqdscr = \array_fill(0, $n, -Linalg::REALMAX);
             for ($i = 0; $i < $n; $i++) {
-                if ($xbdi[$i] === 0 && $su[$i] - $xopt[$i] < sqrt($ssq[$i])) {
-                    $sqdscr[$i] = sqrt(Linalg::max(0.0, $ssq[$i] - ($su[$i] - $xopt[$i]) * ($su[$i] - $xopt[$i])));
+                if ($xbdi[$i] === 0 && $su[$i] - $xopt[$i] < \sqrt($ssq[$i])) {
+                    $sqdscr[$i] = \sqrt(Linalg::max(0.0, $ssq[$i] - ($su[$i] - $xopt[$i]) * ($su[$i] - $xopt[$i])));
                 }
             }
             for ($i = 0; $i < $n; $i++) {
@@ -332,7 +337,7 @@ final class TrustRegion
             }
             $anyBelow = false;
             for ($i = 0; $i < $n; $i++) {
-                if (is_nan($tanbd[$i])) {
+                if (\is_nan($tanbd[$i])) {
                     $tanbd[$i] = 0.0;
                 }
                 if ($tanbd[$i] < 1.0) {
@@ -362,13 +367,13 @@ final class TrustRegion
             $dhd = self::maskedInprod($d, $hdred, $xbdi);
 
             $args = [$shs, $dhd, $dhs, $dredg, $sredg];
-            if (is_nan($shs) || is_nan($dhd) || is_nan($dhs) || is_nan($dredg) || is_nan($sredg)) {
+            if (\is_nan($shs) || \is_nan($dhd) || \is_nan($dhs) || \is_nan($dredg) || \is_nan($sredg)) {
                 break;
             }
             $gridSize = 2 * (int) self::roundHalfAway(17.0 * $hangtBd + 4.1);
             $hangt = Util::intervalMax(0.0, $hangtBd, $args, $gridSize);
             $sdec = Util::intervalFunTrsbox($hangt, $args);
-            if (is_nan($sdec) || $sdec <= 0.0) {
+            if (\is_nan($sdec) || $sdec <= 0.0) {
                 break;
             }
 
@@ -383,7 +388,7 @@ final class TrustRegion
                     $d[$i] = $cth * $d[$i] + $sth * $s[$i];
                 }
             }
-            if (! is_finite(Linalg::sumAbs($d))) {
+            if (! \is_finite(Linalg::sumAbs($d))) {
                 $d = $dold;
                 break;
             }
@@ -391,7 +396,7 @@ final class TrustRegion
                 $hdred[$i] = $cth * $hdred[$i] + $sth * $hs[$i];
             }
             $qred += $sdec;
-            $small = is_nan($sdec) || is_nan($qred) || $sdec <= $tol * $qred;
+            $small = \is_nan($sdec) || \is_nan($qred) || $sdec <= $tol * $qred;
             if ($iact !== null) {
                 if ($hangt >= $hangtBd) {
                     $xbdi[$iact] = (int) Linalg::copysign(1.0, $xopt[$iact] + $d[$iact] - Linalg::midpoint($sl[$iact], $su[$iact]));
@@ -414,7 +419,7 @@ final class TrustRegion
             $d[$i] = $xi - $xopt[$i];
         }
 
-        if ($crvmin <= -Linalg::REALMAX || is_nan($crvmin)) {
+        if ($crvmin <= -Linalg::REALMAX || \is_nan($crvmin)) {
             $crvmin = 0.0;
         }
         if ($scaled && $crvmin > 0.0) {
@@ -440,7 +445,7 @@ final class TrustRegion
     /** f64::round (half away from zero) for a non-negative argument. */
     private static function roundHalfAway(float $x): float
     {
-        $r = floor($x);
+        $r = \floor($x);
 
         return $x - $r >= 0.5 ? $r + 1.0 : $r;
     }

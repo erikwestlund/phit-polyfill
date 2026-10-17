@@ -22,7 +22,7 @@ final class PowAlg
         $ij = [];
         if ($npt > 2 * $n + 1) {
             for ($k = $n; $k <= $npt - $n - 2; $k++) {
-                $ell = intdiv($k, $n);
+                $ell = \intdiv($k, $n);
                 $i1 = $k - $n * $ell + 1;
                 $i2 = ($i1 + $ell - 1) % $n + 1;
                 $ij[] = [$i1 - 1, $i2 - 1];
@@ -116,7 +116,7 @@ final class PowAlg
             }
             $vlag[] = $omega[$j] + $s;
         }
-        $wmv = array_merge($wcheck, $d);
+        $wmv = \array_merge($wcheck, $d);
         foreach (Linalg::matprod21($bmat, $n, $npt + $n, $wmv) as $v) {
             $vlag[] = $v;
         }
@@ -135,7 +135,7 @@ final class PowAlg
         $dxref = Linalg::inprod($d, $xref);
         $dsq = Linalg::inprod($d, $d);
         $xrefsq = Linalg::inprod($xref, $xref);
-        $dvlag = Linalg::inprod($d, array_slice($vlag, $npt, $n));
+        $dvlag = Linalg::inprod($d, \array_slice($vlag, $npt, $n));
         $wvlag = Linalg::inprod($wcheck, $vlag);
 
         return $dxref * $dxref + $dsq * ($xrefsq + $dxref + $dxref + 0.5 * $dsq) - $dvlag - $wvlag;
@@ -206,7 +206,7 @@ final class PowAlg
     public static function calvlagAndDen(int $kref, array $bmat, array $d, array $xpt, array $zmat, int $n, int $npt, array &$vlag, array &$den): float
     {
         $nz = $npt - $n - 1;
-        $hdiag = array_fill(0, $npt, 0.0);
+        $hdiag = \array_fill(0, $npt, 0.0);
         for ($j = 0; $j < $nz; $j++) {
             $offset = $j * $npt;
             for ($k = 0; $k < $npt; $k++) {

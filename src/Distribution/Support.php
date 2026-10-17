@@ -17,7 +17,7 @@ final class Support
 {
     public static function finite(string $name, float $value): float
     {
-        if (! is_finite($value)) {
+        if (! \is_finite($value)) {
             throw ErrorCode::exception(ErrorCode::NONFINITE, "$name must be finite");
         }
 
@@ -59,9 +59,9 @@ final class Support
     /** @return array{0: float, 1: float} */
     public static function betaInc(float $a, float $b, float $x, float $y): array
     {
-        $larger = is_nan($a) ? $b : (is_nan($b) ? $a : max($a, $b));
-        $smaller = is_nan($x) ? $y : (is_nan($y) ? $x : min($x, $y));
-        if (! is_finite($a + $b) || ($larger > self::CDFLIB_ARGUMENT_LIMIT && $smaller < 1.0 / self::CDFLIB_ARGUMENT_LIMIT)) {
+        $larger = \is_nan($a) ? $b : (\is_nan($b) ? $a : \max($a, $b));
+        $smaller = \is_nan($x) ? $y : (\is_nan($y) ? $x : \min($x, $y));
+        if (! \is_finite($a + $b) || ($larger > self::CDFLIB_ARGUMENT_LIMIT && $smaller < 1.0 / self::CDFLIB_ARGUMENT_LIMIT)) {
             return [NAN, NAN];
         }
         try {
@@ -74,7 +74,7 @@ final class Support
     /** @return array{0: float, 1: float} */
     public static function gammaInc(float $a, float $x): array
     {
-        if (is_nan($a) || is_nan($x) || $a > self::CDFLIB_ARGUMENT_LIMIT || $x > self::CDFLIB_ARGUMENT_LIMIT) {
+        if (\is_nan($a) || \is_nan($x) || $a > self::CDFLIB_ARGUMENT_LIMIT || $x > self::CDFLIB_ARGUMENT_LIMIT) {
             return [NAN, NAN];
         }
         try {
@@ -87,7 +87,7 @@ final class Support
     /** Evaluate a density, CDF or survival function at x (±∞ allowed, NaN rejected). */
     public static function point(float $x, \Closure $f): float
     {
-        if (is_nan($x)) {
+        if (\is_nan($x)) {
             throw ErrorCode::exception(ErrorCode::NONFINITE, 'evaluation points must not be NaN');
         }
 
@@ -97,10 +97,10 @@ final class Support
     /** Evaluate a quantile function at a probability in [0, 1]. */
     public static function probability(float $p, \Closure $f): float
     {
-        if (is_nan($p)) {
+        if (\is_nan($p)) {
             throw ErrorCode::exception(ErrorCode::NONFINITE, 'probabilities must not be NaN');
         }
-        if (is_nan($p) || $p < 0.0 || $p > 1.0) {
+        if (\is_nan($p) || $p < 0.0 || $p > 1.0) {
             throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'probabilities must be in [0, 1]');
         }
 
@@ -131,7 +131,7 @@ final class Support
         $out = [];
         for ($i = 0; $i < $n; $i++) {
             $value = (float) $quantile($rng->open01());
-            if (! is_finite($value)) {
+            if (! \is_finite($value)) {
                 throw ErrorCode::exception(ErrorCode::NONFINITE, 'sample exceeded floating-point range for these parameters');
             }
             $out[] = $value;
@@ -165,10 +165,10 @@ final class Support
     /** Array elements must be PHP ints or floats; there is no missing-value policy. */
     private static function element(mixed $value): float
     {
-        if (is_float($value)) {
+        if (\is_float($value)) {
             return $value;
         }
-        if (is_int($value)) {
+        if (\is_int($value)) {
             return (float) $value;
         }
         throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'array elements must be integers or floats');
@@ -176,7 +176,7 @@ final class Support
 
     private static function result(float $value): float
     {
-        if (is_nan($value)) {
+        if (\is_nan($value)) {
             throw ErrorCode::exception(ErrorCode::NONCONVERGENCE, 'numerical evaluation failed for these arguments');
         }
 
@@ -186,11 +186,11 @@ final class Support
     /** Rust f64::round: half away from zero, exact for every double. */
     public static function round(float $v): float
     {
-        if (! is_finite($v)) {
+        if (! \is_finite($v)) {
             return $v;
         }
-        $f = floor(abs($v));
-        $r = abs($v) - $f >= 0.5 ? $f + 1.0 : $f;
+        $f = \floor(\abs($v));
+        $r = \abs($v) - $f >= 0.5 ? $f + 1.0 : $f;
 
         return $v < 0.0 ? -$r : $r;
     }

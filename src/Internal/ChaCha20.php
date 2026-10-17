@@ -32,7 +32,7 @@ final class ChaCha20
     public function __construct(int $seed)
     {
         $this->key = self::seedWords($seed);
-        $this->openssl = extension_loaded('openssl') && in_array('chacha20', openssl_get_cipher_methods(), true);
+        $this->openssl = \extension_loaded('openssl') && \in_array('chacha20', \openssl_get_cipher_methods(), true);
     }
 
     /**
@@ -102,7 +102,7 @@ final class ChaCha20
     private function refill(): void
     {
         $bytes = $this->openssl ? $this->opensslBlocks() : $this->phpBlocks();
-        $this->words = array_values(unpack('V*', $bytes));
+        $this->words = \array_values(\unpack('V*', $bytes));
         $this->index = 0;
         $this->counter += 4;
     }
@@ -110,9 +110,9 @@ final class ChaCha20
     /** OpenSSL's chacha20 takes the 128-bit IV as state words 12 to 15. */
     private function opensslBlocks(): string
     {
-        $key = pack('V*', ...$this->key);
-        $iv = pack('VVVV', $this->counter & 0xFFFFFFFF, ($this->counter >> 32) & 0xFFFFFFFF, 0, 0);
-        $out = openssl_encrypt(str_repeat("\0", self::BUFFER_BYTES), 'chacha20', $key, OPENSSL_RAW_DATA, $iv);
+        $key = \pack('V*', ...$this->key);
+        $iv = \pack('VVVV', $this->counter & 0xFFFFFFFF, ($this->counter >> 32) & 0xFFFFFFFF, 0, 0);
+        $out = \openssl_encrypt(\str_repeat("\0", self::BUFFER_BYTES), 'chacha20', $key, OPENSSL_RAW_DATA, $iv);
         if ($out === false) {
             return $this->phpBlocks();
         }
@@ -144,7 +144,7 @@ final class ChaCha20
             for ($i = 0; $i < 16; $i++) {
                 $x[$i] = ($x[$i] + $state[$i]) & 0xFFFFFFFF;
             }
-            $out .= pack('V*', ...$x);
+            $out .= \pack('V*', ...$x);
         }
 
         return $out;

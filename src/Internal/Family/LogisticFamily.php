@@ -24,16 +24,16 @@ final class LogisticFamily extends Binary
 
     protected function link(float $mean): float
     {
-        return log($mean) - log1p(-$mean);
+        return \log($mean) - \log1p(-$mean);
     }
 
     /** Branching keeps exp() from overflowing for large logits. */
     private static function sigmoid(float $value): float
     {
         if ($value >= 0.0) {
-            return 1.0 / (1.0 + exp(-$value));
+            return 1.0 / (1.0 + \exp(-$value));
         }
-        $e = exp($value);
+        $e = \exp($value);
 
         return $e / (1.0 + $e);
     }
@@ -48,7 +48,7 @@ final class LogisticFamily extends Binary
             $v = $y[$i];
             $term = $weights[$i] * (-$v * self::softplus(-$e) - (1.0 - $v) * self::softplus($e));
             $total = $sum + $term;
-            $compensation += abs($sum) >= abs($term) ? ($sum - $total) + $term : ($term - $total) + $sum;
+            $compensation += \abs($sum) >= \abs($term) ? ($sum - $total) + $term : ($term - $total) + $sum;
             $sum = $total;
         }
 
@@ -60,8 +60,8 @@ final class LogisticFamily extends Binary
         // sqrt(p(1-p)) without subtracting a probability rounded to 1.
         $out = [];
         foreach ($eta as $i => $e) {
-            $x = exp(-abs($e));
-            $out[$i] = sqrt($x) / (1.0 + $x);
+            $x = \exp(-\abs($e));
+            $out[$i] = \sqrt($x) / (1.0 + $x);
         }
 
         return $out;
@@ -75,9 +75,9 @@ final class LogisticFamily extends Binary
     /** logistic.rs computes scaled * sqrt(e) / (1 + e) left to right, e = exp(-|eta|). */
     protected function finalWeighted(float $value, float $root, float $eta): float
     {
-        $exponential = exp(-abs($eta));
+        $exponential = \exp(-\abs($eta));
 
-        return $value * sqrt($exponential) / (1.0 + $exponential);
+        return $value * \sqrt($exponential) / (1.0 + $exponential);
     }
 
     protected function scores(array $eta, array $y): array
@@ -97,6 +97,6 @@ final class LogisticFamily extends Binary
 
     protected function fittedValues(array $eta): array
     {
-        return array_map(self::sigmoid(...), $eta);
+        return \array_map(self::sigmoid(...), $eta);
     }
 }

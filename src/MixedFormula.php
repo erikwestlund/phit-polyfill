@@ -63,7 +63,7 @@ final class MixedFormula
             'reml' => $reml,
             'optimizer' => $optimizer,
             'objective_tolerance' => $objective_tolerance,
-            'offset' => $design->offset ?? array_fill(0, count($y), 0.0),
+            'offset' => $design->offset ?? \array_fill(0, count($y), 0.0),
             'weights' => $w,
             'start' => $startValues,
             'max_evaluations' => $max_evaluations,
@@ -114,7 +114,7 @@ final class MixedFormula
             throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'max_evaluations must be positive');
         }
         $r = LogisticRandomIntercept::fit($design->x, $y, $indices, [
-            'offset' => $design->offset ?? array_fill(0, count($y), 0.0),
+            'offset' => $design->offset ?? \array_fill(0, count($y), 0.0),
             'weights' => $w,
             'quadrature_points' => $quadrature_points,
             'max_evaluations' => $max_evaluations,

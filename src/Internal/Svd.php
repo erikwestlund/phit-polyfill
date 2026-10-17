@@ -59,13 +59,13 @@ final class Svd
         }
         $this->rows = $rows;
         $this->cols = $cols;
-        $dim = min($rows, $cols);
+        $dim = \min($rows, $cols);
 
         $amax = Dense::camax($columns);
         if ($amax != 0.0) {
             foreach ($columns as $j => $column) {
                 foreach ($column as $i => $value) {
-                    $columns[$j][$i] = fdiv($value, $amax);
+                    $columns[$j][$i] = \fdiv($value, $amax);
                 }
             }
         }
@@ -74,8 +74,8 @@ final class Svd
         $this->upper = $upper;
         $this->u = $computeU ? self::assembleU($uv, $diagonal, $offDiagonal, $upper, $rows, $dim) : null;
         $this->vT = $computeV ? self::assembleVt($uv, $diagonal, $offDiagonal, $upper, $cols, $dim) : null;
-        $this->d = array_map(abs(...), $diagonal);
-        $this->f = array_map(abs(...), $offDiagonal);
+        $this->d = \array_map(\abs(...), $diagonal);
+        $this->f = \array_map(\abs(...), $offDiagonal);
 
         $niter = 0;
         [$start, $end] = $this->delimit($dim - 1, $eps);
@@ -133,7 +133,7 @@ final class Svd
         $utb = Dense::transposeMultiply($this->u, $b);
         foreach ($utb as $j => $column) {
             foreach ($this->singularValues as $i => $value) {
-                $utb[$j][$i] = $value > $eps ? fdiv($column[$i], $value) : 0.0;
+                $utb[$j][$i] = $value > $eps ? \fdiv($column[$i], $value) : 0.0;
             }
         }
 
@@ -157,8 +157,8 @@ final class Svd
      */
     private static function bidiagonalize(array $m, int $rows, int $cols, int $dim): array
     {
-        $diagonal = array_fill(0, $dim, 0.0);
-        $offDiagonal = array_fill(0, max(0, $dim - 1), 0.0);
+        $diagonal = \array_fill(0, $dim, 0.0);
+        $offDiagonal = \array_fill(0, \max(0, $dim - 1), 0.0);
         $upper = $rows >= $cols;
         if ($upper) {
             for ($i = 0; $i < $dim - 1; $i++) {
@@ -181,7 +181,7 @@ final class Svd
     private static function clearColumn(array &$m, int $icol, int $shift, int $rows, int $cols): float
     {
         $first = $icol + $shift;
-        $axis = array_slice($m[$icol], $first);
+        $axis = \array_slice($m[$icol], $first);
         [$norm, $notZero] = Dense::reflectionAxis($axis);
         foreach ($axis as $r => $value) {
             $m[$icol][$first + $r] = $value;
@@ -296,14 +296,14 @@ final class Svd
     {
         $res = [];
         for ($j = 0; $j < $dim; $j++) {
-            $column = array_fill(0, $rows, 0.0);
+            $column = \array_fill(0, $rows, 0.0);
             $column[$j] = 1.0;
             $res[$j] = $column;
         }
         $shift = $upper ? 0 : 1;
         for ($i = $dim - $shift - 1; $i >= 0; $i--) {
             $first = $i + $shift;
-            $axis = array_slice($uv[$i], $first);
+            $axis = \array_slice($uv[$i], $first);
             if (0.0 + Dense::dot($axis, $axis) == 0.0) {
                 continue;
             }
@@ -319,7 +319,7 @@ final class Svd
     {
         $res = [];
         for ($j = 0; $j < $cols; $j++) {
-            $column = array_fill(0, $dim, 0.0);
+            $column = \array_fill(0, $dim, 0.0);
             if ($j < $dim) {
                 $column[$j] = 1.0;
             }
@@ -447,8 +447,8 @@ final class Svd
      */
     private static function uptrig2x2(float $m11, float $m12, float $m22, bool $computeU, bool $computeV): array
     {
-        $denom = hypot($m11 + $m22, $m12) + hypot($m11 - $m22, $m12);
-        $v1 = fdiv($m11 * $m22 * 2.0, $denom);
+        $denom = \hypot($m11 + $m22, $m12) + \hypot($m11 - $m22, $m12);
+        $v1 = \fdiv($m11 * $m22 * 2.0, $denom);
         $v2 = 0.5 * $denom;
         $u = null;
         $vt = null;
@@ -459,8 +459,8 @@ final class Svd
             if ($computeV) {
                 $vt = [$cv, $sv];
             }
-            $cu = fdiv($m11 * $cv + $m12 * $sv, $v1);
-            $su = fdiv($m22 * $sv, $v1);
+            $cu = \fdiv($m11 * $cv + $m12 * $sv, $v1);
+            $su = \fdiv($m22 * $sv, $v1);
             [$cu, $su, $sgnU] = self::givens($cu, $su);
             $v1 *= $sgnU;
             $v2 *= $sgnU;
@@ -486,11 +486,11 @@ final class Svd
     public static function tryGivens(float $c, float $s, float $eps): ?array
     {
         [$mod0, $sign0] = $c >= 0.0 ? [$c, 1.0] : [-$c, -1.0];
-        $denom = sqrt($mod0 * $mod0 + $s * $s);
+        $denom = \sqrt($mod0 * $mod0 + $s * $s);
         if ($denom > $eps) {
             $norm = $sign0 * $denom;
 
-            return [fdiv($mod0, $denom), fdiv($s, $norm), $norm];
+            return [\fdiv($mod0, $denom), \fdiv($s, $norm), $norm];
         }
 
         return null;
@@ -507,9 +507,9 @@ final class Svd
             return null;
         }
         [$mod0, $sign0] = $x >= 0.0 ? [$x, 1.0] : [-$x, -1.0];
-        $denom = sqrt($mod0 * $mod0 + $y * $y);
-        $c = fdiv($mod0, $denom);
-        $s = fdiv(-$y, $sign0 * $denom);
+        $denom = \sqrt($mod0 * $mod0 + $y * $y);
+        $c = \fdiv($mod0, $denom);
+        $s = \fdiv(-$y, $sign0 * $denom);
 
         return [$c, $s, $sign0 * $denom];
     }
@@ -525,9 +525,9 @@ final class Svd
             return null;
         }
         [$mod1, $sign1] = $y >= 0.0 ? [$y, 1.0] : [-$y, -1.0];
-        $denom = sqrt($mod1 * $mod1 + $x * $x);
-        $c = fdiv($mod1, $denom);
-        $s = fdiv($x * $sign1, $denom);
+        $denom = \sqrt($mod1 * $mod1 + $x * $x);
+        $c = \fdiv($mod1, $denom);
+        $s = \fdiv($x * $sign1, $denom);
 
         return [$c, $s, $sign1 * $denom];
     }
@@ -566,15 +566,15 @@ final class Svd
         $n = $end;
         while ($n > 0) {
             $m = $n - 1;
-            if ($f[$m] == 0.0 || abs($f[$m]) <= $eps * (abs($d[$n]) + abs($d[$m]))) {
+            if ($f[$m] == 0.0 || \abs($f[$m]) <= $eps * (\abs($d[$n]) + \abs($d[$m]))) {
                 $f[$m] = 0.0;
-            } elseif (abs($d[$m]) <= $eps) {
+            } elseif (\abs($d[$m]) <= $eps) {
                 $d[$m] = 0.0;
                 $this->cancelHorizontal($m, $m + 1);
                 if ($m !== 0) {
                     $this->cancelVertical($m - 1);
                 }
-            } elseif (abs($d[$n]) <= $eps) {
+            } elseif (\abs($d[$n]) <= $eps) {
                 $d[$n] = 0.0;
                 $this->cancelVertical($m);
             } else {
@@ -589,10 +589,10 @@ final class Svd
         $newStart = $n - 1;
         while ($newStart > 0) {
             $m = $newStart - 1;
-            if (abs($f[$m]) <= $eps * (abs($d[$newStart]) + abs($d[$m]))) {
+            if (\abs($f[$m]) <= $eps * (\abs($d[$newStart]) + \abs($d[$m]))) {
                 $f[$m] = 0.0;
                 break;
-            } elseif (abs($d[$m]) <= $eps) {
+            } elseif (\abs($d[$m]) <= $eps) {
                 $d[$m] = 0.0;
                 $this->cancelHorizontal($m, $n);
                 if ($m !== 0) {
@@ -676,13 +676,13 @@ final class Svd
         foreach ($this->singularValues as $i => $value) {
             // Rust's sort compares every element of a slice of two or more,
             // and partial_cmp(..).expect() panics on NaN.
-            if (is_nan($value) && count($this->singularValues) > 1) {
+            if (\is_nan($value) && count($this->singularValues) > 1) {
                 throw new \RuntimeException('Singular value was NaN');
             }
             $pairs[] = [$value, $i];
         }
         $pairs = RustSort::sortUnstableBy($pairs, fn (array $x, array $y): bool => $y[0] < $x[0]);
-        $this->singularValues = array_column($pairs, 0);
+        $this->singularValues = \array_column($pairs, 0);
 
         $processed = -1;
         $swaps = [];

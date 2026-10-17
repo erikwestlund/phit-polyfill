@@ -88,7 +88,7 @@ final class Dense
         for ($j = 0; $j < $n; $j++) {
             $bj = $b[$j];
             if ($k === 0) {
-                $c[$j] = array_fill(0, $m, 0.0);
+                $c[$j] = \array_fill(0, $m, 0.0);
 
                 continue;
             }
@@ -127,7 +127,7 @@ final class Dense
         foreach ($a as $p => $column) {
             $finite = true;
             foreach ($column as $v) {
-                $finite = $finite && is_finite($v);
+                $finite = $finite && \is_finite($v);
             }
             $finiteColumn[$p] = $finite;
         }
@@ -145,7 +145,7 @@ final class Dense
                 $total = 0.0;
                 $contributed = false;
                 for ($start = 0; $start < $k; $start += self::KC) {
-                    $stop = min($k, $start + self::KC);
+                    $stop = \min($k, $start + self::KC);
                     $acc = 0.0;
                     foreach ($terms as $p) {
                         if ($p < $start || $p >= $stop) {
@@ -153,7 +153,7 @@ final class Dense
                         }
                         $x = $a[$p][$i];
                         $v = $bj[$p];
-                        if ($x == 0.0 && is_finite($v)) {
+                        if ($x == 0.0 && \is_finite($v)) {
                             continue;
                         }
                         $contributed = true;
@@ -179,7 +179,7 @@ final class Dense
     {
         $total = 0.0;
         for ($start = 0; $start < $k; $start += self::KC) {
-            $stop = min($k, $start + self::KC);
+            $stop = \min($k, $start + self::KC);
             $acc = 0.0;
             for ($p = $start; $p < $stop; $p++) {
                 $acc = self::fma($a[$p][$i], $bj[$p], $acc);
@@ -203,13 +203,13 @@ final class Dense
     public static function fma(float $a, float $b, float $c): float
     {
         $product = $a * $b;
-        if ($a == 0.0 || $b == 0.0 || is_nan($product) || is_nan($c) || is_infinite($c)
-            || is_infinite($a) || is_infinite($b)) {
+        if ($a == 0.0 || $b == 0.0 || \is_nan($product) || \is_nan($c) || \is_infinite($c)
+            || \is_infinite($a) || \is_infinite($b)) {
             return Fma::fma($a, $b, $c);
         }
-        $magnitude = abs($product);
-        if ($magnitude >= self::TINY_PRODUCT && $magnitude <= self::HUGE && abs($a) <= self::HUGE
-            && abs($b) <= self::HUGE && abs($c) <= self::HUGE) {
+        $magnitude = \abs($product);
+        if ($magnitude >= self::TINY_PRODUCT && $magnitude <= self::HUGE && \abs($a) <= self::HUGE
+            && \abs($b) <= self::HUGE && \abs($c) <= self::HUGE) {
             return Fma::fma($a, $b, $c);
         }
         if ($c == 0.0) {
@@ -218,9 +218,9 @@ final class Dense
         [$aUnit, $aShift] = self::unit($a);
         [$bUnit, $bShift] = self::unit($b);
         $shift = $aShift + $bShift;
-        $cExponent = abs($c) < PHP_FLOAT_MIN ? -1023 : self::exponent($c);
+        $cExponent = \abs($c) < PHP_FLOAT_MIN ? -1023 : self::exponent($c);
         // |a * b| < 2^(2 - shift); below a quarter ulp of c it cannot move c.
-        if (2 - $shift <= max($cExponent - 52, -1074) - 2) {
+        if (2 - $shift <= \max($cExponent - 52, -1074) - 2) {
             return $c;
         }
         // A c this far below a * b only breaks ties; a stand-in of the same sign does too.
@@ -238,7 +238,7 @@ final class Dense
         // a midpoint of the coarser grid; then the exact remainder decides.
         if ($exponent + 1075 - $shift >= 0) {
             $halves = self::scale($result, 1075 - $shift); // in units of 2^-1075, exact
-            if (abs(fmod($halves, 2.0)) == 1.0) {
+            if (\abs(\fmod($halves, 2.0)) == 1.0) {
                 [$uh, $ul] = self::twoProduct($aUnit, $bUnit);
                 [$th, $tl] = self::twoSum($cScaled, $uh);
                 $direction = self::sumSign([-$result, $th, $tl, $ul]);
@@ -313,7 +313,7 @@ final class Dense
     private static function unit(float $x): array
     {
         $shift = 0;
-        if (abs($x) < PHP_FLOAT_MIN) {
+        if (\abs($x) < PHP_FLOAT_MIN) {
             $x *= self::pow2(600);
             $shift = 600;
         }
@@ -325,7 +325,7 @@ final class Dense
     /** Unbiased exponent of a normal float. */
     private static function exponent(float $x): int
     {
-        return ((unpack('q', pack('e', $x))[1] >> 52) & 0x7FF) - 1023;
+        return ((\unpack('q', \pack('e', $x))[1] >> 52) & 0x7FF) - 1023;
     }
 
     /** 2^n for -1074 <= n <= 1023, built from its bits. */
@@ -333,7 +333,7 @@ final class Dense
     {
         $bits = $n >= -1022 ? ($n + 1023) << 52 : 1 << ($n + 1074);
 
-        return unpack('e', pack('q', $bits))[1];
+        return \unpack('e', \pack('q', $bits))[1];
     }
 
     /** $x * 2^n in steps that are exact while no step underflows. */
@@ -421,7 +421,7 @@ final class Dense
     /** @param  list<list<float>>  $a */
     public static function norm(array $a): float
     {
-        return sqrt(self::normSquared($a));
+        return \sqrt(self::normSquared($a));
     }
 
     /** @param  list<float>  $x */
@@ -433,7 +433,7 @@ final class Dense
     /** @param  list<float>  $x */
     public static function vectorNorm(array $x): float
     {
-        return sqrt(0.0 + self::dot($x, $x));
+        return \sqrt(0.0 + self::dot($x, $x));
     }
 
     /**
@@ -445,7 +445,7 @@ final class Dense
         $rows ??= count($a) > 0 ? count($a[0]) : 0;
         $t = [];
         for ($i = 0; $i < $rows; $i++) {
-            $t[$i] = array_column($a, $i);
+            $t[$i] = \array_column($a, $i);
         }
 
         return $t;
@@ -466,10 +466,10 @@ final class Dense
      */
     public static function signum(float $x): float
     {
-        if (is_nan($x)) {
+        if (\is_nan($x)) {
             return NAN;
         }
-        if ($x < 0.0 || ($x == 0.0 && fdiv(1.0, $x) < 0.0)) {
+        if ($x < 0.0 || ($x == 0.0 && \fdiv(1.0, $x) < 0.0)) {
             return -1.0;
         }
 
@@ -487,7 +487,7 @@ final class Dense
         $max = null;
         foreach ($a as $column) {
             foreach ($column as $value) {
-                $abs = abs($value);
+                $abs = \abs($value);
                 if ($max === null) {
                     $max = $abs;
                 } elseif ($max >= $abs) {
@@ -511,7 +511,7 @@ final class Dense
     public static function reflectionAxis(array &$v): array
     {
         $squared = 0.0 + self::dot($v, $v);
-        $norm = sqrt($squared);
+        $norm = \sqrt($squared);
         $first = $v[0];
         // simba's to_exp: (x, 1) when x >= 0 (so -0.0 keeps sign +1), else (-x, -1).
         if ($first >= 0.0) {
@@ -527,14 +527,14 @@ final class Dense
         if ($factor == 0.0) {
             return [$signedNorm, false];
         }
-        $root = sqrt($factor);
+        $root = \sqrt($factor);
         $length = count($v);
         for ($i = 0; $i < $length; $i++) {
-            $v[$i] = fdiv($v[$i], $root);
+            $v[$i] = \fdiv($v[$i], $root);
         }
-        $norm = sqrt(0.0 + self::dot($v, $v));
+        $norm = \sqrt(0.0 + self::dot($v, $v));
         for ($i = 0; $i < $length; $i++) {
-            $v[$i] = fdiv($v[$i], $norm);
+            $v[$i] = \fdiv($v[$i], $norm);
         }
 
         return [-$signedNorm, true];

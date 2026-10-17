@@ -27,7 +27,7 @@ final class Draws
 
         [$n, $p] = self::shape($draws);
         if ($w === null) {
-            $w = array_fill(0, $n, 1.0 / $n);
+            $w = \array_fill(0, $n, 1.0 / $n);
         } else {
             if (count($w) !== $n) {
                 throw ErrorCode::exception(ErrorCode::DIMENSION_MISMATCH, 'weights must have one element per draw');
@@ -45,10 +45,10 @@ final class Draws
             if ($largest == 0.0) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'weights must have positive total weight');
             }
-            $total = self::sum(array_map(fn (float $v): float => $v / $largest, $w));
-            $w = array_map(fn (float $v): float => ($v / $largest) / $total, $w);
+            $total = self::sum(\array_map(fn (float $v): float => $v / $largest, $w));
+            $w = \array_map(fn (float $v): float => ($v / $largest) / $total, $w);
         }
-        $denominator = $unbiased ? 1.0 - self::sum(array_map(fn (float $v): float => $v * $v, $w)) : 1.0;
+        $denominator = $unbiased ? 1.0 - self::sum(\array_map(fn (float $v): float => $v * $v, $w)) : 1.0;
         if ($denominator <= 0.0) {
             throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'unbiased covariance normalization is undefined; need at least two effective draws');
         }
@@ -57,7 +57,7 @@ final class Draws
             $anchor++;
         }
         $mean = [];
-        $centered = array_fill(0, $p, array_fill(0, $n, 0.0));
+        $centered = \array_fill(0, $p, \array_fill(0, $n, 0.0));
         for ($j = 0; $j < $p; $j++) {
             $origin = $draws[$anchor][$j];
             $terms = [];
@@ -81,7 +81,7 @@ final class Draws
                 }
             }
         }
-        $covariance = array_fill(0, $p, array_fill(0, $p, 0.0));
+        $covariance = \array_fill(0, $p, \array_fill(0, $p, 0.0));
         for ($j = 0; $j < $p; $j++) {
             for ($k = 0; $k <= $j; $k++) {
                 $terms = [];
@@ -133,7 +133,7 @@ final class Draws
         }
         $terms = [];
         for ($j = 0; $j < $p; $j++) {
-            $terms[] = log($target[$j][$j]) - log($source[$j][$j]);
+            $terms[] = \log($target[$j][$j]) - \log($source[$j][$j]);
         }
 
         return ['matrix' => $a, 'log_abs_det' => self::finite(self::sum($terms))];
@@ -165,7 +165,7 @@ final class Draws
                     // from zero and then added to the running result.
                     for ($start = 0; $start < $p; $start += 256) {
                         $acc = 0.0;
-                        $end = min($p, $start + 256);
+                        $end = \min($p, $start + 256);
                         for ($k = $start; $k < $end; $k++) {
                             $acc = Dense::fma($row[$k], $aj[$k], $acc);
                         }
@@ -210,12 +210,12 @@ final class Draws
         }
         $scales = [];
         for ($j = 0; $j < $p; $j++) {
-            $scales[] = sqrt($covariance[$j][$j]);
+            $scales[] = \sqrt($covariance[$j][$j]);
         }
         // Column-major: $m[$col][$row].
         $m = [];
         for ($j = 0; $j < $p; $j++) {
-            $column = array_fill(0, $p, 0.0);
+            $column = \array_fill(0, $p, 0.0);
             $column[$j] = 1.0;
             $m[$j] = $column;
         }
@@ -223,7 +223,7 @@ final class Draws
             for ($j = 0; $j < $i; $j++) {
                 $a = self::finite($covariance[$i][$j] / $scales[$i] / $scales[$j]);
                 $b = self::finite($covariance[$j][$i] / $scales[$i] / $scales[$j]);
-                if (abs($a - $b) > 64.0 * PHP_FLOAT_EPSILON * max(abs($a), abs($b), 1.0)) {
+                if (\abs($a - $b) > 64.0 * PHP_FLOAT_EPSILON * \max(\abs($a), \abs($b), 1.0)) {
                     throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'covariance matrices must be symmetric within tolerance');
                 }
                 $value = 0.5 * $a + 0.5 * $b;
@@ -240,10 +240,10 @@ final class Draws
                 }
             }
             $diagonal = $m[$j][$j];
-            if ($diagonal == 0.0 || is_nan($diagonal) || $diagonal < 0.0) {
+            if ($diagonal == 0.0 || \is_nan($diagonal) || $diagonal < 0.0) {
                 throw ErrorCode::exception(ErrorCode::FACTORIZATION_FAILURE, 'covariance must be positive definite');
             }
-            $denominator = sqrt($diagonal);
+            $denominator = \sqrt($diagonal);
             $m[$j][$j] = $denominator;
             for ($i = $j + 1; $i < $p; $i++) {
                 $m[$j][$i] /= $denominator;
@@ -251,7 +251,7 @@ final class Draws
         }
         $lower = [];
         for ($i = 0; $i < $p; $i++) {
-            $row = array_fill(0, $p, 0.0);
+            $row = \array_fill(0, $p, 0.0);
             for ($j = 0; $j <= $i; $j++) {
                 $row[$j] = $m[$j][$i];
             }
@@ -280,7 +280,7 @@ final class Draws
         for ($i = 0; $i < $p; $i++) {
             $scale = 0.0;
             foreach ($a[$i] as $v) {
-                $scale = self::fmax($scale, abs($v));
+                $scale = self::fmax($scale, \abs($v));
             }
             if ($scale == 0.0) {
                 throw ErrorCode::exception(ErrorCode::RANK_DEFICIENCY, 'affine matrix must be invertible');
@@ -288,12 +288,12 @@ final class Draws
             for ($j = 0; $j < $p; $j++) {
                 $a[$i][$j] /= $scale;
             }
-            $logScale += log($scale);
+            $logScale += \log($scale);
         }
         for ($j = 0; $j < $p; $j++) {
             $scale = 0.0;
             for ($i = 0; $i < $p; $i++) {
-                $scale = self::fmax($scale, abs($a[$i][$j]));
+                $scale = self::fmax($scale, \abs($a[$i][$j]));
             }
             if ($scale == 0.0) {
                 throw ErrorCode::exception(ErrorCode::RANK_DEFICIENCY, 'affine matrix must be invertible');
@@ -301,24 +301,24 @@ final class Draws
             for ($i = 0; $i < $p; $i++) {
                 $a[$i][$j] /= $scale;
             }
-            $logScale += log($scale);
+            $logScale += \log($scale);
         }
         $columns = [];
         for ($j = 0; $j < $p; $j++) {
-            $columns[$j] = array_column($a, $j);
+            $columns[$j] = \array_column($a, $j);
         }
         $singular = LeastSquares::singularValuesOf($columns, $p);
-        if (end($singular) <= 64.0 * PHP_FLOAT_EPSILON * $p * $singular[0]) {
+        if (\end($singular) <= 64.0 * PHP_FLOAT_EPSILON * $p * $singular[0]) {
             throw ErrorCode::exception(ErrorCode::RANK_DEFICIENCY, 'affine matrix is numerically singular within tolerance');
         }
         // nalgebra LU::new with partial pivoting; $m[$col][$row].
         $m = $columns;
         for ($i = 0; $i < $p; $i++) {
             $piv = $i;
-            $max = abs($m[$i][$i]);
+            $max = \abs($m[$i][$i]);
             for ($r = $i + 1; $r < $p; $r++) {
-                if (abs($m[$i][$r]) > $max) {
-                    $max = abs($m[$i][$r]);
+                if (\abs($m[$i][$r]) > $max) {
+                    $max = \abs($m[$i][$r]);
                     $piv = $r;
                 }
             }
@@ -344,7 +344,7 @@ final class Draws
         }
         $terms = [];
         for ($j = 0; $j < $p; $j++) {
-            $terms[] = log(abs($m[$j][$j]));
+            $terms[] = \log(\abs($m[$j][$j]));
         }
 
         return self::finite($logScale + self::sum($terms));
@@ -353,7 +353,7 @@ final class Draws
     /** Rust's f64::max: NaN loses to a number. */
     private static function fmax(float $a, float $b): float
     {
-        if (is_nan($a)) {
+        if (\is_nan($a)) {
             return $b;
         }
 
@@ -367,7 +367,7 @@ final class Draws
         $correction = 0.0;
         foreach ($values as $v) {
             $t = $total + $v;
-            $correction += abs($total) >= abs($v) ? ($total - $t) + $v : ($v - $t) + $total;
+            $correction += \abs($total) >= \abs($v) ? ($total - $t) + $v : ($v - $t) + $total;
             $total = $t;
         }
 
@@ -376,7 +376,7 @@ final class Draws
 
     private static function finite(float $value): float
     {
-        if (is_finite($value)) {
+        if (\is_finite($value)) {
             return $value;
         }
         throw ErrorCode::exception(ErrorCode::NONFINITE, 'draw operation exceeded floating-point range');
@@ -401,13 +401,13 @@ final class Draws
     /** Integers or finite floats only; null and other types are rejected. */
     private static function number(mixed $value): float
     {
-        if (is_int($value)) {
+        if (\is_int($value)) {
             return (float) $value;
         }
-        if (! is_float($value)) {
+        if (! \is_float($value)) {
             throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'draw inputs must contain integers or floats; null is not allowed');
         }
-        if (! is_finite($value)) {
+        if (! \is_finite($value)) {
             throw ErrorCode::exception(ErrorCode::NONFINITE, 'draw inputs must contain finite numbers');
         }
 
@@ -430,7 +430,7 @@ final class Draws
     {
         $out = [];
         foreach ($input as $row) {
-            if (! is_array($row)) {
+            if (! \is_array($row)) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'each matrix row must be an array');
             }
             $out[] = self::vector($row);

@@ -40,20 +40,20 @@ final class ProbitFamily extends Binary
                 $denominator = $x + $k / $denominator;
             }
 
-            return -0.5 * $x * $x - 0.5 * log(2.0 * M_PI) - log($denominator);
+            return -0.5 * $x * $x - 0.5 * \log(2.0 * M_PI) - \log($denominator);
         }
 
-        return log(0.5 * Statrs::erfc(-$value / M_SQRT2));
+        return \log(0.5 * Statrs::erfc(-$value / M_SQRT2));
     }
 
     private static function logDensity(float $value): float
     {
-        return -0.5 * $value * $value - 0.5 * log(2.0 * M_PI);
+        return -0.5 * $value * $value - 0.5 * \log(2.0 * M_PI);
     }
 
     private static function rootWeight(float $value): float
     {
-        return exp(self::logDensity($value) - 0.5 * (self::logProbability($value) + self::logProbability(-$value)));
+        return \exp(self::logDensity($value) - 0.5 * (self::logProbability($value) + self::logProbability(-$value)));
     }
 
     protected function likelihood(array $eta, array $y, array $weights): float
@@ -65,7 +65,7 @@ final class ProbitFamily extends Binary
             $v = $y[$i];
             $term = $weights[$i] * ($v * self::logProbability($e) + (1.0 - $v) * self::logProbability(-$e));
             $total = $sum + $term;
-            $compensation += abs($sum) >= abs($term) ? ($sum - $total) + $term : ($term - $total) + $sum;
+            $compensation += \abs($sum) >= \abs($term) ? ($sum - $total) + $term : ($term - $total) + $sum;
             $sum = $total;
         }
 
@@ -78,7 +78,7 @@ final class ProbitFamily extends Binary
         $out = [];
         foreach ($eta as $i => $e) {
             $w = self::rootWeight($e);
-            if (! is_finite($w)) {
+            if (! \is_finite($w)) {
                 throw self::error(ErrorCode::NONFINITE, 'probit information exceeds floating-point range');
             }
             $out[$i] = $w;
@@ -92,7 +92,7 @@ final class ProbitFamily extends Binary
         $out = [];
         foreach ($eta as $i => $e) {
             $w = self::rootWeight($e);
-            if (! is_finite($w)) {
+            if (! \is_finite($w)) {
                 throw self::error(ErrorCode::NONFINITE, 'final probit information exceeds floating-point range');
             }
             $out[$i] = $w;
@@ -106,7 +106,7 @@ final class ProbitFamily extends Binary
         $out = [];
         foreach ($eta as $i => $e) {
             $ld = self::logDensity($e);
-            $out[$i] = $y[$i] * exp($ld - self::logProbability($e)) - (1.0 - $y[$i]) * exp($ld - self::logProbability(-$e));
+            $out[$i] = $y[$i] * \exp($ld - self::logProbability($e)) - (1.0 - $y[$i]) * \exp($ld - self::logProbability(-$e));
         }
 
         return $out;

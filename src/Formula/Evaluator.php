@@ -69,7 +69,7 @@ final class Evaluator
 
     private static function clean(float $v): ?float
     {
-        return is_nan($v) ? null : $v;
+        return \is_nan($v) ? null : $v;
     }
 
     /** @return list<?float> */
@@ -79,7 +79,7 @@ final class Evaluator
             return $value['v'];
         }
         if ($value['t'] === 'lgl') {
-            return array_map(fn (?bool $b) => $b === null ? null : ($b ? 1.0 : 0.0), $value['v']);
+            return \array_map(fn (?bool $b) => $b === null ? null : ($b ? 1.0 : 0.0), $value['v']);
         }
         throw Parser::error("'$what' requires numeric or logical values, not a factor or string");
     }
@@ -103,7 +103,7 @@ final class Evaluator
             if ($b & 1) {
                 $r *= $a;
             }
-            $b = intdiv($b, 2);
+            $b = \intdiv($b, 2);
             if ($b === 0) {
                 break;
             }
@@ -116,8 +116,8 @@ final class Evaluator
     /** Sorted unique labels in C-locale (byte) order. @return list<string> */
     public static function sortedLevels(array $values): array
     {
-        $levels = array_values(array_unique($values, SORT_STRING));
-        sort($levels, SORT_STRING);
+        $levels = \array_values(\array_unique($values, SORT_STRING));
+        \sort($levels, SORT_STRING);
 
         return $levels;
     }
@@ -131,8 +131,8 @@ final class Evaluator
         if ($a > $b) {
             return 1;
         }
-        $sa = $a === 0.0 && fdiv(1.0, $a) < 0;
-        $sb = $b === 0.0 && fdiv(1.0, $b) < 0;
+        $sa = $a === 0.0 && \fdiv(1.0, $a) < 0;
+        $sb = $b === 0.0 && \fdiv(1.0, $b) < 0;
 
         return $sb <=> $sa;
     }
@@ -140,7 +140,7 @@ final class Evaluator
     /** Sort with total_cmp, then dedup equal neighbours (keeping the first). @return list<float> */
     private static function distinct(array $values): array
     {
-        usort($values, self::totalCompare(...));
+        \usort($values, self::totalCompare(...));
         $out = [];
         foreach ($values as $v) {
             if ($out === [] || $out[count($out) - 1] != $v) {
@@ -155,9 +155,9 @@ final class Evaluator
     {
         switch ($value['t']) {
             case 'num':
-                $present = array_values(array_filter($value['v'], fn ($x) => $x !== null));
+                $present = \array_values(\array_filter($value['v'], fn ($x) => $x !== null));
                 $distinct = self::distinct($present);
-                $levels = array_map(Parser::formatNumber(...), $distinct);
+                $levels = \array_map(Parser::formatNumber(...), $distinct);
                 $codes = [];
                 foreach ($value['v'] as $x) {
                     $codes[] = $x === null ? null : self::partitionPoint($distinct, $x);
@@ -166,21 +166,21 @@ final class Evaluator
                 return ['t' => 'factor', 'levels' => $levels, 'codes' => $codes, 'ordered' => $ordered];
             case 'lgl':
                 $levels = [];
-                if (in_array(false, $value['v'], true)) {
+                if (\in_array(false, $value['v'], true)) {
                     $levels[] = 'FALSE';
                 }
-                if (in_array(true, $value['v'], true)) {
+                if (\in_array(true, $value['v'], true)) {
                     $levels[] = 'TRUE';
                 }
                 $codes = [];
                 foreach ($value['v'] as $b) {
-                    $codes[] = $b === null ? null : (int) (array_search($b ? 'TRUE' : 'FALSE', $levels, true) ?: 0);
+                    $codes[] = $b === null ? null : (int) (\array_search($b ? 'TRUE' : 'FALSE', $levels, true) ?: 0);
                 }
 
                 return ['t' => 'factor', 'levels' => $levels, 'codes' => $codes, 'ordered' => $ordered];
             case 'text':
-                $levels = self::sortedLevels(array_values(array_filter($value['v'], fn ($x) => $x !== null)));
-                $index = array_flip($levels);
+                $levels = self::sortedLevels(\array_values(\array_filter($value['v'], fn ($x) => $x !== null)));
+                $index = \array_flip($levels);
                 $codes = [];
                 foreach ($value['v'] as $x) {
                     $codes[] = $x === null ? null : ($index[$x] ?? null);
@@ -203,7 +203,7 @@ final class Evaluator
         $lo = 0;
         $hi = count($sorted);
         while ($lo < $hi) {
-            $mid = intdiv($lo + $hi, 2);
+            $mid = \intdiv($lo + $hi, 2);
             if ($sorted[$mid] < $x) {
                 $lo = $mid + 1;
             } else {
@@ -217,7 +217,7 @@ final class Evaluator
     /** @return array{0: list<string>, 1: list<?int>} */
     public static function dropUnused(array $levels, array $codes): array
     {
-        $used = array_fill(0, count($levels), false);
+        $used = \array_fill(0, count($levels), false);
         foreach ($codes as $c) {
             if ($c !== null) {
                 $used[$c] = true;
@@ -269,11 +269,11 @@ final class Evaluator
             $sum += $v;
         }
         $mean = $sum / count($x);
-        $centered = array_map(fn ($v) => $v - $mean, $x);
+        $centered = \array_map(fn ($v) => $v - $mean, $x);
         $basis = [];
         $coefs = ['alpha' => [], 'norm2' => [1.0]];
         for ($k = 0; $k <= $degree; $k++) {
-            $v = array_map(fn ($c) => self::powi($c, $k), $centered);
+            $v = \array_map(fn ($c) => self::powi($c, $k), $centered);
             for ($pass = 0; $pass < 2; $pass++) {
                 foreach ($basis as $q) {
                     $dot = 0.0;
@@ -290,8 +290,8 @@ final class Evaluator
             foreach ($v as $a) {
                 $norm2 += $a * $a;
             }
-            $norm = sqrt($norm2);
-            if ($norm == 0.0 || ! is_finite($norm)) {
+            $norm = \sqrt($norm2);
+            if ($norm == 0.0 || ! \is_finite($norm)) {
                 throw ErrorCode::exception(ErrorCode::RANK_DEFICIENCY, 'polynomial basis is numerically rank deficient');
             }
             if ($k < $degree) {
@@ -302,9 +302,9 @@ final class Evaluator
                 $coefs['alpha'][] = $weighted / $norm2 + $mean;
             }
             $coefs['norm2'][] = $norm2;
-            $basis[] = array_map(fn ($a) => $a / $norm, $v);
+            $basis[] = \array_map(fn ($a) => $a / $norm, $v);
         }
-        array_shift($basis);
+        \array_shift($basis);
 
         return [$basis, $coefs];
     }
@@ -320,7 +320,7 @@ final class Evaluator
         $alpha = $coefs['alpha'];
         $norm2 = $coefs['norm2'];
         $degree = count($alpha);
-        $cols = array_fill(0, $degree, []);
+        $cols = \array_fill(0, $degree, []);
         foreach ($x as $v) {
             if ($v === null) {
                 for ($k = 0; $k < $degree; $k++) {
@@ -331,12 +331,12 @@ final class Evaluator
             }
             $previous = 1.0;
             $current = $v - $alpha[0];
-            $cols[0][] = self::clean($current / sqrt($norm2[2]));
+            $cols[0][] = self::clean($current / \sqrt($norm2[2]));
             for ($k = 1; $k < $degree; $k++) {
                 $next = ($v - $alpha[$k]) * $current - ($norm2[$k + 1] / $norm2[$k]) * $previous;
                 $previous = $current;
                 $current = $next;
-                $cols[$k][] = self::clean($current / sqrt($norm2[$k + 2]));
+                $cols[$k][] = self::clean($current / \sqrt($norm2[$k + 2]));
             }
         }
 
@@ -378,9 +378,9 @@ final class Evaluator
         $n = $data->rows;
         switch ($expr[0]) {
             case 'num':
-                return ['t' => 'num', 'v' => array_fill(0, $n, $expr[1])];
+                return ['t' => 'num', 'v' => \array_fill(0, $n, $expr[1])];
             case 'bool':
-                return ['t' => 'lgl', 'v' => array_fill(0, $n, $expr[1])];
+                return ['t' => 'lgl', 'v' => \array_fill(0, $n, $expr[1])];
             case 'str':
                 return ['t' => 'str', 's' => $expr[1]];
             case 'dot':
@@ -403,10 +403,10 @@ final class Evaluator
                         return ['t' => 'num', 'v' => self::numeric($v, Parser::deparse($expr))];
                     case '!':
                         if ($v['t'] === 'lgl') {
-                            return ['t' => 'lgl', 'v' => array_map(fn ($b) => $b === null ? null : ! $b, $v['v'])];
+                            return ['t' => 'lgl', 'v' => \array_map(fn ($b) => $b === null ? null : ! $b, $v['v'])];
                         }
                         if ($v['t'] === 'num') {
-                            return ['t' => 'lgl', 'v' => array_map(fn ($x) => $x === null ? null : $x == 0.0, $v['v'])];
+                            return ['t' => 'lgl', 'v' => \array_map(fn ($x) => $x === null ? null : $x == 0.0, $v['v'])];
                         }
                         throw Parser::error("'!' requires logical values");
                     default:
@@ -428,7 +428,7 @@ final class Evaluator
             return $value['v'];
         }
         if ($value['t'] === 'factor') {
-            return array_map(fn ($c) => $c === null ? null : $value['levels'][$c], $value['codes']);
+            return \array_map(fn ($c) => $c === null ? null : $value['levels'][$c], $value['codes']);
         }
 
         return null;
@@ -447,7 +447,7 @@ final class Evaluator
             if ($pair !== null) {
                 $eq = $op === '==';
 
-                return ['t' => 'lgl', 'v' => array_map(fn ($v) => $v === null ? null : (($v === $pair[1]) === $eq), $pair[0])];
+                return ['t' => 'lgl', 'v' => \array_map(fn ($v) => $v === null ? null : (($v === $pair[1]) === $eq), $pair[0])];
             }
         }
         if ($op === '&' || $op === '|') {
@@ -481,7 +481,7 @@ final class Evaluator
             '+' => fn ($x, $y) => $x + $y,
             '-' => fn ($x, $y) => $x - $y,
             '*' => fn ($x, $y) => $x * $y,
-            '/' => fn ($x, $y) => fdiv($x, $y),
+            '/' => fn ($x, $y) => \fdiv($x, $y),
             // R: 1^y and x^0 are 1 even for NaN/Inf operands.
             '^' => fn ($x, $y) => ($x == 1.0 || $y == 0.0) ? 1.0 : $x ** $y,
             '<', '>', '<=', '>=', '==', '!=' => null,
@@ -538,35 +538,35 @@ final class Evaluator
                 $x = self::numeric(self::evaluate($first(), $data), $text);
                 $base = self::arg($args, 1, 'base');
                 if ($base === null && count($args) === 1) {
-                    return self::map1($x, fn ($v) => log($v));
+                    return self::map1($x, fn ($v) => \log($v));
                 }
                 if ($base !== null && count($args) === 2) {
                     $b = self::constant($base) ?? throw Parser::error('log() base must be a number');
-                    $lb = $b > 0.0 ? log($b) : ($b == 0.0 ? -INF : NAN);
+                    $lb = $b > 0.0 ? \log($b) : ($b == 0.0 ? -INF : NAN);
 
-                    return self::map1($x, fn ($v) => fdiv(log($v), $lb));
+                    return self::map1($x, fn ($v) => \fdiv(\log($v), $lb));
                 }
                 throw Parser::error('log() takes x and an optional base');
             case 'log2':
-                return $unary(fn ($v) => $v > 0.0 ? log($v, 2) : log($v));
+                return $unary(fn ($v) => $v > 0.0 ? \log($v, 2) : \log($v));
             case 'log10':
-                return $unary(log10(...));
+                return $unary(\log10(...));
             case 'log1p':
-                return $unary(log1p(...));
+                return $unary(\log1p(...));
             case 'exp':
-                return $unary(exp(...));
+                return $unary(\exp(...));
             case 'expm1':
-                return $unary(expm1(...));
+                return $unary(\expm1(...));
             case 'sqrt':
-                return $unary(sqrt(...));
+                return $unary(\sqrt(...));
             case 'abs':
-                return $unary(fn ($v) => abs($v));
+                return $unary(fn ($v) => \abs($v));
             case 'sin':
-                return $unary(sin(...));
+                return $unary(\sin(...));
             case 'cos':
-                return $unary(cos(...));
+                return $unary(\cos(...));
             case 'tan':
-                return $unary(tan(...));
+                return $unary(\tan(...));
             case 'as.numeric':
             case 'as.double':
                 if (count($args) !== 1) {
@@ -574,7 +574,7 @@ final class Evaluator
                 }
                 $v = self::evaluate($first(), $data);
                 if ($v['t'] === 'factor') {
-                    return ['t' => 'num', 'v' => array_map(fn ($c) => $c === null ? null : $c + 1.0, $v['codes'])];
+                    return ['t' => 'num', 'v' => \array_map(fn ($c) => $c === null ? null : $c + 1.0, $v['codes'])];
                 }
 
                 return ['t' => 'num', 'v' => self::numeric($v, $text)];
@@ -626,13 +626,13 @@ final class Evaluator
         }
         $degree = $degreeExpr === null ? 1.0
             : (self::constant($degreeExpr) ?? throw Parser::error('poly() degree must be a number'));
-        if ($degree < 1.0 || fmod($degree, 1.0) != 0.0 || $degree > 25.0) {
+        if ($degree < 1.0 || \fmod($degree, 1.0) != 0.0 || $degree > 25.0) {
             throw Parser::error('poly() degree must be an integer from 1 to 25');
         }
         $degree = (int) $degree;
         $unnamed = 0;
         foreach ($args as [$n]) {
-            if ($n !== null && ! in_array($n, ['x', 'degree', 'raw'], true)) {
+            if ($n !== null && ! \in_array($n, ['x', 'degree', 'raw'], true)) {
                 throw Parser::error("unsupported poly() argument '$n'");
             }
         }
@@ -653,11 +653,11 @@ final class Evaluator
             throw Parser::error('poly() raw must be TRUE or FALSE');
         }
         $raw = $rawExpr !== null && $rawExpr[1];
-        $names = array_map('strval', range(1, $degree));
+        $names = \array_map('strval', \range(1, $degree));
         if ($raw) {
             $cols = [];
             for ($k = 1; $k <= $degree; $k++) {
-                $cols[] = array_map(fn ($v) => $v === null ? null : self::powi($v, $k), $x);
+                $cols[] = \array_map(fn ($v) => $v === null ? null : self::powi($v, $k), $x);
             }
 
             return ['t' => 'mat', 'cols' => $cols, 'names' => $names];
@@ -670,11 +670,11 @@ final class Evaluator
 
             return ['t' => 'mat', 'cols' => self::polyPredict($x, $coefs), 'names' => $names];
         }
-        if (in_array(null, $x, true)) {
+        if (\in_array(null, $x, true)) {
             throw Parser::error('missing values are not allowed in orthogonal poly(); use raw = TRUE or remove them');
         }
         [$basis, $coefs] = self::polyBasis($x, $degree);
-        if (! array_key_exists($text, self::$recordedPoly)) {
+        if (! \array_key_exists($text, self::$recordedPoly)) {
             self::$recordedPoly[$text] = $coefs;
         }
 

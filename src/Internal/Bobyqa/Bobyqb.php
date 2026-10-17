@@ -58,11 +58,11 @@ final class Bobyqb
         $hq = [];
         $fval = [];
         $pq = [];
-        $gopt = array_fill(0, $n, 0.0);
-        $sl = array_fill(0, $n, 0.0);
-        $su = array_fill(0, $n, 0.0);
-        $xbase = array_fill(0, $n, 0.0);
-        $d = array_fill(0, $n, 0.0);
+        $gopt = \array_fill(0, $n, 0.0);
+        $sl = \array_fill(0, $n, 0.0);
+        $su = \array_fill(0, $n, 0.0);
+        $xbase = \array_fill(0, $n, 0.0);
+        $d = \array_fill(0, $n, 0.0);
         $vlag = [];
         $den = [];
         $distsq = [];
@@ -103,7 +103,7 @@ final class Bobyqb
         $dnorm = 0.0;
 
         $bestF = $realmax;
-        $bestX = array_fill(0, $n, 0.0);
+        $bestX = \array_fill(0, $n, 0.0);
         $fireRestart = false;
         $ftolStageF = null;
 
@@ -170,7 +170,7 @@ final class Bobyqb
 
             $qred = -PowAlg::quadinc($d, $xpt, $n, $npt, $gopt, $pq, $hq);
             $qredThreshold = Util::F32_1E_6 * ($rho * $rho);
-            $trfail = is_nan($qred) || is_nan($qredThreshold) || $qred <= $qredThreshold;
+            $trfail = \is_nan($qred) || \is_nan($qredThreshold) || $qred <= $qredThreshold;
 
             if ($shortd || $trfail) {
                 $delta = 0.1 * $delta;
@@ -227,7 +227,7 @@ final class Bobyqb
                         break;
                     }
                 }
-                $toRescue = $ximproved && (! is_finite($vlagAbsSum) || ! $denOk);
+                $toRescue = $ximproved && (! \is_finite($vlagAbsSum) || ! $denOk);
                 if ($toRescue) {
                     if ($rescued) {
                         $info = Util::DAMAGING_ROUNDING;
@@ -281,7 +281,7 @@ final class Bobyqb
                 }
             }
 
-            $accurateMod = abs($moderrRec[0]) <= $ebound && abs($moderrRec[1]) <= $ebound
+            $accurateMod = \abs($moderrRec[0]) <= $ebound && \abs($moderrRec[1]) <= $ebound
                 && $dnormRec[0] <= $rho && $dnormRec[1] <= $rho;
             $koff = $kopt * $n;
             $distsq = [];
@@ -297,7 +297,7 @@ final class Bobyqb
             $closeBound = Linalg::max($delta * $delta, (10.0 * $rho) * (10.0 * $rho));
             $closeItpset = true;
             foreach ($distsq as $value) {
-                if (is_nan($value) || is_nan($closeBound) || $value > $closeBound) {
+                if (\is_nan($value) || \is_nan($closeBound) || $value > $closeBound) {
                     $closeItpset = false;
                     break;
                 }
@@ -323,14 +323,14 @@ final class Bobyqb
                         $maxDistsq = $distsq[$k];
                     }
                 }
-                $delbar = Linalg::max(Linalg::min(0.1 * sqrt($maxDistsq), $delta), $rho);
+                $delbar = Linalg::max(Linalg::min(0.1 * \sqrt($maxDistsq), $delta), $rho);
 
                 $d = Geometry::geostep($knewGeo, $kopt, $bmat, $delbar, $sl, $su, $xpt, $zmat, $n, $npt);
 
                 $geoBeta = PowAlg::calvlagAndDen($kopt, $bmat, $d, $xpt, $zmat, $n, $npt, $vlag, $den);
                 $vlagAbsSum = Linalg::sumAbs($vlag);
                 $geoThreshold = 0.5 * ($vlag[$knewGeo] * $vlag[$knewGeo]);
-                $toRescue = ! is_finite($vlagAbsSum) || is_nan($den[$knewGeo]) || is_nan($geoThreshold)
+                $toRescue = ! \is_finite($vlagAbsSum) || \is_nan($den[$knewGeo]) || \is_nan($geoThreshold)
                     || $den[$knewGeo] <= $geoThreshold;
                 if ($toRescue) {
                     if ($rescued) {
@@ -392,7 +392,7 @@ final class Bobyqb
                     $fopt = $fval[$kopt];
                     if ($ftolStageF !== null) {
                         $df = $ftolStageF - $fopt;
-                        if ($df <= $ftol[0] * Linalg::max(abs($fopt), 1.0) + $ftol[1]) {
+                        if ($df <= $ftol[0] * Linalg::max(\abs($fopt), 1.0) + $ftol[1]) {
                             $info = Util::FTOL_REACHED;
                             break;
                         }
@@ -450,18 +450,18 @@ final class Bobyqb
             $nf++;
         }
 
-        if ($fval[$kopt] < $f || is_nan($f)) {
+        if ($fval[$kopt] < $f || \is_nan($f)) {
             $x = Util::xinbd($xbase, Linalg::col($xpt, $n, $kopt), $xl, $xu, $sl, $su);
             $f = $fval[$kopt];
         }
 
-        if ($bestF < $f || (is_nan($f) && $bestF < $realmax)) {
+        if ($bestF < $f || (\is_nan($f) && $bestF < $realmax)) {
             $x = $bestX;
             $f = $bestF;
         }
 
         if ($restart !== null && $restart->cycleBoundaries !== []
-            && in_array($info, [Util::DAMAGING_ROUNDING, Util::NAN_INF_MODEL, Util::NAN_INF_X, Util::NAN_INF_F], true)) {
+            && \in_array($info, [Util::DAMAGING_ROUNDING, Util::NAN_INF_MODEL, Util::NAN_INF_X, Util::NAN_INF_F], true)) {
             $info = Util::SMALL_TR_RADIUS;
         }
 
@@ -471,13 +471,13 @@ final class Bobyqb
     /** PRIMA ratio.f90 redrat: the reduction ratio of a trust-region step, Inf/NaN-safe. */
     private static function redrat(float $ared, float $pred, float $rshrink): float
     {
-        if (is_nan($ared)) {
+        if (\is_nan($ared)) {
             return -Linalg::REALMAX;
         }
-        if (is_nan($pred) || $pred <= 0.0) {
+        if (\is_nan($pred) || $pred <= 0.0) {
             return $ared > 0.0 ? 0.5 * $rshrink : -Linalg::REALMAX;
         }
-        if (is_infinite($pred) && $pred > 0.0 && is_infinite($ared)) {
+        if (\is_infinite($pred) && $pred > 0.0 && \is_infinite($ared)) {
             return $ared > 0.0 ? 1.0 : -Linalg::REALMAX;
         }
 
@@ -495,7 +495,7 @@ final class Bobyqb
             return $rhoend;
         }
 
-        return sqrt($rhoRatio) * $rhoend;
+        return \sqrt($rhoRatio) * $rhoend;
     }
 
     /**
@@ -538,7 +538,7 @@ final class Bobyqb
             }
         }
 
-        $bmatNpt = array_slice($bmat, 0, $n * $npt);
+        $bmatNpt = \array_slice($bmat, 0, $n * $npt);
         $ymatT = [];
         for ($i = 0; $i < $n; $i++) {
             for ($k = 0; $k < $npt; $k++) {
@@ -634,7 +634,7 @@ final class Bobyqb
         $hm = PowAlg::hessMul($d, $xpt, $n, $npt, $pq, $hq);
         $maxAbsModerr = 0.0;
         foreach ($moderrRec as $value) {
-            $maxAbsModerr = Linalg::max($maxAbsModerr, abs($value));
+            $maxAbsModerr = Linalg::max($maxAbsModerr, \abs($value));
         }
 
         $bfirst = [];
@@ -652,7 +652,7 @@ final class Bobyqb
         }
 
         $rhosq = $rho * $rho;
-        $v = array_fill(0, $n, 0.0);
+        $v = \array_fill(0, $n, 0.0);
         for ($k = 0; $k < $npt; $k++) {
             $pqk = $pq[$k];
             $offset = $k * $n;

@@ -120,13 +120,13 @@ abstract class Glm
         }
         foreach ($x as $row) {
             foreach ($row as $value) {
-                if (! is_finite($value)) {
+                if (! \is_finite($value)) {
                     throw self::error(ErrorCode::NONFINITE, 'x and y must be finite');
                 }
             }
         }
         foreach ($y as $value) {
-            if (! is_finite($value)) {
+            if (! \is_finite($value)) {
                 throw self::error(ErrorCode::NONFINITE, 'x and y must be finite');
             }
         }
@@ -137,15 +137,15 @@ abstract class Glm
         $scales = [];
         $intercept = false;
         for ($j = 0; $j < $p; $j++) {
-            $column = array_column($x, $j);
+            $column = \array_column($x, $j);
             $ones = true;
             foreach ($column as $value) {
                 $ones = $ones && $value == 1.0;
             }
             $intercept = $intercept || $ones;
             // nalgebra's column norm, summed the same way.
-            $scale = sqrt(LeastSquares::dot($column, $column, 0, $n));
-            if (! is_finite($scale) || $scale == 0.0) {
+            $scale = \sqrt(LeastSquares::dot($column, $column, 0, $n));
+            if (! \is_finite($scale) || $scale == 0.0) {
                 throw self::error(ErrorCode::RANK_DEFICIENCY, 'design is rank deficient or exceeds floating-point range');
             }
             $design[$j] = $column;
@@ -155,9 +155,9 @@ abstract class Glm
             $columns[$j] = $column;
             $scales[$j] = $scale;
         }
-        $rootPrior = array_map(sqrt(...), $weights);
+        $rootPrior = \array_map(\sqrt(...), $weights);
 
-        $theta = array_fill(0, $p, 0.0);
+        $theta = \array_fill(0, $p, 0.0);
         $eta = $offset;
         $started = $this->start($y, $weights, $offset, $design, $scales, $n, $p);
         if ($started !== null) {
@@ -182,28 +182,28 @@ abstract class Glm
             for ($i = 0; $i < $n; $i++) {
                 $rhs[$i] = ($root[$i] == 0.0 && $scores[$i] == 0.0)
                     ? 0.0
-                    : fdiv($rootPrior[$i] * $scores[$i], $root[$i]);
+                    : \fdiv($rootPrior[$i] * $scores[$i], $root[$i]);
             }
             $ls = new LeastSquares($weighted, $n, $p, $rhs);
             if ($ls->rankDeficient()) {
                 throw self::error(ErrorCode::NONCONVERGENCE, $this->rankMessage());
             }
             foreach ($rhs as $value) {
-                if (! is_finite($value)) {
+                if (! \is_finite($value)) {
                     throw self::error(ErrorCode::NONCONVERGENCE, $this->overflowMessage());
                 }
             }
             $step = $ls->solution()
                 ?? throw self::error(ErrorCode::FACTORIZATION_FAILURE, 'least-squares factorization failed');
             foreach ($step as $value) {
-                if (! is_finite($value)) {
+                if (! \is_finite($value)) {
                     throw self::error(ErrorCode::NONFINITE, $this->name().' step exceeds floating-point range');
                 }
             }
             // Concave likelihood: halve an overlarge step until it does not decrease.
             $fraction = 1.0;
             $accepted = null;
-            $floor = $likelihood - 16.0 * PHP_FLOAT_EPSILON * (1.0 + abs($likelihood));
+            $floor = $likelihood - 16.0 * PHP_FLOAT_EPSILON * (1.0 + \abs($likelihood));
             for ($attempt = 0; $attempt < 31; $attempt++) {
                 $candidate = [];
                 for ($j = 0; $j < $p; $j++) {
@@ -211,7 +211,7 @@ abstract class Glm
                 }
                 $candidateEta = self::linear($columns, $candidate, $offset, $n);
                 $candidateLikelihood = $this->likelihood($candidateEta, $y, $weights);
-                if (is_finite($candidateLikelihood) && $candidateLikelihood >= $floor) {
+                if (\is_finite($candidateLikelihood) && $candidateLikelihood >= $floor) {
                     $accepted = [$candidate, $candidateEta, $candidateLikelihood];
                     break;
                 }
@@ -231,12 +231,12 @@ abstract class Glm
             // Require a small full step, not merely a damped one or a flat likelihood.
             $smallStep = true;
             for ($j = 0; $j < $p; $j++) {
-                if (abs($step[$j]) > $stepTolerance * (1.0 + abs($nextTheta[$j]))) {
+                if (\abs($step[$j]) > $stepTolerance * (1.0 + \abs($nextTheta[$j]))) {
                     $smallStep = false;
                     break;
                 }
             }
-            $smallChange = abs($nextLikelihood - $likelihood) <= $likelihoodTolerance * (1.0 + abs($likelihood));
+            $smallChange = \abs($nextLikelihood - $likelihood) <= $likelihoodTolerance * (1.0 + \abs($likelihood));
             $theta = $nextTheta;
             $eta = $nextEta;
             $likelihood = $nextLikelihood;
@@ -272,16 +272,16 @@ abstract class Glm
         $stdErrors = $zStatistics = $pValues = $confInt = [];
         $finite = true;
         for ($j = 0; $j < $p; $j++) {
-            $se = sqrt($covariance[$j][$j]);
-            $z = fdiv($coefficients[$j], $se);
+            $se = \sqrt($covariance[$j][$j]);
+            $z = \fdiv($coefficients[$j], $se);
             $stdErrors[$j] = $se;
             $zStatistics[$j] = $z;
-            $pValues[$j] = 2.0 * Statrs::normalSf(abs($z));
+            $pValues[$j] = 2.0 * Statrs::normalSf(\abs($z));
             $confInt[$j] = [$coefficients[$j] - $critical * $se, $coefficients[$j] + $critical * $se];
-            $finite = $finite && is_finite($coefficients[$j]) && is_finite($se) && is_finite($z)
-                && is_finite($pValues[$j]) && is_finite($confInt[$j][0]) && is_finite($confInt[$j][1]);
+            $finite = $finite && \is_finite($coefficients[$j]) && \is_finite($se) && \is_finite($z)
+                && \is_finite($pValues[$j]) && \is_finite($confInt[$j][0]) && \is_finite($confInt[$j][1]);
             foreach ($covariance[$j] as $value) {
-                $finite = $finite && is_finite($value);
+                $finite = $finite && \is_finite($value);
             }
         }
         if (! $finite) {
@@ -325,7 +325,7 @@ abstract class Glm
     protected static function checkWeights(array $weights, bool $binary): void
     {
         foreach ($weights as $w) {
-            if ($w <= 0.0 || ($binary && fmod($w, 1.0) != 0.0)) {
+            if ($w <= 0.0 || ($binary && \fmod($w, 1.0) != 0.0)) {
                 throw self::error(ErrorCode::INVALID_INPUT, 'weights must be positive (integer trials for binary outcomes)');
             }
         }
@@ -340,6 +340,6 @@ abstract class Glm
 
     protected static function softplus(float $t): float
     {
-        return max($t, 0.0) + log1p(exp(-abs($t)));
+        return \max($t, 0.0) + \log1p(\exp(-\abs($t)));
     }
 }

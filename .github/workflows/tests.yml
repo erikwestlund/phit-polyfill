@@ -10,19 +10,19 @@ jobs:
     name: PHP ${{ matrix.php }}, ${{ matrix.mode }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
-    # PHP 8.5.11's function JIT (opcache.jit=1235) intermittently hangs while
-    # compiling one of the large BOBYQA functions; see docs/notes/opcache-nan.md.
-    continue-on-error: ${{ matrix.mode == 'function-jit' }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
         php: ['8.5']
-        mode: [no-opcache, opcache, jit, function-jit]
+        mode: [no-opcache, opcache, jit, function-jit, function-jit-load]
         include:
           - os: macos-latest
             php: '8.5'
             mode: opcache
+          - os: macos-latest
+            php: '8.5'
+            mode: function-jit
     steps:
       - uses: actions/checkout@v4
 
@@ -52,6 +52,19 @@ jobs:
             # mode disables the JIT explicitly and function-jit keeps 1235.
             opcache) flags="-d opcache.enable_cli=1 -d opcache.file_update_protection=0 -d opcache.jit=disable" ;;
             function-jit) flags="-d opcache.enable_cli=1 -d opcache.file_update_protection=0 -d opcache.jit=1235 -d opcache.jit_buffer_size=128M" ;;
+            # Compiles every function when its file loads, independent of hot counters.
+            function-jit-load) flags="-d opcache.enable_cli=1 -d opcache.file_update_protection=0 -d opcache.jit=1205 -d opcache.jit_buffer_size=128M" ;;
             jit) flags="-d opcache.enable_cli=1 -d opcache.file_update_protection=0 -d opcache.jit=tracing -d opcache.jit_buffer_size=64M" ;;
           esac
-          php $flags vendor/bin/pest
+          set -o pipefail
+          php $flags vendor/bin/pest 2>&1 | tee pest.log
+          # The function JIT's register allocator prints "ENTRY n (block b start s)
+          # - live var v" when it cannot restore a value at a loop or call entry
+          # point (php-src #24214), and the compiled code then reads garbage.
+          # Fail on the message even when the tests pass. See
+          # docs/notes/function-jit.md.
+          if grep -q -- '- live var' pest.log; then
+            grep -- '- live var' pest.log
+            echo "::error::the function JIT reported an unrestorable value at an entry point"
+            exit 1
+          fi

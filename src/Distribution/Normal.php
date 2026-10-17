@@ -112,17 +112,17 @@ final class Normal
     /** @internal */
     public static function stdPdf(float $z): float
     {
-        if (is_infinite($z)) {
+        if (\is_infinite($z)) {
             return 0.0;
         }
-        if (abs($z) <= 5.0) {
-            return self::INV_SQRT_2PI * exp(-0.5 * $z * $z);
+        if (\abs($z) <= 5.0) {
+            return self::INV_SQRT_2PI * \exp(-0.5 * $z * $z);
         }
         // Split z so that z² is formed exactly in its leading part (as R's dnorm).
         $z1 = Support::round($z * 65536.0) / 65536.0;
         $z2 = $z - $z1;
 
-        return self::INV_SQRT_2PI * exp(-0.5 * $z1 * $z1) * exp((-0.5 * $z2 - $z1) * $z2);
+        return self::INV_SQRT_2PI * \exp(-0.5 * $z1 * $z1) * \exp((-0.5 * $z2 - $z1) * $z2);
     }
 
     /** @internal */
@@ -192,13 +192,13 @@ final class Normal
             return self::stdPdf($this->z($x));
         }
 
-        return exp($this->logpdfAt($x));
+        return \exp($this->logpdfAt($x));
     }
 
     /** @internal */
     public function logpdfAt(float $x): float
     {
-        return self::stdLogpdf($this->z($x)) - log($this->sd);
+        return self::stdLogpdf($this->z($x)) - \log($this->sd);
     }
 
     /** @internal */

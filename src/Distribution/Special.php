@@ -62,10 +62,10 @@ final class Special
     public static function logTail(float $lower, float $upper, \Closure $extreme): float
     {
         if ($lower > 0.5) {
-            return log1p(-$upper);
+            return \log1p(-$upper);
         }
         if ($lower >= self::TINY) {
-            return log($lower);
+            return \log($lower);
         }
 
         return $extreme();
@@ -79,14 +79,14 @@ final class Special
         }
         $ln = $lnValue();
 
-        return is_nan($ln) ? $value : exp($ln);
+        return \is_nan($ln) ? $value : \exp($ln);
     }
 
     /** ln Φ(z) for z < -8 from the continued fraction for the Mills ratio. */
     public static function normalLogLowerTail(float $z): float
     {
         $x = -$z;
-        if (is_infinite($x)) {
+        if (\is_infinite($x)) {
             return -INF;
         }
         $denominator = $x;
@@ -94,7 +94,7 @@ final class Special
             $denominator = $x + $k / $denominator;
         }
 
-        return -0.5 * $x * $x - self::LN_SQRT_2PI - log($denominator);
+        return -0.5 * $x * $x - self::LN_SQRT_2PI - \log($denominator);
     }
 
     /** ln P(a, x) by the power series; valid for x < a + 1. */
@@ -112,7 +112,7 @@ final class Special
             $term *= $x / ($a + $n);
             $sum += $term;
             if ($term < $sum * PHP_FLOAT_EPSILON) {
-                return $a * log($x) - $x - Cdflib::gammaLog($a) + log($sum);
+                return $a * \log($x) - $x - Cdflib::gammaLog($a) + \log($sum);
             }
         }
 
@@ -122,7 +122,7 @@ final class Special
     /** ln Q(a, x) by Lentz's continued fraction; valid for x > a + 1. */
     public static function lnGammaUpperFraction(float $a, float $x): float
     {
-        if (is_infinite($x)) {
+        if (\is_infinite($x)) {
             return -INF;
         }
         if ($x <= $a + 1.0) {
@@ -137,18 +137,18 @@ final class Special
             $an = -$fi * ($fi - $a);
             $b += 2.0;
             $d = $an * $d + $b;
-            if (abs($d) < self::FPMIN) {
+            if (\abs($d) < self::FPMIN) {
                 $d = self::FPMIN;
             }
             $c = $b + $an / $c;
-            if (abs($c) < self::FPMIN) {
+            if (\abs($c) < self::FPMIN) {
                 $c = self::FPMIN;
             }
             $d = 1.0 / $d;
             $delta = $d * $c;
             $h *= $delta;
-            if (abs($delta - 1.0) < PHP_FLOAT_EPSILON) {
-                return -$x + $a * log($x) - Cdflib::gammaLog($a) + log($h);
+            if (\abs($delta - 1.0) < PHP_FLOAT_EPSILON) {
+                return -$x + $a * \log($x) - Cdflib::gammaLog($a) + \log($h);
             }
         }
 
@@ -172,7 +172,7 @@ final class Special
         $qam = $a - 1.0;
         $c = 1.0;
         $d = 1.0 - $qab * $x / $qap;
-        if (abs($d) < self::FPMIN) {
+        if (\abs($d) < self::FPMIN) {
             $d = self::FPMIN;
         }
         $d = 1.0 / $d;
@@ -182,29 +182,29 @@ final class Special
             $m2 = 2.0 * $m;
             $aa = $m * ($b - $m) * $x / (($qam + $m2) * ($a + $m2));
             $d = 1.0 + $aa * $d;
-            if (abs($d) < self::FPMIN) {
+            if (\abs($d) < self::FPMIN) {
                 $d = self::FPMIN;
             }
             $c = 1.0 + $aa / $c;
-            if (abs($c) < self::FPMIN) {
+            if (\abs($c) < self::FPMIN) {
                 $c = self::FPMIN;
             }
             $d = 1.0 / $d;
             $h *= $d * $c;
             $aa = -($a + $m) * ($qab + $m) * $x / (($a + $m2) * ($qap + $m2));
             $d = 1.0 + $aa * $d;
-            if (abs($d) < self::FPMIN) {
+            if (\abs($d) < self::FPMIN) {
                 $d = self::FPMIN;
             }
             $c = 1.0 + $aa / $c;
-            if (abs($c) < self::FPMIN) {
+            if (\abs($c) < self::FPMIN) {
                 $c = self::FPMIN;
             }
             $d = 1.0 / $d;
             $delta = $d * $c;
             $h *= $delta;
-            if (abs($delta - 1.0) < PHP_FLOAT_EPSILON) {
-                return $a * $lnX + $b * $lnY - Cdflib::betaLog($a, $b) - log($a) + log($h);
+            if (\abs($delta - 1.0) < PHP_FLOAT_EPSILON) {
+                return $a * $lnX + $b * $lnY - Cdflib::betaLog($a, $b) - \log($a) + \log($h);
             }
         }
 
@@ -216,11 +216,11 @@ final class Special
     {
         if ($n <= 15.0) {
             $twice = $n + $n;
-            if ($twice == floor($twice) && $twice >= 1.0) {
+            if ($twice == \floor($twice) && $twice >= 1.0) {
                 return self::STIRLING_HALVES[(int) $twice - 1];
             }
 
-            return Cdflib::gammaLog($n + 1.0) - ($n + 0.5) * log($n) + $n - self::LN_SQRT_2PI;
+            return Cdflib::gammaLog($n + 1.0) - ($n + 0.5) * \log($n) + $n - self::LN_SQRT_2PI;
         }
         $S0 = 1.0 / 12.0;
         $S1 = 1.0 / 360.0;
@@ -244,10 +244,10 @@ final class Special
     /** Deviance term x ln(x / np) + np - x without cancellation when x ≈ np. */
     public static function devianceTerm(float $x, float $np): float
     {
-        if (abs($x - $np) < 0.1 * ($x + $np)) {
+        if (\abs($x - $np) < 0.1 * ($x + $np)) {
             $v = ($x - $np) / ($x + $np);
             $s = ($x - $np) * $v;
-            if (abs($s) < PHP_FLOAT_MIN) {
+            if (\abs($s) < PHP_FLOAT_MIN) {
                 return $s;
             }
             $ej = 2.0 * $x * $v;
@@ -262,7 +262,7 @@ final class Special
             }
         }
 
-        return $x * log(fdiv($x, $np)) + $np - $x;
+        return $x * \log(\fdiv($x, $np)) + $np - $x;
     }
 
     /** ln of λ^x e^-λ / Γ(x + 1) for real x ≥ 0 (Loader's saddle-point form). */
@@ -271,17 +271,17 @@ final class Special
         if ($lambda == 0.0) {
             return $x == 0.0 ? 0.0 : -INF;
         }
-        if (! is_finite($lambda) || $x < 0.0) {
+        if (! \is_finite($lambda) || $x < 0.0) {
             return -INF;
         }
         if ($x == 0.0) {
             return -$lambda;
         }
-        if (is_infinite($x)) {
+        if (\is_infinite($x)) {
             return -INF;
         }
 
-        return -self::stirlingError($x) - self::devianceTerm($x, $lambda) - 0.5 * log(2.0 * M_PI * $x);
+        return -self::stirlingError($x) - self::devianceTerm($x, $lambda) - 0.5 * \log(2.0 * M_PI * $x);
     }
 
     /** ln of the binomial density at real 0 ≤ x ≤ n, with q = 1 - p supplied. */
@@ -309,17 +309,17 @@ final class Special
                 return 0.0;
             }
 
-            return $p < 0.1 ? -self::devianceTerm($n, $n * $q) - $n * $p : $n * log($q);
+            return $p < 0.1 ? -self::devianceTerm($n, $n * $q) - $n * $p : $n * \log($q);
         }
         if ($m == 0.0) {
-            return $q < 0.1 ? -self::devianceTerm($n, $n * $p) - $n * $q : $n * log($p);
+            return $q < 0.1 ? -self::devianceTerm($n, $n * $p) - $n * $q : $n * \log($p);
         }
         $lc = self::stirlingError($n)
             - self::stirlingError($x)
             - self::stirlingError($m)
             - self::devianceTerm($x, $n * $p)
             - self::devianceTerm($m, $n * $q);
-        $lf = log(2.0 * M_PI) + log($x) + log($m / $n);
+        $lf = \log(2.0 * M_PI) + \log($x) + \log($m / $n);
 
         return $lc - 0.5 * $lf;
     }
@@ -327,16 +327,16 @@ final class Special
     /** ln(1 + e^t) without overflow. */
     public static function softplus(float $t): float
     {
-        return ($t > 0.0 ? $t : 0.0) + log1p(exp(-abs($t)));
+        return ($t > 0.0 ? $t : 0.0) + \log1p(\exp(-\abs($t)));
     }
 
     /** ln(1 - e^-t) for t ≥ 0 (Mächler's log1mexp). */
     public static function lnOneMinusExpNeg(float $t): float
     {
         if ($t <= M_LN2) {
-            return log(-expm1(-$t));
+            return \log(-\expm1(-$t));
         }
 
-        return log1p(-exp(-$t));
+        return \log1p(-\exp(-$t));
     }
 }

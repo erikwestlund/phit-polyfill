@@ -27,10 +27,10 @@ final class Linalg
      */
     public static function max(float $a, float $b): float
     {
-        if (is_nan($a)) {
+        if (\is_nan($a)) {
             return $b;
         }
-        if (is_nan($b)) {
+        if (\is_nan($b)) {
             return $a;
         }
         if ($a > $b) {
@@ -47,10 +47,10 @@ final class Linalg
     /** Rust's f64::min: a NaN operand loses, and -0 beats +0. */
     public static function min(float $a, float $b): float
     {
-        if (is_nan($a)) {
+        if (\is_nan($a)) {
             return $b;
         }
-        if (is_nan($b)) {
+        if (\is_nan($b)) {
             return $a;
         }
         if ($a < $b) {
@@ -66,9 +66,9 @@ final class Linalg
     /** |a| with the sign bit of b. */
     public static function copysign(float $a, float $b): float
     {
-        $negative = (ord(pack('E', $b)[0]) & 0x80) !== 0;
+        $negative = (\ord(\pack('E', $b)[0]) & 0x80) !== 0;
 
-        return $negative ? -abs($a) : abs($a);
+        return $negative ? -\abs($a) : \abs($a);
     }
 
     /** Rust's f64::midpoint. */
@@ -76,8 +76,8 @@ final class Linalg
     {
         $lo = 2.0 * self::REALMIN;
         $hi = self::REALMAX / 2.0;
-        $absA = abs($a);
-        $absB = abs($b);
+        $absA = \abs($a);
+        $absB = \abs($b);
         if ($absA <= $hi && $absB <= $hi) {
             return ($a + $b) / 2.0;
         }
@@ -115,7 +115,7 @@ final class Linalg
     {
         $s = -0.0;
         foreach ($x as $v) {
-            $s += abs($v);
+            $s += \abs($v);
         }
 
         return $s;
@@ -125,7 +125,7 @@ final class Linalg
     public static function allFinite(array $x): bool
     {
         foreach ($x as $v) {
-            if (! is_finite($v)) {
+            if (! \is_finite($v)) {
                 return false;
             }
         }
@@ -180,7 +180,7 @@ final class Linalg
     public static function matprod21(array $x, int $nr, int $nc, array $y): array
     {
         if ($nc === 0) {
-            return array_fill(0, $nr, 0.0);
+            return \array_fill(0, $nr, 0.0);
         }
         $z = [];
         $y0 = $y[0];
@@ -208,7 +208,7 @@ final class Linalg
      */
     public static function matprod22(array $x, int $xr, int $xc, array $y, int $yc): array
     {
-        $z = array_fill(0, $xr * $yc, 0.0);
+        $z = \array_fill(0, $xr * $yc, 0.0);
         for ($j = 0; $j < $yc; $j++) {
             $zOffset = $j * $xr;
             for ($i = 0; $i < $xc; $i++) {
@@ -251,7 +251,7 @@ final class Linalg
     {
         $maxabs = 0.0;
         foreach ($x as $v) {
-            $maxabs = self::max($maxabs, abs($v));
+            $maxabs = self::max($maxabs, \abs($v));
         }
         if ($x === []) {
             return 0.0;
@@ -259,7 +259,7 @@ final class Linalg
         if (! self::allFinite($x)) {
             $y = 0.0;
             foreach ($x as $v) {
-                $y += abs($v);
+                $y += \abs($v);
             }
 
             return $y;
@@ -271,15 +271,15 @@ final class Linalg
         foreach ($x as $v) {
             $sumsq += $v * $v;
         }
-        $y = sqrt($sumsq);
-        if ((is_infinite($y) && $y > 0.0) || $y <= 0.0) {
+        $y = \sqrt($sumsq);
+        if ((\is_infinite($y) && $y > 0.0) || $y <= 0.0) {
             $scaling = self::min(self::SCALMAX, self::max(self::REALMIN, $maxabs));
             $scaled = 0.0;
             foreach ($x as $v) {
                 $s = $v / $scaling;
                 $scaled += $s * $s;
             }
-            $y = $scaling * sqrt($scaled);
+            $y = $scaling * \sqrt($scaled);
         }
 
         return $y;
@@ -292,36 +292,36 @@ final class Linalg
      */
     public static function planerot(float $x0, float $x1): array
     {
-        if (is_nan($x0) || is_nan($x1)) {
+        if (\is_nan($x0) || \is_nan($x1)) {
             return [1.0, 0.0];
         }
-        if (is_infinite($x0) && is_infinite($x1)) {
-            return [self::copysign(1.0 / sqrt(2.0), $x0), self::copysign(1.0 / sqrt(2.0), $x1)];
+        if (\is_infinite($x0) && \is_infinite($x1)) {
+            return [self::copysign(1.0 / \sqrt(2.0), $x0), self::copysign(1.0 / \sqrt(2.0), $x1)];
         }
-        if (abs($x0) <= 0.0 && abs($x1) <= 0.0) {
+        if (\abs($x0) <= 0.0 && \abs($x1) <= 0.0) {
             return [1.0, 0.0];
         }
-        if (abs($x1) <= self::EPS * abs($x0)) {
+        if (\abs($x1) <= self::EPS * \abs($x0)) {
             return [self::copysign(1.0, $x0), 0.0];
         }
-        if (abs($x0) <= self::EPS * abs($x1)) {
+        if (\abs($x0) <= self::EPS * \abs($x1)) {
             return [0.0, self::copysign(1.0, $x1)];
         }
-        $lo = sqrt(self::REALMIN);
-        $hi = sqrt(self::REALMAX / 2.1);
-        if (abs($x0) > $lo && abs($x0) < $hi && abs($x1) > $lo && abs($x1) < $hi) {
+        $lo = \sqrt(self::REALMIN);
+        $hi = \sqrt(self::REALMAX / 2.1);
+        if (\abs($x0) > $lo && \abs($x0) < $hi && \abs($x1) > $lo && \abs($x1) < $hi) {
             $r = self::norm([$x0, $x1]);
 
             return [$x0 / $r, $x1 / $r];
         }
-        if (abs($x0) > abs($x1)) {
+        if (\abs($x0) > \abs($x1)) {
             $t = $x1 / $x0;
-            $u = self::copysign(self::max(self::max(1.0, abs($t)), sqrt(1.0 + $t * $t)), $x0);
+            $u = self::copysign(self::max(self::max(1.0, \abs($t)), \sqrt(1.0 + $t * $t)), $x0);
 
             return [1.0 / $u, $t / $u];
         }
         $t = $x0 / $x1;
-        $u = self::copysign(self::max(self::max(1.0, abs($t)), sqrt(1.0 + $t * $t)), $x1);
+        $u = self::copysign(self::max(self::max(1.0, \abs($t)), \sqrt(1.0 + $t * $t)), $x1);
 
         return [$t / $u, 1.0 / $u];
     }
@@ -382,6 +382,6 @@ final class Linalg
      */
     public static function col(array $a, int $nr, int $j): array
     {
-        return array_slice($a, $j * $nr, $nr);
+        return \array_slice($a, $j * $nr, $nr);
     }
 }

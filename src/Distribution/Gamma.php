@@ -110,17 +110,17 @@ final class Gamma
     private function stdLogpdf(float $y): float
     {
         $a = $this->shape;
-        if ($y < 0.0 || is_infinite($y)) {
+        if ($y < 0.0 || \is_infinite($y)) {
             return -INF;
         }
         if ($y == 0.0) {
             return $a < 1.0 ? INF : ($a == 1.0 ? 0.0 : -INF);
         }
         if ($y < 1e-100) {
-            return ($a - 1.0) * log($y) - $y - Cdflib::gammaLog($a);
+            return ($a - 1.0) * \log($y) - $y - Cdflib::gammaLog($a);
         }
         if ($a < 1.0) {
-            return Special::lnPoissonRaw($a, $y) + log($a) - log($y);
+            return Special::lnPoissonRaw($a, $y) + \log($a) - \log($y);
         }
 
         return Special::lnPoissonRaw($a - 1.0, $y);
@@ -131,7 +131,7 @@ final class Gamma
         if ($y <= 0.0) {
             return [0.0, 1.0];
         }
-        if (is_infinite($y)) {
+        if (\is_infinite($y)) {
             return [1.0, 0.0];
         }
 
@@ -154,7 +154,7 @@ final class Gamma
     private function stdLogcdf(float $y): float
     {
         if (($exact = self::stdExact($y)) !== null) {
-            return log($exact[0]);
+            return \log($exact[0]);
         }
         [$p, $q] = $this->stdTails($y);
 
@@ -164,7 +164,7 @@ final class Gamma
     private function stdLogsf(float $y): float
     {
         if (($exact = self::stdExact($y)) !== null) {
-            return log($exact[1]);
+            return \log($exact[1]);
         }
         [$p, $q] = $this->stdTails($y);
 
@@ -174,13 +174,13 @@ final class Gamma
     /** @internal */
     public function pdfAt(float $x): float
     {
-        return exp($this->logpdfAt($x));
+        return \exp($this->logpdfAt($x));
     }
 
     /** @internal */
     public function logpdfAt(float $x): float
     {
-        return $this->stdLogpdf($x / $this->scale) - log($this->scale);
+        return $this->stdLogpdf($x / $this->scale) - \log($this->scale);
     }
 
     /** @internal */
@@ -213,10 +213,10 @@ final class Gamma
         $a = $this->shape;
         // Wilson–Hilferty start, or the small-x power law when it is not positive.
         $c = 1.0 / (9.0 * $a);
-        $w = 1.0 - $c + Normal::stdQuantile($p) * sqrt($c);
+        $w = 1.0 - $c + Normal::stdQuantile($p) * \sqrt($c);
         $start = $w > 0.0
             ? $a * $w * $w * $w
-            : exp((log($p) + Cdflib::gammaLog($a + 1.0)) / $a);
+            : \exp((\log($p) + Cdflib::gammaLog($a + 1.0)) / $a);
 
         return $this->scale * Quantile::continuous(
             $p,

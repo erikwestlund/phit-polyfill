@@ -30,7 +30,7 @@ final class Data
 
     public function column(string $name): ?array
     {
-        $i = array_search($name, $this->names, true);
+        $i = \array_search($name, $this->names, true);
 
         return $i === false ? null : $this->columns[$i];
     }
@@ -43,22 +43,22 @@ final class Data
     /** Whether ext-php-rs reads $value as a Rust &str (a valid UTF-8 string). */
     public static function utf8(mixed $value): bool
     {
-        return is_string($value) && mb_check_encoding($value, 'UTF-8');
+        return \is_string($value) && \mb_check_encoding($value, 'UTF-8');
     }
 
     /** An array of columns, or an object with toModelData() or toColumns(). */
     public static function from(mixed $data): self
     {
-        if (is_array($data)) {
+        if (\is_array($data)) {
             return self::fromColumns($data);
         }
-        if (is_object($data)) {
+        if (\is_object($data)) {
             foreach (['toModelData', 'toColumns'] as $method) {
-                if (! method_exists($data, $method)) {
+                if (! \method_exists($data, $method)) {
                     continue;
                 }
                 $result = new \ReflectionMethod($data, $method)->invoke($data);
-                if (! is_array($result)) {
+                if (! \is_array($result)) {
                     throw self::invalid("$method() must return an array of columns");
                 }
 
@@ -72,7 +72,7 @@ final class Data
     {
         $columns = [];
         foreach ($table as $key => $value) {
-            if (! is_string($key)) {
+            if (! \is_string($key)) {
                 throw self::invalid('data must be an associative array of columns (name => list of values), not a list of rows');
             }
             $columns[] = [$key, self::convert($key, $value)];
@@ -85,7 +85,7 @@ final class Data
             if ($length !== $n) {
                 throw ErrorCode::exception(ErrorCode::DIMENSION_MISMATCH, "column '$name' has $length values; every column needs $n");
             }
-            if ($column['t'] === 'factor' && count(array_unique($column['levels'], SORT_STRING)) !== count($column['levels'])) {
+            if ($column['t'] === 'factor' && count(\array_unique($column['levels'], SORT_STRING)) !== count($column['levels'])) {
                 throw self::invalid("factor column '$name' has duplicate levels");
             }
             $names[] = $name;
@@ -106,11 +106,11 @@ final class Data
 
     private static function convert(string $name, mixed $value): array
     {
-        if (! is_array($value)) {
+        if (! \is_array($value)) {
             throw self::invalid("column '$name' must be an array of values or a factor descriptor");
         }
         foreach ($value as $key => $_) {
-            if (! is_int($key)) {
+            if (! \is_int($key)) {
                 return self::descriptor($name, $value);
             }
         }
@@ -125,14 +125,14 @@ final class Data
             if ($v === null) {
                 continue;
             }
-            if (is_int($v) || is_float($v)) {
-                if (is_float($v) && is_infinite($v)) {
+            if (\is_int($v) || \is_float($v)) {
+                if (\is_float($v) && \is_infinite($v)) {
                     throw ErrorCode::exception(ErrorCode::NONFINITE, "column '$name' contains an infinite value");
                 }
                 $numbers = true;
-            } elseif (is_bool($v)) {
+            } elseif (\is_bool($v)) {
                 $bools = true;
-            } elseif (is_string($v)) {
+            } elseif (\is_string($v)) {
                 $strings = true;
             } else {
                 $nested = true;
@@ -155,13 +155,13 @@ final class Data
         }
         if ($bools) {
             foreach ($value as $v) {
-                $out[] = is_bool($v) ? $v : null;
+                $out[] = \is_bool($v) ? $v : null;
             }
 
             return ['t' => 'lgl', 'v' => $out];
         }
         foreach ($value as $v) {
-            $out[] = ($v === null || (is_float($v) && is_nan($v))) ? null : (float) $v;
+            $out[] = ($v === null || (\is_float($v) && \is_nan($v))) ? null : (float) $v;
         }
 
         return ['t' => 'num', 'v' => $out];
@@ -175,7 +175,7 @@ final class Data
         if (count($table) !== 3) {
             throw $malformed('unexpected keys');
         }
-        if (! is_array($table['levels'] ?? null)) {
+        if (! \is_array($table['levels'] ?? null)) {
             throw $malformed('levels must be an array');
         }
         $levels = [];
@@ -185,14 +185,14 @@ final class Data
             }
             $levels[] = $level;
         }
-        if (! is_array($table['codes'] ?? null)) {
+        if (! \is_array($table['codes'] ?? null)) {
             throw $malformed('codes must be an array');
         }
         $codes = [];
         foreach ($table['codes'] as $code) {
             if ($code === null) {
                 $codes[] = null;
-            } elseif (is_int($code)) {
+            } elseif (\is_int($code)) {
                 if ($code < 0 || $code >= count($levels)) {
                     throw $malformed('codes must be 0-based indexes into levels');
                 }
@@ -201,7 +201,7 @@ final class Data
                 throw $malformed('codes must be integers or null');
             }
         }
-        if (! is_bool($table['ordered'] ?? null)) {
+        if (! \is_bool($table['ordered'] ?? null)) {
             throw $malformed('ordered must be a boolean');
         }
 

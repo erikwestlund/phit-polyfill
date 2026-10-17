@@ -35,20 +35,20 @@ final class Quantile
             return $upper;
         }
         $useLower = $p <= 0.5;
-        $target = $useLower ? log($p) : log(1.0 - $p);
+        $target = $useLower ? \log($p) : \log(1.0 - $p);
         $g = $useLower
             ? static fn (float $x): float => $logCdf($x) - $target
             : static fn (float $x): float => $target - $logSf($x);
         $tail = $useLower ? $logCdf : $logSf;
-        $slope = static fn (float $x): float => exp($logPdf($x) - $tail($x));
+        $slope = static fn (float $x): float => \exp($logPdf($x) - $tail($x));
 
-        if (is_finite($start) && $start > $lower && $start < $upper) {
+        if (\is_finite($start) && $start > $lower && $start < $upper) {
             $x = $start;
-        } elseif (is_finite($lower) && is_finite($upper)) {
+        } elseif (\is_finite($lower) && \is_finite($upper)) {
             $x = 0.5 * ($lower + $upper);
-        } elseif (is_finite($lower)) {
+        } elseif (\is_finite($lower)) {
             $x = $lower + 1.0;
-        } elseif (is_finite($upper)) {
+        } elseif (\is_finite($upper)) {
             $x = $upper - 1.0;
         } else {
             $x = 0.0;
@@ -58,42 +58,42 @@ final class Quantile
             return $x;
         }
         // A failed tail evaluation (NaN) must surface as a failure, not steer the search.
-        if (is_nan($gx)) {
+        if (\is_nan($gx)) {
             return NAN;
         }
         $a = $lower;
         $b = $upper;
         if ($gx < 0.0) {
             $a = $x;
-            if (is_infinite($upper)) {
+            if (\is_infinite($upper)) {
                 // The upstream walk stops at the first point where g is NaN or
                 // reaches the target; a NaN stop is a failure.
                 // NaN is tested explicitly: opcache's optimizer may rewrite !(a < b) as a >= b.
                 $hit = self::bracket($x, 1.0, static function (float $v) use ($g): bool {
                     $gv = $g($v);
 
-                    return is_nan($gv) || $gv >= 0.0;
+                    return \is_nan($gv) || $gv >= 0.0;
                 });
                 if ($hit === null) {
                     return $upper;
                 }
-                if (is_nan($g($hit[0]))) {
+                if (\is_nan($g($hit[0]))) {
                     return NAN;
                 }
                 [$b, $a] = $hit;
             }
         } else {
             $b = $x;
-            if (is_infinite($lower)) {
+            if (\is_infinite($lower)) {
                 $hit = self::bracket($x, -1.0, static function (float $v) use ($g): bool {
                     $gv = $g($v);
 
-                    return is_nan($gv) || $gv <= 0.0;
+                    return \is_nan($gv) || $gv <= 0.0;
                 });
                 if ($hit === null) {
                     return $lower;
                 }
-                if (is_nan($g($hit[0]))) {
+                if (\is_nan($g($hit[0]))) {
                     return NAN;
                 }
                 [$a, $b] = $hit;
@@ -103,15 +103,15 @@ final class Quantile
         }
 
         for ($i = 0; $i < 400; $i++) {
-            $step = fdiv($gx, $slope($x));
+            $step = \fdiv($gx, $slope($x));
             $next = $x - $step;
             // Written without a negation: opcache folds !(x > a) into x <= a, which is wrong for NaN.
-            if (is_finite($next) && $next > $a && $next < $b) {
+            if (\is_finite($next) && $next > $a && $next < $b) {
                 // Keep the Newton step.
             } else {
                 $next = self::midpoint($a, $b);
             }
-            if ($next == $x || abs($next - $x) <= 4.0 * PHP_FLOAT_EPSILON * abs($next)) {
+            if ($next == $x || \abs($next - $x) <= 4.0 * PHP_FLOAT_EPSILON * \abs($next)) {
                 return $next;
             }
             $x = $next;
@@ -119,7 +119,7 @@ final class Quantile
             if ($gx == 0.0) {
                 return $x;
             }
-            if (is_nan($gx)) {
+            if (\is_nan($gx)) {
                 return NAN;
             }
             if ($gx < 0.0) {
@@ -127,8 +127,8 @@ final class Quantile
             } else {
                 $b = $x;
             }
-            $absA = abs($a);
-            $absB = abs($b);
+            $absA = \abs($a);
+            $absB = \abs($b);
             if ($b - $a <= 4.0 * PHP_FLOAT_EPSILON * ($absA > $absB ? $absA : $absB)) {
                 return 0.5 * ($a + $b);
             }
@@ -158,9 +158,9 @@ final class Quantile
         $previous = $x;
         while (true) {
             $distance = $direction < 0.0 ? $next - 2.0 : -2.0 - $next;
-            if ($distance >= 0.0 && abs($next) < $limit) {
+            if ($distance >= 0.0 && \abs($next) < $limit) {
                 // Steps k = 1..K keep the preceding point at |v| >= 2, so each is exact.
-                $steps = floor($distance / 2.0) + 1.0;
+                $steps = \floor($distance / 2.0) + 1.0;
                 $origin = $next;
                 $at = static fn (float $k): float => $origin + $direction * (2.0 * $k);
                 $miss = 0.0;
@@ -174,7 +174,7 @@ final class Quantile
                 }
                 if ($probe !== INF) {
                     while ($probe - $miss > 1.0) {
-                        $mid = floor($miss + ($probe - $miss) / 2.0);
+                        $mid = \floor($miss + ($probe - $miss) / 2.0);
                         if ($stop($at($mid))) {
                             $probe = $mid;
                         } else {
@@ -211,25 +211,25 @@ final class Quantile
         if ($x * $direction <= 2.0) {
             return $x + 2.0 * $direction;
         }
-        if (abs($x) == PHP_FLOAT_MAX) {
+        if (\abs($x) == PHP_FLOAT_MAX) {
             return $direction * INF;
         }
-        $next = $x * abs($x);
+        $next = $x * \abs($x);
 
-        return is_finite($next) ? $next : $direction * PHP_FLOAT_MAX;
+        return \is_finite($next) ? $next : $direction * PHP_FLOAT_MAX;
     }
 
     private static function midpoint(float $a, float $b): float
     {
         $aFloor = $a > PHP_FLOAT_MIN ? $a : PHP_FLOAT_MIN;
         if ($a >= 0.0 && $b > 4.0 * $aFloor) {
-            return sqrt($aFloor) * sqrt($b);
+            return \sqrt($aFloor) * \sqrt($b);
         }
         $bCeil = $b < -PHP_FLOAT_MIN ? $b : -PHP_FLOAT_MIN;
         if ($b <= 0.0 && $a < 4.0 * $bCeil) {
-            $absB = abs($b);
+            $absB = \abs($b);
 
-            return -(sqrt(abs($a)) * sqrt($absB > PHP_FLOAT_MIN ? $absB : PHP_FLOAT_MIN));
+            return -(\sqrt(\abs($a)) * \sqrt($absB > PHP_FLOAT_MIN ? $absB : PHP_FLOAT_MIN));
         }
 
         return $a + 0.5 * ($b - $a);
@@ -260,15 +260,15 @@ final class Quantile
             $bound = (1.0 - $p) * (1.0 + $fuzz);
             $reached = static function (float $k) use ($sf, $bound, &$failed): bool {
                 $v = $sf($k);
-                $failed = $failed || is_nan($v);
+                $failed = $failed || \is_nan($v);
 
                 return $v <= $bound;
             };
         } elseif ($p < Special::TINY) {
-            $bound = log($p) + log1p(-$fuzz);
+            $bound = \log($p) + \log1p(-$fuzz);
             $reached = static function (float $k) use ($logCdf, $bound, &$failed): bool {
                 $v = $logCdf($k);
-                $failed = $failed || is_nan($v);
+                $failed = $failed || \is_nan($v);
 
                 return $v >= $bound;
             };
@@ -276,14 +276,14 @@ final class Quantile
             $bound = $p * (1.0 - $fuzz);
             $reached = static function (float $k) use ($cdf, $bound, &$failed): bool {
                 $v = $cdf($k);
-                $failed = $failed || is_nan($v);
+                $failed = $failed || \is_nan($v);
 
                 return $v >= $bound;
             };
         }
-        $limit = is_finite($max) ? $max : 9.007_199_254_740_992e15;
-        if (is_finite($start)) {
-            $k = floor($start);
+        $limit = \is_finite($max) ? $max : 9.007_199_254_740_992e15;
+        if (\is_finite($start)) {
+            $k = \floor($start);
             $k = $k < 0.0 ? 0.0 : ($k > $limit ? $limit : $k);
         } else {
             $k = 0.0;
@@ -323,14 +323,14 @@ final class Quantile
                         return NAN;
                     }
 
-                    return is_finite($max) ? $max : INF;
+                    return \is_finite($max) ? $max : INF;
                 }
                 $lo = $candidate;
                 $step *= 2.0;
             }
         }
         while ($hi - $lo > 1.0) {
-            $k = floor($lo + 0.5 * ($hi - $lo));
+            $k = \floor($lo + 0.5 * ($hi - $lo));
             if ($reached($k)) {
                 $hi = $k;
             } else {
@@ -359,6 +359,6 @@ final class Quantile
     /** A nonnegative finite integer (k.fract() == 0). */
     public static function isCount(float $k): bool
     {
-        return $k >= 0.0 && is_finite($k) && $k == floor($k);
+        return $k >= 0.0 && \is_finite($k) && $k == \floor($k);
     }
 }

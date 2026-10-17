@@ -100,7 +100,7 @@ final class RustSort
         }
         if ($run === $length) {
             if ($descending) {
-                $this->v = array_reverse($this->v);
+                $this->v = \array_reverse($this->v);
             }
 
             return;
@@ -154,7 +154,7 @@ final class RustSort
 
     private function choosePivot(int $base, int $length): int
     {
-        $n8 = intdiv($length, 8);
+        $n8 = \intdiv($length, 8);
         $a = $base;
         $b = $base + $n8 * 4;
         $c = $base + $n8 * 7;
@@ -166,7 +166,7 @@ final class RustSort
     private function median3Rec(int $a, int $b, int $c, int $n): int
     {
         if ($n * 8 >= 64) {
-            $n8 = intdiv($n, 8);
+            $n8 = \intdiv($n, 8);
             $a = $this->median3Rec($a, $a + $n8 * 4, $a + $n8 * 7, $n8);
             $b = $this->median3Rec($b, $b + $n8 * 4, $b + $n8 * 7, $n8);
             $c = $this->median3Rec($c, $c + $n8 * 4, $c + $n8 * 7, $n8);
@@ -222,7 +222,7 @@ final class RustSort
             return;
         }
         $isLess = $this->isLess;
-        $half = intdiv($length, 2);
+        $half = \intdiv($length, 2);
         $scratch = [];
         if ($length >= 16) {
             $this->sort8Stable($base, $scratch, 0, $length, $isLess);
@@ -284,7 +284,7 @@ final class RustSort
 
     private static function bidirectionalMerge(array $src, int $at, int $length, array &$dst, int $dstAt, \Closure $isLess): void
     {
-        $half = intdiv($length, 2);
+        $half = \intdiv($length, 2);
         $left = $at;
         $right = $at + $half;
         $out = $dstAt;
@@ -308,14 +308,14 @@ final class RustSort
     private function heapsort(int $base, int $length): void
     {
         $v = &$this->v;
-        for ($i = $length + intdiv($length, 2) - 1; $i >= 0; $i--) {
+        for ($i = $length + \intdiv($length, 2) - 1; $i >= 0; $i--) {
             if ($i >= $length) {
                 $node = $i - $length;
             } else {
                 [$v[$base], $v[$base + $i]] = [$v[$base + $i], $v[$base]];
                 $node = 0;
             }
-            $end = min($i, $length);
+            $end = \min($i, $length);
             while (true) {
                 $child = 2 * $node + 1;
                 if ($child >= $end) {

@@ -71,28 +71,28 @@ final class Parser
 
     private static function isWhitespace(string $c): bool
     {
-        return preg_match('/^\p{White_Space}$/u', $c) === 1;
+        return \preg_match('/^\p{White_Space}$/u', $c) === 1;
     }
 
     private static function isAlphabetic(string $c): bool
     {
-        return preg_match('/^\p{Alphabetic}$/u', $c) === 1;
+        return \preg_match('/^\p{Alphabetic}$/u', $c) === 1;
     }
 
     private static function isAlphanumeric(string $c): bool
     {
-        return preg_match('/^[\p{Alphabetic}\p{N}]$/u', $c) === 1;
+        return \preg_match('/^[\p{Alphabetic}\p{N}]$/u', $c) === 1;
     }
 
     private static function isDigit(?string $c): bool
     {
-        return $c !== null && strlen($c) === 1 && $c >= '0' && $c <= '9';
+        return $c !== null && \strlen($c) === 1 && $c >= '0' && $c <= '9';
     }
 
     /** @return list<array> */
     private static function tokenize(string $text): array
     {
-        $chars = preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $chars = \preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [];
         $count = count($chars);
         $out = [];
         $i = 0;
@@ -121,9 +121,9 @@ final class Parser
                         }
                     }
                 }
-                $literal = implode('', array_slice($chars, $start, $i - $start));
+                $literal = \implode('', \array_slice($chars, $start, $i - $start));
                 // Rust's f64 parser: digits with at most one '.', optional exponent.
-                if (preg_match('/^(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/', $literal) !== 1) {
+                if (\preg_match('/^(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/', $literal) !== 1) {
                     throw self::error("invalid number '$literal' in formula");
                 }
                 $value = (float) $literal;
@@ -140,7 +140,7 @@ final class Parser
                 while ($i < $count && (self::isAlphanumeric($chars[$i]) || $chars[$i] === '.' || $chars[$i] === '_')) {
                     $i++;
                 }
-                $out[] = ['name', implode('', array_slice($chars, $start, $i - $start))];
+                $out[] = ['name', \implode('', \array_slice($chars, $start, $i - $start))];
 
                 continue;
             }
@@ -178,7 +178,7 @@ final class Parser
                 if ($i >= $count) {
                     throw self::error('unterminated backtick name in formula');
                 }
-                $name = implode('', array_slice($chars, $start, $i - $start));
+                $name = \implode('', \array_slice($chars, $start, $i - $start));
                 if ($name === '') {
                     throw self::error('empty backtick name in formula');
                 }
@@ -206,7 +206,7 @@ final class Parser
                 default => throw self::error("unexpected character '$c' in formula"),
             };
             if ($token === null) {
-                if (implode('', array_slice($chars, $i, 4)) === '%in%') {
+                if (\implode('', \array_slice($chars, $i, 4)) === '%in%') {
                     $token = ['op', '%in%'];
                     $width = 4;
                 } else {
@@ -322,7 +322,7 @@ final class Parser
     /** R's syntactic-name rule; other names are deparsed in backticks. */
     public static function syntactic(string $name): bool
     {
-        $chars = preg_split('//u', $name, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $chars = \preg_split('//u', $name, -1, PREG_SPLIT_NO_EMPTY) ?: [];
         if ($chars === []) {
             return false;
         }
@@ -338,7 +338,7 @@ final class Parser
             }
         }
 
-        return ! (in_array($name, self::RESERVED, true) && $name !== 'T') && $name !== '...';
+        return ! (\in_array($name, self::RESERVED, true) && $name !== 'T') && $name !== '...';
     }
 
     public static function deparseName(string $name): string
@@ -349,7 +349,7 @@ final class Parser
     /** Rust's `{:.Ne}` scientific formatting: mantissa digits and exponent. */
     private static function scientific(float $value, int $precision): array
     {
-        [$mantissa, $exponent] = explode('e', sprintf('%.'.$precision.'e', $value));
+        [$mantissa, $exponent] = \explode('e', \sprintf('%.'.$precision.'e', $value));
 
         return [$mantissa, (int) $exponent];
     }
@@ -357,39 +357,39 @@ final class Parser
     /** Exact decimal digits of an integral double, as Rust prints it with {:.0}. */
     private static function integerDigits(float $value): string
     {
-        return sprintf('%.0F', $value);
+        return \sprintf('%.0F', $value);
     }
 
     /** R's 15-significant-digit number formatting (deparse, as.character, factor labels). */
     public static function formatNumber(float $value): string
     {
-        if (is_nan($value)) {
+        if (\is_nan($value)) {
             return 'NaN';
         }
-        if (is_infinite($value)) {
+        if (\is_infinite($value)) {
             return $value > 0 ? 'Inf' : '-Inf';
         }
         if ($value == 0.0) {
             return '0';
         }
-        $rounded = (float) sprintf('%.14e', $value);
+        $rounded = (float) \sprintf('%.14e', $value);
         $digits = 15;
         for ($d = 1; $d <= 15; $d++) {
-            if ((float) sprintf('%.'.($d - 1).'e', $value) === $rounded) {
+            if ((float) \sprintf('%.'.($d - 1).'e', $value) === $rounded) {
                 $digits = $d;
                 break;
             }
         }
         [$mantissa, $exponent] = self::scientific($value, $digits - 1);
-        $sci = $mantissa.'e'.($exponent < 0 ? '-' : '+').str_pad((string) abs($exponent), 2, '0', STR_PAD_LEFT);
-        $decimals = max($digits - 1 - $exponent, 0);
+        $sci = $mantissa.'e'.($exponent < 0 ? '-' : '+').\str_pad((string) \abs($exponent), 2, '0', STR_PAD_LEFT);
+        $decimals = \max($digits - 1 - $exponent, 0);
         if ($decimals > 40) {
             // The fixed form is longer than any scientific form here.
             return $sci;
         }
-        $fixed = $decimals === 0 ? self::integerDigits($value) : sprintf('%.'.$decimals.'F', $value);
+        $fixed = $decimals === 0 ? self::integerDigits($value) : \sprintf('%.'.$decimals.'F', $value);
 
-        return strlen($fixed) <= strlen($sci) ? $fixed : $sci;
+        return \strlen($fixed) <= \strlen($sci) ? $fixed : $sci;
     }
 
     public static function deparse(array $expr): string
@@ -402,7 +402,7 @@ final class Parser
             case 'name':
                 return self::deparseName($expr[1]);
             case 'str':
-                return '"'.str_replace(['\\', '"'], ['\\\\', '\\"'], $expr[1]).'"';
+                return '"'.\str_replace(['\\', '"'], ['\\\\', '\\"'], $expr[1]).'"';
             case 'dot':
                 return '.';
             case 'call':
@@ -411,7 +411,7 @@ final class Parser
                     $args[] = $name !== null ? self::deparseName($name).' = '.self::deparse($value) : self::deparse($value);
                 }
 
-                return self::deparseName($expr[1]).'('.implode(', ', $args).')';
+                return self::deparseName($expr[1]).'('.\implode(', ', $args).')';
             case 'unary':
                 return $expr[1].self::deparse($expr[2]);
             case 'paren':

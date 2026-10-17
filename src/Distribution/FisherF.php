@@ -113,12 +113,12 @@ final class FisherF
     private function args(float $x): array
     {
         $r = $this->df1 / $this->df2 * $x;
-        if (is_finite($r)) {
-            return [$r / (1.0 + $r), 1.0 / (1.0 + $r), -log1p(fdiv(1.0, $r)), -log1p($r)];
+        if (\is_finite($r)) {
+            return [$r / (1.0 + $r), 1.0 / (1.0 + $r), -\log1p(\fdiv(1.0, $r)), -\log1p($r)];
         }
-        $v = fdiv($this->df2 / $this->df1, $x);
+        $v = \fdiv($this->df2 / $this->df1, $x);
 
-        return [1.0, $v, -$v, log($this->df2 / $this->df1) - log($x)];
+        return [1.0, $v, -$v, \log($this->df2 / $this->df1) - \log($x)];
     }
 
     private function lnLower(array $a): float
@@ -136,7 +136,7 @@ final class FisherF
         if ($x <= 0.0) {
             return [0.0, 1.0];
         }
-        if (is_infinite($x)) {
+        if (\is_infinite($x)) {
             return [1.0, 0.0];
         }
 
@@ -162,7 +162,7 @@ final class FisherF
     /** @internal */
     public function pdfAt(float $x): float
     {
-        return exp($this->logpdfAt($x));
+        return \exp($this->logpdfAt($x));
     }
 
     /** @internal */
@@ -170,7 +170,7 @@ final class FisherF
     {
         $m = $this->df1;
         $n = $this->df2;
-        if ($x < 0.0 || is_infinite($x)) {
+        if ($x < 0.0 || \is_infinite($x)) {
             return -INF;
         }
         if ($x == 0.0) {
@@ -179,15 +179,15 @@ final class FisherF
         $a = $this->args($x);
         if ($a[1] < 1e-100) {
             // Far right tail: the direct formula has no cancellation here.
-            return 0.5 * $m * log($m / $n) + (0.5 * $m - 1.0) * log($x) + 0.5 * ($m + $n) * $a[3]
+            return 0.5 * $m * \log($m / $n) + (0.5 * $m - 1.0) * \log($x) + 0.5 * ($m + $n) * $a[3]
                 - Cdflib::betaLog(0.5 * $m, 0.5 * $n);
         }
         if ($m >= 2.0) {
-            return log(0.5 * $m * $a[1])
+            return \log(0.5 * $m * $a[1])
                 + Special::lnBinomialRaw(0.5 * $m - 1.0, 0.5 * ($m + $n) - 1.0, $a[0], $a[1]);
         }
 
-        return log(fdiv($m * $m * $a[1], 2.0 * $a[0] * ($m + $n)))
+        return \log(\fdiv($m * $m * $a[1], 2.0 * $a[0] * ($m + $n)))
             + Special::lnBinomialRaw(0.5 * $m, 0.5 * ($m + $n), $a[0], $a[1]);
     }
 
@@ -207,7 +207,7 @@ final class FisherF
     public function logcdfAt(float $x): float
     {
         if (($exact = self::exact($x)) !== null) {
-            return log($exact[0]);
+            return \log($exact[0]);
         }
         [$lower, $upper] = $this->tails($x);
 
@@ -218,7 +218,7 @@ final class FisherF
     public function logsfAt(float $x): float
     {
         if (($exact = self::exact($x)) !== null) {
-            return log($exact[1]);
+            return \log($exact[1]);
         }
         [$lower, $upper] = $this->tails($x);
 

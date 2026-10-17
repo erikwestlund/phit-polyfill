@@ -37,7 +37,7 @@ final class SymmetricEigen
         if ($amax != 0.0) {
             foreach ($columns as $j => $column) {
                 foreach ($column as $i => $value) {
-                    $columns[$j][$i] = fdiv($value, $amax);
+                    $columns[$j][$i] = \fdiv($value, $amax);
                 }
             }
         }
@@ -48,7 +48,7 @@ final class SymmetricEigen
         for ($i = 0; $i < $dim; $i++) {
             $diag[$i] = $tri[$i][$i];
         }
-        $off = array_map(abs(...), $offRaw);
+        $off = \array_map(\abs(...), $offRaw);
 
         if ($dim === 1) {
             $diag[0] *= $amax;
@@ -103,7 +103,7 @@ final class SymmetricEigen
                     $q[$i] = $x;
                     $q[$j] = $y;
                 }
-                if (abs($off[$m]) <= $eps * (abs($diag[$m]) + abs($diag[$n]))) {
+                if (\abs($off[$m]) <= $eps * (\abs($diag[$m]) + \abs($diag[$n]))) {
                     $end--;
                 }
             } elseif ($subdim === 2) {
@@ -114,14 +114,14 @@ final class SymmetricEigen
                 $val = ($d0 - $d1) * 0.5;
                 $discriminant = $e * $e + $val * $val;
                 if ($discriminant >= 0.0) {
-                    $root = sqrt($discriminant);
+                    $root = \sqrt($discriminant);
                 } else {
                     throw new \RuntimeException('Symmetric eigen: complex 2x2 eigenvalues.');
                 }
                 $halfTrace = ($d0 + $d1) * 0.5;
                 $lambda0 = $halfTrace + $root;
                 $lambda1 = $halfTrace - $root;
-                if (abs($lambda0 - $d1) > abs($lambda0 - $d0)) {
+                if (\abs($lambda0 - $d1) > \abs($lambda0 - $d0)) {
                     $bx = $lambda0 - $d1;
                     $by = $e;
                 } else {
@@ -168,7 +168,7 @@ final class SymmetricEigen
         }
         $d = ($tmm - $tnn) * 0.5;
 
-        return $tnn - fdiv($sq, $d + Dense::signum($d) * sqrt($d * $d + $sq));
+        return $tnn - \fdiv($sq, $d + Dense::signum($d) * \sqrt($d * $d + $sq));
     }
 
     /**
@@ -181,10 +181,10 @@ final class SymmetricEigen
     private static function tridiagonalize(array $m, int $dim): array
     {
         $off = [];
-        $p = array_fill(0, max(0, $dim - 1), 0.0);
+        $p = \array_fill(0, \max(0, $dim - 1), 0.0);
         for ($i = 0; $i < $dim - 1; $i++) {
             $first = $i + 1;
-            $axis = array_slice($m[$i], $first);
+            $axis = \array_slice($m[$i], $first);
             [$norm, $notZero] = Dense::reflectionAxis($axis);
             foreach ($axis as $k => $value) {
                 $m[$i][$first + $k] = $value;
@@ -278,13 +278,13 @@ final class SymmetricEigen
     {
         $res = [];
         for ($j = 0; $j < $dim; $j++) {
-            $column = array_fill(0, $dim, 0.0);
+            $column = \array_fill(0, $dim, 0.0);
             $column[$j] = 1.0;
             $res[$j] = $column;
         }
         for ($i = $dim - 2; $i >= 0; $i--) {
             $first = $i + 1;
-            $axis = array_slice($tri[$i], $first);
+            $axis = \array_slice($tri[$i], $first);
             $sign = Dense::signum($off[$i]);
             $scale = $sign * -2.0;
             $length = count($axis);
@@ -312,7 +312,7 @@ final class SymmetricEigen
         $n = $end;
         while ($n > 0) {
             $m = $n - 1;
-            if (abs($off[$m]) > $eps * (abs($diag[$n]) + abs($diag[$m]))) {
+            if (\abs($off[$m]) > $eps * (\abs($diag[$n]) + \abs($diag[$m]))) {
                 break;
             }
             $n--;
@@ -323,7 +323,7 @@ final class SymmetricEigen
         $newStart = $n - 1;
         while ($newStart > 0) {
             $m = $newStart - 1;
-            if ($off[$m] == 0.0 || abs($off[$m]) <= $eps * (abs($diag[$newStart]) + abs($diag[$m]))) {
+            if ($off[$m] == 0.0 || \abs($off[$m]) <= $eps * (\abs($diag[$newStart]) + \abs($diag[$m]))) {
                 $off[$m] = 0.0;
                 break;
             }

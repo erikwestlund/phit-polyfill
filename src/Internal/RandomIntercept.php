@@ -68,12 +68,12 @@ final class RandomIntercept
         }
         $design = [];
         for ($j = 0; $j < $p; $j++) {
-            $design[$j] = array_column($x, $j);
+            $design[$j] = \array_column($x, $j);
         }
         $scales = [];
         foreach ($design as $column) {
-            $scale = sqrt(LeastSquares::dot($column, $column, 0, $n));
-            if (is_nan($scale) || is_infinite($scale) || $scale == 0.0) {
+            $scale = \sqrt(LeastSquares::dot($column, $column, 0, $n));
+            if (\is_nan($scale) || \is_infinite($scale) || $scale == 0.0) {
                 throw ErrorCode::exception(ErrorCode::RANK_DEFICIENCY, 'fixed design is rank deficient or exceeds floating-point range');
             }
             $scales[] = $scale;
@@ -125,7 +125,7 @@ final class RandomIntercept
         }
         $final = $data->profile($bestT, true);
         $evaluations++;
-        $rho = expm1($bestT);
+        $rho = \expm1($bestT);
         $variance = $final['variance'];
         $tau = $variance * $rho;
         $beta = [];
@@ -144,10 +144,10 @@ final class RandomIntercept
         $pValues = [];
         $confInt = [];
         for ($j = 0; $j < $p; $j++) {
-            $se = sqrt($covariance[$j][$j]);
+            $se = \sqrt($covariance[$j][$j]);
             $stdErrors[] = $se;
             $z[] = $beta[$j] / $se;
-            $pValues[] = 2.0 * Statrs::normalSf(abs($beta[$j] / $se));
+            $pValues[] = 2.0 * Statrs::normalSf(\abs($beta[$j] / $se));
             $confInt[] = [$beta[$j] - Statrs::Z_975 * $se, $beta[$j] + Statrs::Z_975 * $se];
         }
         // design * beta, accumulated column by column as nalgebra's gemv does.
@@ -183,10 +183,10 @@ final class RandomIntercept
             $residuals[] = $y[$i] - $fitted[$i];
         }
         $all = [$beta, ...$covariance, $stdErrors, $z, $pValues, ...$confInt, $randomEffects, $condVar, $fitted, $residuals, $marginal];
-        $finite = is_finite($tau);
+        $finite = \is_finite($tau);
         foreach ($all as $values) {
             foreach ($values as $v) {
-                $finite = $finite && is_finite($v);
+                $finite = $finite && \is_finite($v);
             }
         }
         if ($finite === false) {
@@ -206,10 +206,10 @@ final class RandomIntercept
             'marginal_residuals' => $marginal,
             'random_effects' => $randomEffects,
             'random_effects_cond_var' => $condVar,
-            'group_sizes' => array_map('count', $members),
+            'group_sizes' => \array_map('count', $members),
             'residual_variance' => $variance,
             'random_intercept_variance' => $tau,
-            'sigma' => sqrt($variance),
+            'sigma' => \sqrt($variance),
             'icc' => $rho / (1.0 + $rho),
             'log_likelihood' => -$final['objective'],
             'aic' => 2.0 * ($p + 2) + 2.0 * $final['objective'],
@@ -248,7 +248,7 @@ final class RandomIntercept
                     $sum += $centered[$j][$i] - $origin;
                 }
                 $mean = $origin + $sum / $size;
-                $means[$g][$j] = $mean * sqrt($size);
+                $means[$g][$j] = $mean * \sqrt($size);
                 foreach ($rows as $i) {
                     $centered[$j][$i] -= $mean;
                 }
@@ -257,7 +257,7 @@ final class RandomIntercept
         [$this->within] = LeastSquares::householder($centered, $this->n, $p + 1);
         $this->withinRows = $p + 1;
         $this->means = $means;
-        $this->sizes = array_map('count', $members);
+        $this->sizes = \array_map('count', $members);
     }
 
     /**
@@ -268,7 +268,7 @@ final class RandomIntercept
      */
     private function profile(float $t, bool $inference): array
     {
-        $rho = expm1($t);
+        $rho = \expm1($t);
         $n = $this->n;
         $p = $this->p;
         $rows = $this->withinRows + count($this->sizes);
@@ -280,7 +280,7 @@ final class RandomIntercept
                 $column[] = $this->within[$j][$i];
             }
             foreach ($this->sizes as $g => $size) {
-                $column[] = $this->means[$g][$j] / sqrt(1.0 + $size * $rho);
+                $column[] = $this->means[$g][$j] / \sqrt(1.0 + $size * $rho);
             }
             $a[$j] = $column;
         }
@@ -288,9 +288,9 @@ final class RandomIntercept
         unset($a[$p]);
         $svd = new Svd($a, true, true);
         $singular = $svd->singularValues;
-        $tolerance = PHP_FLOAT_EPSILON * max($n, $p) * $singular[0];
+        $tolerance = PHP_FLOAT_EPSILON * \max($n, $p) * $singular[0];
         foreach ($singular as $s) {
-            if (is_nan($s) || is_infinite($s) || $s <= $tolerance) {
+            if (\is_nan($s) || \is_infinite($s) || $s <= $tolerance) {
                 throw ErrorCode::exception(ErrorCode::RANK_DEFICIENCY, 'mixed-model fixed design/information is numerically rank deficient');
             }
         }
@@ -313,15 +313,15 @@ final class RandomIntercept
             $residual[] = $b[$i] - $fitted[$i];
         }
         $q = LeastSquares::dot($residual, $residual, 0, $rows);
-        if (is_nan($q) || is_infinite($q) || $q <= 0.0) {
+        if (\is_nan($q) || \is_infinite($q) || $q <= 0.0) {
             throw ErrorCode::exception(ErrorCode::NONFINITE, 'mixed-model residual variance is zero or exceeds floating-point range');
         }
         $variance = $q / $n; // ML scale, not RSS/(n-p), and not REML.
         $logdet = 0.0;
         foreach ($this->sizes as $m) {
-            $logdet += log1p($m * $rho);
+            $logdet += \log1p($m * $rho);
         }
-        $objective = 0.5 * ($n * (log(2.0 * M_PI) + log($variance) + 1.0) + $logdet);
+        $objective = 0.5 * ($n * (\log(2.0 * M_PI) + \log($variance) + 1.0) + $logdet);
         // Envelope theorem: q' from the group residual sums of the cached means.
         $qDerivative = 0.0;
         foreach ($this->sizes as $g => $m) {
@@ -339,7 +339,7 @@ final class RandomIntercept
             $logdetDerivative += $m / (1.0 + $m * $rho);
         }
         $derivative = 0.5 * (1.0 + $rho) * ($n * $qDerivative / $q + $logdetDerivative);
-        if (is_nan($objective) || is_infinite($objective) || is_nan($derivative) || is_infinite($derivative)) {
+        if (\is_nan($objective) || \is_infinite($objective) || \is_nan($derivative) || \is_infinite($derivative)) {
             throw ErrorCode::exception(ErrorCode::NONFINITE, 'mixed-model likelihood exceeds floating-point range');
         }
         $information = null;

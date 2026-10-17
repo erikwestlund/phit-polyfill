@@ -69,17 +69,17 @@ final class Initialize
         }
 
         $xbase = $x0;
-        $evaluated = array_fill(0, $npt, false);
-        $fval = array_fill(0, $npt, Linalg::REALMAX);
+        $evaluated = \array_fill(0, $npt, false);
+        $fval = \array_fill(0, $npt, Linalg::REALMAX);
 
-        $xpt = array_fill(0, $n * $npt, 0.0);
+        $xpt = \array_fill(0, $n * $npt, 0.0);
         for ($k = 0; $k < $n; $k++) {
             $xpt[$k + ($k + 1) * $n] = $rhobeg;
             if ($su[$k] <= 0.0) {
                 $xpt[$k + ($k + 1) * $n] = -$rhobeg;
             }
         }
-        $limit = min($npt - $n - 1, $n);
+        $limit = \min($npt - $n - 1, $n);
         for ($k = 0; $k < $limit; $k++) {
             $index = $k + ($k + $n + 1) * $n;
             $xpt[$index] = -$rhobeg;
@@ -91,7 +91,7 @@ final class Initialize
             }
         }
 
-        $limit = min($npt, 2 * $n + 1);
+        $limit = \min($npt, 2 * $n + 1);
         for ($k = 0; $k < $limit; $k++) {
             $x = Util::xinbd($xbase, Linalg::col($xpt, $n, $k), $xl, $xu, $sl, $su);
             $f = Util::evaluate($calfun, $x);
@@ -104,7 +104,7 @@ final class Initialize
             }
         }
 
-        $limit = min($npt - $n, $n + 1);
+        $limit = \min($npt - $n, $n + 1);
         for ($k = 1; $k < $limit; $k++) {
             if ($xpt[$k - 1 + $k * $n] * $xpt[$k - 1 + ($k + $n) * $n] < 0.0 && $fval[$k + $n] < $fval[$k]) {
                 [$fval[$k], $fval[$k + $n]] = [$fval[$k + $n], $fval[$k]];
@@ -170,7 +170,7 @@ final class Initialize
             $gopt[$i] = ($fval[$i + 1] - $fbase) / $xpt[$i + ($i + 1) * $n];
         }
 
-        $ndiag = min($n, $npt - $n - 1);
+        $ndiag = \min($n, $npt - $n - 1);
         $xa = [];
         $xb = [];
         for ($k = 0; $k < $ndiag; $k++) {
@@ -182,7 +182,7 @@ final class Initialize
             $gopt[$k] = ($gopt[$k] * $xb[$k] - (($fval[$n + 1 + $k] - $fbase) / $xb[$k]) * $xa[$k]) / ($xb[$k] - $xa[$k]);
         }
 
-        $hq = array_fill(0, $n * $n, 0.0);
+        $hq = \array_fill(0, $n * $n, 0.0);
         for ($k = 0; $k < $ndiag; $k++) {
             $hq[$k + $k * $n] = 2.0 * (($fval[$k + 1] - $fbase) / $xa[$k] - ($fval[$n + $k + 1] - $fbase) / $xb[$k])
                 / ($xa[$k] - $xb[$k]);
@@ -208,7 +208,7 @@ final class Initialize
             }
         }
 
-        $pq = array_fill(0, $npt, 0.0);
+        $pq = \array_fill(0, $npt, 0.0);
     }
 
     /**
@@ -223,11 +223,11 @@ final class Initialize
     {
         $rhobeg = 0.0;
         for ($i = 0; $i < $n; $i++) {
-            $rhobeg = Linalg::max($rhobeg, abs($xpt[$i + $n]));
+            $rhobeg = Linalg::max($rhobeg, \abs($xpt[$i + $n]));
         }
         $rhosq = $rhobeg * $rhobeg;
 
-        $ndiag = min($n, $npt - $n - 1);
+        $ndiag = \min($n, $npt - $n - 1);
         $xa = [];
         $xb = [];
         for ($k = 0; $k < $ndiag; $k++) {
@@ -235,7 +235,7 @@ final class Initialize
             $xb[$k] = $xpt[$k + ($n + 1 + $k) * $n];
         }
 
-        $bmat = array_fill(0, $n * ($npt + $n), 0.0);
+        $bmat = \array_fill(0, $n * ($npt + $n), 0.0);
         for ($k = 0; $k < $ndiag; $k++) {
             $bmat[$k] = -($xa[$k] + $xb[$k]) / ($xa[$k] * $xb[$k]);
         }
@@ -250,13 +250,13 @@ final class Initialize
         }
 
         $nz = $npt - $n - 1;
-        $zmat = array_fill(0, $npt * $nz, 0.0);
+        $zmat = \array_fill(0, $npt * $nz, 0.0);
         for ($k = 0; $k < $ndiag; $k++) {
-            $zmat[$k * $npt] = sqrt(2.0) / ($xa[$k] * $xb[$k]);
+            $zmat[$k * $npt] = \sqrt(2.0) / ($xa[$k] * $xb[$k]);
         }
         for ($k = 0; $k < $ndiag; $k++) {
-            $zmat[$k + 1 + $k * $npt] = -$zmat[$k * $npt] - sqrt(0.5) / $rhosq;
-            $zmat[$k + $n + 1 + $k * $npt] = sqrt(0.5) / $rhosq;
+            $zmat[$k + 1 + $k * $npt] = -$zmat[$k * $npt] - \sqrt(0.5) / $rhosq;
+            $zmat[$k + $n + 1 + $k * $npt] = \sqrt(0.5) / $rhosq;
         }
         for ($k = $ndiag; $k < $nz; $k++) {
             $zmat[$k * $npt] = 1.0 / $rhosq;

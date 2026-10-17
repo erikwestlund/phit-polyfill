@@ -38,7 +38,7 @@ final class RestartState
         }
         $improved = $this->lastFopt - $fopt;
 
-        return $improved >= $this->config->improveRelTol * Linalg::max(abs($fopt), 1.0);
+        return $improved >= $this->config->improveRelTol * Linalg::max(\abs($fopt), 1.0);
     }
 
     public function noteReduction(float $fopt): bool
@@ -50,7 +50,7 @@ final class RestartState
             $this->stallCount = 0;
         } else {
             $improved = $this->stallFopt - $fopt;
-            if ($improved >= $this->config->improveRelTol * Linalg::max(abs($fopt), 1.0)) {
+            if ($improved >= $this->config->improveRelTol * Linalg::max(\abs($fopt), 1.0)) {
                 $this->stallCount = 0;
             } else {
                 $this->stallCount++;

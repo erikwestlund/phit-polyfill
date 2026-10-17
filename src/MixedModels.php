@@ -93,13 +93,13 @@ final class MixedModels
         }
         $terms = [];
         foreach ($random as $term) {
-            if (! is_array($term)) {
+            if (! \is_array($term)) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'each random term must be an array');
             }
-            if (! array_key_exists('z', $term) || ! is_array($term['z'])) {
+            if (! \array_key_exists('z', $term) || ! \is_array($term['z'])) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'each random term needs z');
             }
-            if (! array_key_exists('groups', $term) || ! is_array($term['groups'])) {
+            if (! \array_key_exists('groups', $term) || ! \is_array($term['groups'])) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'each random term needs groups');
             }
             $z = self::numericRows($term['z']);
@@ -112,8 +112,8 @@ final class MixedModels
                 throw ErrorCode::exception(ErrorCode::DIMENSION_MISMATCH, 'each random z must be rectangular with one row and group per original observation');
             }
             $correlated = true;
-            if (array_key_exists('correlated', $term)) {
-                if (! is_bool($term['correlated'])) {
+            if (\array_key_exists('correlated', $term)) {
+                if (! \is_bool($term['correlated'])) {
                     throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'correlated must be a boolean');
                 }
                 $correlated = $term['correlated'];
@@ -126,9 +126,9 @@ final class MixedModels
         $retained = [];
         $dropped = [];
         for ($i = 0; $i < $n; $i++) {
-            $complete = $outcomes[$i] !== null && $w[$i] !== null && $o[$i] !== null && ! in_array(null, $rows[$i], true);
+            $complete = $outcomes[$i] !== null && $w[$i] !== null && $o[$i] !== null && ! \in_array(null, $rows[$i], true);
             foreach ($terms as [$z, $groups]) {
-                $complete = $complete && $groups[$i] !== null && ! in_array(null, $z[$i], true);
+                $complete = $complete && $groups[$i] !== null && ! \in_array(null, $z[$i], true);
             }
             if ($complete) {
                 $retained[] = $i;
@@ -142,10 +142,10 @@ final class MixedModels
         $coreTerms = [];
         $termLabels = [];
         foreach ($terms as [$z, $groups, $correlated]) {
-            [$indices, $labels] = ModelData::groupIndices(array_map(fn (int $i) => $groups[$i], $retained));
+            [$indices, $labels] = ModelData::groupIndices(\array_map(fn (int $i) => $groups[$i], $retained));
             $termLabels[] = $labels;
             $coreTerms[] = [
-                'z' => array_map(fn (int $i) => $z[$i], $retained),
+                'z' => \array_map(fn (int $i) => $z[$i], $retained),
                 'groups' => $indices,
                 'correlated' => $correlated,
             ];
@@ -174,14 +174,14 @@ final class MixedModels
         }
         $result = LinearMixed::fit(
             $design,
-            array_map(fn (int $i) => $outcomes[$i], $retained),
+            \array_map(fn (int $i) => $outcomes[$i], $retained),
             $coreTerms,
             [
                 'reml' => $reml,
                 'optimizer' => $method,
                 'objective_tolerance' => $objective_tolerance,
-                'weights' => array_map(fn (int $i) => $w[$i], $retained),
-                'offset' => array_map(fn (int $i) => $o[$i], $retained),
+                'weights' => \array_map(fn (int $i) => $w[$i], $retained),
+                'offset' => \array_map(fn (int $i) => $o[$i], $retained),
                 'start' => $startValues,
                 'max_evaluations' => $max_evaluations,
                 'tolerance' => $tolerance,
@@ -333,7 +333,7 @@ final class MixedModels
     {
         $out = [];
         foreach ($values as $row) {
-            if (! is_array($row)) {
+            if (! \is_array($row)) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'each matrix row must be an array');
             }
             $converted = [];
@@ -350,7 +350,7 @@ final class MixedModels
     private static function numericVector(?array $values, int $n, float $default): array
     {
         if ($values === null) {
-            return array_fill(0, $n, $default);
+            return \array_fill(0, $n, $default);
         }
         $out = [];
         foreach ($values as $value) {

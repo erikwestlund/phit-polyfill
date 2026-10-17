@@ -32,19 +32,19 @@ final class Predict
         Frontend::stringArgument($type, 'type');
         Frontend::stringArgument($interval, 'interval');
         $formula = $fit['formula'] ?? null;
-        if (! is_string($formula)) {
+        if (! \is_string($formula)) {
             throw self::malformed('missing formula');
         }
-        $mixed = array_key_exists('random', $fit);
+        $mixed = \array_key_exists('random', $fit);
         $link = $fit['link'] ?? null;
-        if (is_string($link)) {
-            if (! in_array($link, ['identity', 'logit', 'probit', 'log'], true)) {
+        if (\is_string($link)) {
+            if (! \in_array($link, ['identity', 'logit', 'probit', 'log'], true)) {
                 throw self::malformed('unknown link');
             }
         } else {
             $link = 'identity';
         }
-        $isLm = array_key_exists('family', $fit) === false && $mixed === false;
+        $isLm = \array_key_exists('family', $fit) === false && $mixed === false;
         $response = match ($type) {
             'link' => false,
             'response' => true,
@@ -59,7 +59,7 @@ final class Predict
             ),
             default => throw ErrorCode::exception(ErrorCode::INVALID_INPUT, "interval must be 'none', 'confidence' or 'prediction'"),
         };
-        if (is_nan($level) || $level <= 0.0 || $level >= 1.0) {
+        if (\is_nan($level) || $level <= 0.0 || $level >= 1.0) {
             throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'level must be strictly between 0 and 1');
         }
         $uncertainty = $se_fit || $intervalKind !== null;
@@ -69,7 +69,7 @@ final class Predict
         $coefficients = self::floatList($fit['coefficients'] ?? null, 'coefficients');
         $columns = self::stringList($fit['columns'] ?? null, 'columns');
         $rows = $fit['covariance'] ?? null;
-        if (! is_array($rows)) {
+        if (! \is_array($rows)) {
             throw self::malformed('missing covariance');
         }
         $covariance = [];
@@ -88,22 +88,22 @@ final class Predict
         $frame = Data::from($newdata);
         $design = Design::prediction($formula, $frame, $predvars, $mixed && $random);
         if ($design->columns !== $columns) {
-            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, sprintf(
+            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, \sprintf(
                 'newdata produce columns [%s] but the fit has [%s]',
-                implode(', ', $design->columns),
-                implode(', ', $columns),
+                \implode(', ', $design->columns),
+                \implode(', ', $columns),
             ));
         }
         $effects = $mixed && $random ? self::fittedEffects($fit) : null;
         $n = $frame->rows;
-        $eta = array_fill(0, $n, null);
-        $se = array_fill(0, $n, null);
+        $eta = \array_fill(0, $n, null);
+        $se = \array_fill(0, $n, null);
         $newLevels = [];
         foreach ($design->retainedRows as $k => $row) {
             $x = $design->x[$k];
             $value = -0.0; // Rust's f64 sum starts from -0.0
             foreach ($x as $j => $a) {
-                if (array_key_exists($j, $coefficients)) {
+                if (\array_key_exists($j, $coefficients)) {
                     $value += $a * $coefficients[$j];
                 }
             }
@@ -112,7 +112,7 @@ final class Predict
             }
             if ($effects !== null) {
                 foreach ($design->random as $t => $term) {
-                    if (! array_key_exists($t, $effects)) {
+                    if (! \array_key_exists($t, $effects)) {
                         break;
                     }
                     $key = (string) $term['groups'][$k];
@@ -120,14 +120,14 @@ final class Predict
                     if ($b !== null) {
                         $sum = -0.0;
                         foreach ($term['z'][$k] as $j => $z) {
-                            if (array_key_exists($j, $b)) {
+                            if (\array_key_exists($j, $b)) {
                                 $sum += $z * $b[$j];
                             }
                         }
                         $value += $sum;
                     } elseif ($allow_new_levels === false) {
                         $label = "{$term['group']}=$key";
-                        if (! in_array($label, $newLevels, true)) {
+                        if (! \in_array($label, $newLevels, true)) {
                             $newLevels[] = $label;
                         }
                     }
@@ -137,11 +137,11 @@ final class Predict
             if ($uncertainty) {
                 $quadratic = self::quadForm($x, $covariance);
                 // f64::max: a NaN form becomes 0.
-                $se[$row] = sqrt(is_nan($quadratic) || $quadratic < 0.0 ? 0.0 : $quadratic);
+                $se[$row] = \sqrt(\is_nan($quadratic) || $quadratic < 0.0 ? 0.0 : $quadratic);
             }
         }
         if ($newLevels !== []) {
-            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'new levels detected in newdata: '.implode(', ', $newLevels).'; pass allow_new_levels: true to predict them at the population level');
+            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'new levels detected in newdata: '.\implode(', ', $newLevels).'; pass allow_new_levels: true to predict them at the population level');
         }
         $fitted = $eta;
         if ($response) {
@@ -149,7 +149,7 @@ final class Predict
                 if ($e !== null) {
                     $fitted[$i] = self::inverseLink($link, $e);
                     if ($se[$i] !== null) {
-                        $se[$i] = $se[$i] * abs(self::derivative($link, $e));
+                        $se[$i] = $se[$i] * \abs(self::derivative($link, $e));
                     }
                 }
             }
@@ -158,14 +158,14 @@ final class Predict
         if ($se_fit) {
             $out['se_fit'] = $se;
         }
-        $df = is_int($fit['df_residual'] ?? null) ? $fit['df_residual'] : null;
+        $df = \is_int($fit['df_residual'] ?? null) ? $fit['df_residual'] : null;
         if ($isLm && $uncertainty) {
             $out['df'] = $df;
         }
         if ($mixed === false && $uncertainty) {
             // R's residual.scale: sigma for Gaussian fits, 1 for binomial and Poisson.
             $out['residual_scale'] = $link === 'identity'
-                ? (is_float($fit['sigma'] ?? null) ? $fit['sigma'] : null)
+                ? (\is_float($fit['sigma'] ?? null) ? $fit['sigma'] : null)
                 : 1.0;
         }
         if ($intervalKind !== null) {
@@ -173,7 +173,7 @@ final class Predict
                 throw self::malformed('missing df_residual');
             }
             $sigma = $fit['sigma'] ?? null;
-            if (! is_float($sigma)) {
+            if (! \is_float($sigma)) {
                 throw self::malformed('missing sigma');
             }
             $critical = StudentT::create((float) $df)->quantileAt((1.0 + $level) / 2.0);
@@ -186,17 +186,17 @@ final class Predict
                 foreach ($weights as $w) {
                     if ($w != 1.0) {
                         // Userland code cannot raise E_WARNING; the text matches the extension's.
-                        trigger_error('stats_predict(): stats_predict assumes constant prediction variance even though the model fit is weighted', E_USER_WARNING);
+                        \trigger_error('stats_predict(): stats_predict assumes constant prediction variance even though the model fit is weighted', E_USER_WARNING);
                         break;
                     }
                 }
             }
-            $lower = array_fill(0, $n, null);
-            $upper = array_fill(0, $n, null);
+            $lower = \array_fill(0, $n, null);
+            $upper = \array_fill(0, $n, null);
             for ($i = 0; $i < $n; $i++) {
                 if ($fitted[$i] !== null && $se[$i] !== null) {
                     $s = $se[$i];
-                    $width = $critical * ($intervalKind ? sqrt($s * $s + $sigma * $sigma) : $s);
+                    $width = $critical * ($intervalKind ? \sqrt($s * $s + $sigma * $sigma) : $s);
                     $lower[$i] = $fitted[$i] - $width;
                     $upper[$i] = $fitted[$i] + $width;
                 }
@@ -220,14 +220,14 @@ final class Predict
     /** @return list<float> */
     private static function floatList(mixed $value, string $what): array
     {
-        if (! is_array($value)) {
+        if (! \is_array($value)) {
             throw self::malformed("missing $what");
         }
         $out = [];
         foreach ($value as $v) {
-            if (is_float($v)) {
+            if (\is_float($v)) {
                 $out[] = $v;
-            } elseif (is_int($v)) {
+            } elseif (\is_int($v)) {
                 $out[] = (float) $v;
             } else {
                 throw self::malformed("$what must be numbers");
@@ -240,12 +240,12 @@ final class Predict
     /** @return list<string> */
     private static function stringList(mixed $value, string $what): array
     {
-        if (! is_array($value)) {
+        if (! \is_array($value)) {
             throw self::malformed("missing $what");
         }
         $out = [];
         foreach ($value as $v) {
-            if (! is_string($v)) {
+            if (! \is_string($v)) {
                 throw self::malformed("$what must be strings");
             }
             $out[] = $v;
@@ -258,18 +258,18 @@ final class Predict
     private static function predvars(array $fit): array
     {
         $table = $fit['predvars'] ?? null;
-        if (! is_array($table)) {
+        if (! \is_array($table)) {
             throw self::malformed('missing predvars');
         }
         $predvars = ['levels' => [], 'poly' => []];
-        if (is_array($table['levels'] ?? null)) {
+        if (\is_array($table['levels'] ?? null)) {
             foreach ($table['levels'] as $name => $values) {
                 $predvars['levels'][(string) $name] = self::stringList($values, 'levels');
             }
         }
-        if (is_array($table['poly'] ?? null)) {
+        if (\is_array($table['poly'] ?? null)) {
             foreach ($table['poly'] as $text => $coefs) {
-                if (! is_array($coefs)) {
+                if (! \is_array($coefs)) {
                     throw self::malformed('poly coefficients must be arrays');
                 }
                 $predvars['poly'][(string) $text] = [
@@ -284,7 +284,7 @@ final class Predict
 
     private static function labelKey(mixed $value): ?string
     {
-        return is_int($value) || is_string($value) ? (string) $value : null;
+        return \is_int($value) || \is_string($value) ? (string) $value : null;
     }
 
     /**
@@ -295,22 +295,22 @@ final class Predict
     private static function fittedEffects(array $fit): array
     {
         $malformed = fn () => self::malformed('random effects are incomplete');
-        if (! is_array($fit['random'] ?? null)) {
+        if (! \is_array($fit['random'] ?? null)) {
             throw $malformed();
         }
-        if (is_array($fit['random_effects'] ?? null)) {
+        if (\is_array($fit['random_effects'] ?? null)) {
             // stats_glmer: one random intercept with top-level effects and labels.
             $labels = $fit['group_labels'] ?? null;
-            if (! is_array($labels)) {
+            if (! \is_array($labels)) {
                 throw $malformed();
             }
             $map = [];
-            $effects = array_values($fit['random_effects']);
-            foreach (array_values($labels) as $i => $label) {
-                if (! array_key_exists($i, $effects)) {
+            $effects = \array_values($fit['random_effects']);
+            foreach (\array_values($labels) as $i => $label) {
+                if (! \array_key_exists($i, $effects)) {
                     break;
                 }
-                if (! is_float($effects[$i])) {
+                if (! \is_float($effects[$i])) {
                     throw $malformed();
                 }
                 $key = self::labelKey($label) ?? throw $malformed();
@@ -321,13 +321,13 @@ final class Predict
         }
         $out = [];
         foreach ($fit['random'] as $term) {
-            if (! is_array($term) || ! is_array($term['group_labels'] ?? null) || ! is_array($term['effects'] ?? null)) {
+            if (! \is_array($term) || ! \is_array($term['group_labels'] ?? null) || ! \is_array($term['effects'] ?? null)) {
                 throw $malformed();
             }
             $map = [];
-            $effects = array_values($term['effects']);
-            foreach (array_values($term['group_labels']) as $i => $label) {
-                if (! array_key_exists($i, $effects)) {
+            $effects = \array_values($term['effects']);
+            foreach (\array_values($term['group_labels']) as $i => $label) {
+                if (! \array_key_exists($i, $effects)) {
                     break;
                 }
                 $key = self::labelKey($label) ?? throw $malformed();
@@ -356,15 +356,15 @@ final class Predict
         switch ($link) {
             case 'logit':
                 if ($eta >= 0.0) {
-                    return 1.0 / (1.0 + exp(-$eta));
+                    return 1.0 / (1.0 + \exp(-$eta));
                 }
-                $e = exp($eta);
+                $e = \exp($eta);
 
                 return $e / (1.0 + $e);
             case 'probit':
                 return Normal::create(0.0, 1.0)->cdfAt($eta);
             case 'log':
-                return exp($eta);
+                return \exp($eta);
             default:
                 return $eta;
         }
@@ -380,7 +380,7 @@ final class Predict
             case 'probit':
                 return Normal::create(0.0, 1.0)->pdfAt($eta);
             case 'log':
-                return exp($eta);
+                return \exp($eta);
             default:
                 return 1.0;
         }

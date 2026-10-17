@@ -27,14 +27,14 @@ final class Binomial
             throw Support::invalid('size must be nonnegative');
         }
         Support::finite('prob', $prob);
-        if (is_nan($prob) || $prob < 0.0 || $prob > 1.0) {
+        if (\is_nan($prob) || $prob < 0.0 || $prob > 1.0) {
             throw Support::invalid('prob must be in [0, 1]');
         }
         if ($size > self::MAX_SIZE) {
             throw ErrorCode::exception(ErrorCode::UNSUPPORTED, 'size must not exceed 2^53 (exact integer range of a double)');
         }
 
-        return new self((float) $size, $prob, 1.0 - $prob, log($prob), log1p(-$prob));
+        return new self((float) $size, $prob, 1.0 - $prob, \log($prob), \log1p(-$prob));
     }
 
     /** stats_binomial_pmf */
@@ -147,7 +147,7 @@ final class Binomial
         if (($exact = $this->exact($k)) !== null) {
             return $exact;
         }
-        $k = floor($k);
+        $k = \floor($k);
         [$lower, $upper] = Support::betaInc($this->n - $k, $k + 1.0, $this->q, $this->p);
 
         return [
@@ -169,7 +169,7 @@ final class Binomial
     /** @internal */
     public function pmfAt(float $k): float
     {
-        return exp($this->logpmfAt($k));
+        return \exp($this->logpmfAt($k));
     }
 
     /** @internal */
@@ -198,22 +198,22 @@ final class Binomial
     public function logcdfAt(float $k): float
     {
         if (($exact = $this->exact($k)) !== null) {
-            return log($exact[0]);
+            return \log($exact[0]);
         }
         [$lower, $upper] = $this->tails($k);
 
-        return Special::logTail($lower, $upper, fn (): float => $this->lnLower(floor($k)));
+        return Special::logTail($lower, $upper, fn (): float => $this->lnLower(\floor($k)));
     }
 
     /** @internal */
     public function logsfAt(float $k): float
     {
         if (($exact = $this->exact($k)) !== null) {
-            return log($exact[1]);
+            return \log($exact[1]);
         }
         [$lower, $upper] = $this->tails($k);
 
-        return Special::logTail($upper, $lower, fn (): float => $this->lnUpper(floor($k)));
+        return Special::logTail($upper, $lower, fn (): float => $this->lnUpper(\floor($k)));
     }
 
     /** @internal */
@@ -225,8 +225,8 @@ final class Binomial
         if ($this->q == 0.0) {
             return $p == 0.0 ? 0.0 : $this->n;
         }
-        $sd = sqrt($this->n * $this->p * $this->q);
-        $first = Quantile::cornishFisher($p, $this->n * $this->p, $sd, fdiv($this->q - $this->p, $sd));
+        $sd = \sqrt($this->n * $this->p * $this->q);
+        $first = Quantile::cornishFisher($p, $this->n * $this->p, $sd, \fdiv($this->q - $this->p, $sd));
 
         return Quantile::discrete($p, $first, $this->n, $this->cdfAt(...), $this->sfAt(...), $this->logcdfAt(...));
     }
