@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use PhpStats\Polyfill\Distribution\RustPanic;
-use PhpStats\Polyfill\Internal\NelderMead;
-use PhpStats\Polyfill\Internal\NelderMeadError;
-use PhpStats\Polyfill\Internal\NelderMeadTermination;
+use Phit\Polyfill\Distribution\RustPanic;
+use Phit\Polyfill\Internal\NelderMead;
+use Phit\Polyfill\Internal\NelderMeadError;
+use Phit\Polyfill\Internal\NelderMeadTermination;
 
 // Bit-for-bit comparison with argmin 0.11.0's NelderMead + Executor, from the
 // harness in tests/reference/neldermead. Floats are IEEE-754 bit patterns in hex.

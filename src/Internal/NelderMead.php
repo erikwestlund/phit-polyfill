@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Internal;
+namespace Phit\Polyfill\Internal;
 
-use PhpStats\Polyfill\Distribution\Support;
+use Phit\Polyfill\Distribution\Support;
 
 /**
  * argmin 0.11.0's NelderMead solver driven by its Executor, over Vec<f64>

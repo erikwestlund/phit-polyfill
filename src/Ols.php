@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill;
+namespace Phit\Polyfill;
 
-use PhpStats\Polyfill\Internal\LeastSquares;
-use PhpStats\Polyfill\Internal\ModelData;
-use PhpStats\Polyfill\Internal\Statrs;
+use Phit\Polyfill\Internal\LeastSquares;
+use Phit\Polyfill\Internal\ModelData;
+use Phit\Polyfill\Internal\Statrs;
 
 /**
- * Ordinary and weighted least squares with known offsets (stats_ols).
+ * Ordinary and weighted least squares with known offsets (Phit\fit_ols).
  */
 final class Ols
 {
@@ -40,7 +40,7 @@ final class Ols
             'adj_r_squared' => $r['adj_r_squared'],
             'df_residual' => $r['df_residual'],
             'log_likelihood' => $r['log_likelihood'],
-        ], 'stats_ols', 'scaled_svd');
+        ], 'Phit\fit_ols', 'scaled_svd');
     }
 
     private static function error(int $code, string $message): \Exception
@@ -51,7 +51,7 @@ final class Ols
     /**
      * Weighted Gaussian fit with known additive offsets. Prior weights specify
      * Var(e_i) = sigma^2 / w_i; residuals stay on the response scale.
-     * Shared with the formula interface (stats_lm, stats_glm gaussian).
+     * Shared with the formula interface (Phit\fit_lm, Phit\fit_glm gaussian).
      *
      * @internal
      */

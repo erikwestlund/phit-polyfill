@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Internal\Bobyqa;
+namespace Phit\Polyfill\Internal\Bobyqa;
 
 /**
  * The crate's rescue.rs: PRIMA's RESCUE (Section 5 of the BOBYQA paper) and

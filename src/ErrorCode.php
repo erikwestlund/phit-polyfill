@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill;
+namespace Phit\Polyfill;
 
 /**
- * Exception codes shared with the php_stats extension. Both throw a plain
+ * Exception codes shared with the phit extension. Both throw a plain
  * \Exception whose code identifies the category; messages are not part of
  * the contract.
  */

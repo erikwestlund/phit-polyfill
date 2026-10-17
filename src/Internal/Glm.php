@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Internal;
+namespace Phit\Polyfill\Internal;
 
-use PhpStats\Polyfill\ErrorCode;
+use Phit\Polyfill\ErrorCode;
 
 /**
  * The extension's damped Newton / Fisher-scoring loop for the logistic,
@@ -313,7 +313,7 @@ abstract class Glm
         ];
     }
 
-    /** Public entry shared by the stats_* model functions. */
+    /** Public entry shared by the Phit\fit_* model functions. */
     public function run(array $x, array $y, string $missing, ?array $weights, ?array $offset, bool $intercept, string $outcome, string $function): array
     {
         $data = ModelData::prepare($x, $y, $missing, $outcome, $weights, $offset, $intercept);

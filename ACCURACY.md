@@ -1,13 +1,13 @@
 # Accuracy
 
 This document records how closely the polyfill reproduces two references. The
-first is the R, SciPy, and mpmath values that the php_stats extension is
+first is the R, SciPy, and mpmath values that the phit extension is
 validated against. The second is the extension itself. Every number below was
 measured, not estimated. A function is shipped only when it passes the
 extension's own fixture tolerances and the parity suite. Anything that cannot
 meet them stays undefined and is listed under [Not provided](#not-provided).
 
-Reference: php-stats commit pinned in `tests/fixtures/REFERENCE`. The fixtures
+Reference: phit commit pinned in `tests/fixtures/REFERENCE`. The fixtures
 are copied from that commit by `bin/fetch-fixtures` and never edited.
 
 ## How the numbers are produced
@@ -38,11 +38,11 @@ for every invalid input tested.
 
 ## Regression models
 
-`stats_ols` solves least squares by Householder QR of the column-scaled design,
+`Phit\fit_ols` solves least squares by Householder QR of the column-scaled design,
 then a one-sided Jacobi SVD of the small R factor. The singular values are
 those of the design, so the extension's rank rule (s ≤ ε·max(n, p)·s_max)
-makes the same decisions. `stats_logistic`, `stats_probit`, and
-`stats_poisson` port the extension's damped Newton / Fisher-scoring loop step
+makes the same decisions. `Phit\fit_logistic`, `Phit\fit_probit`, and
+`Phit\fit_poisson` port the extension's damped Newton / Fisher-scoring loop step
 for step. This includes the starting values, line search, separation
 certificate, convergence rule, compensated likelihood sums, and statistics. The
 statrs special functions behind p-values and likelihood constants (erfc, ln Γ,
@@ -53,28 +53,28 @@ from the same crate version.
 
 | Function | Reference | Comparisons | Max relative error | Tolerance used | Tested domain |
 |---|---|---:|---:|---:|---|
-| `stats_cor` | R (descriptive-r.json) | 3 | 1.3e-16 | 0% | correlated, negative, offset |
-| `stats_cov` | R (descriptive-r.json) | 6 | 2.1e-16 | 0% | correlated, negative, offset |
-| `stats_logistic` | R (logistic-r.json) | 78 | 7.4e-9 | 6% | n=80, p=3, n=80, p=2, n=80, p=1 |
-| `stats_logistic` | R (r-compatibility.json) | 52 | 3.5e-6 | 20% | logistic_intercept_individual, logistic_intercept_grouped, logistic_no_intercept_individual, logistic_no_intercept_grouped |
-| `stats_logistic` | R (stress-r.json) | 44 | 2.5e-12 | 0% | logistic_rare, logistic_offset_-1000, logistic_offset_1000, logistic_extreme_known_predictors |
-| `stats_mean` | R (descriptive-r.json) | 8 | 1.5e-16 | 0% | small, integers, offset, tiny, and 4 more |
-| `stats_median` | R (descriptive-r.json) | 8 | 0.0e+0 | 0% | small, integers, offset, tiny, and 4 more |
-| `stats_ols` | R (ols-r.json) | 108 | 3.5e-13 | 0% | n=8, p=2, n=8, p=3, n=5, p=2, n=10, p=3, and 1 more |
-| `stats_ols` | R (r-compatibility.json) | 30 | 3.8e-12 | 0% | ols_intercept_individual, ols_no_intercept_individual |
-| `stats_ols` | R (stress-r.json) | 54 | 1.6e-8 | 0% | nearly_collinear, poorly_scaled, small_outcome, large_outcome, and 2 more |
-| `stats_poisson` | R (poisson-r.json) | 78 | 8.8e-11 | 0% | n=120, p=3, n=120, p=2, n=120, p=1 |
-| `stats_poisson` | R (r-compatibility.json) | 26 | 8.0e-7 | 39% | poisson_intercept_individual, poisson_no_intercept_individual |
-| `stats_poisson` | R (stress-r.json) | 55 | 1.7e-8 | 21% | poisson_tiny_known_means, poisson_sparse, poisson_large, poisson_offset_-1000, and 1 more |
-| `stats_probit` | R (probit-r.json) | 78 | 6.3e-8 | 17% | n=120, p=3, n=120, p=2, n=120, p=1 |
-| `stats_probit` | R (r-compatibility.json) | 52 | 1.8e-5 | 20% | probit_intercept_individual, probit_intercept_grouped, probit_no_intercept_individual, probit_no_intercept_grouped |
-| `stats_probit` | R (stress-r.json) | 44 | 7.4e-11 | 0% | probit_rare, probit_offset_-1000, probit_offset_1000, probit_extreme_known_predictors |
-| `stats_quantile_array` | R (descriptive-r.json) | 8 | 0.0e+0 | 0% | small, integers, offset, tiny, and 4 more |
-| `stats_quantile` | R (descriptive-r.json) | 80 | 0.0e+0 | 0% | small, integers, offset, tiny, and 4 more |
-| `stats_sd` | R (descriptive-r.json) | 8 | 3.9e-16 | 0% | small, integers, offset, tiny, and 4 more |
-| `stats_var` | R (descriptive-r.json) | 16 | 5.2e-16 | 0% | small, integers, offset, tiny, and 4 more |
-| `stats_weighted_mean` | R (descriptive-r.json) | 2 | 2.1e-16 | 0% | analytic, counts |
-| `stats_weighted_var` | R (descriptive-r.json) | 6 | 1.9e-16 | 0% | analytic, counts |
+| `Phit\stat_cor` | R (descriptive-r.json) | 3 | 1.3e-16 | 0% | correlated, negative, offset |
+| `Phit\stat_cov` | R (descriptive-r.json) | 6 | 2.1e-16 | 0% | correlated, negative, offset |
+| `Phit\fit_logistic` | R (logistic-r.json) | 78 | 7.4e-9 | 6% | n=80, p=3, n=80, p=2, n=80, p=1 |
+| `Phit\fit_logistic` | R (r-compatibility.json) | 52 | 3.5e-6 | 20% | logistic_intercept_individual, logistic_intercept_grouped, logistic_no_intercept_individual, logistic_no_intercept_grouped |
+| `Phit\fit_logistic` | R (stress-r.json) | 44 | 2.5e-12 | 0% | logistic_rare, logistic_offset_-1000, logistic_offset_1000, logistic_extreme_known_predictors |
+| `Phit\stat_mean` | R (descriptive-r.json) | 8 | 1.5e-16 | 0% | small, integers, offset, tiny, and 4 more |
+| `Phit\stat_median` | R (descriptive-r.json) | 8 | 0.0e+0 | 0% | small, integers, offset, tiny, and 4 more |
+| `Phit\fit_ols` | R (ols-r.json) | 108 | 3.5e-13 | 0% | n=8, p=2, n=8, p=3, n=5, p=2, n=10, p=3, and 1 more |
+| `Phit\fit_ols` | R (r-compatibility.json) | 30 | 3.8e-12 | 0% | ols_intercept_individual, ols_no_intercept_individual |
+| `Phit\fit_ols` | R (stress-r.json) | 54 | 1.6e-8 | 0% | nearly_collinear, poorly_scaled, small_outcome, large_outcome, and 2 more |
+| `Phit\fit_poisson` | R (poisson-r.json) | 78 | 8.8e-11 | 0% | n=120, p=3, n=120, p=2, n=120, p=1 |
+| `Phit\fit_poisson` | R (r-compatibility.json) | 26 | 8.0e-7 | 39% | poisson_intercept_individual, poisson_no_intercept_individual |
+| `Phit\fit_poisson` | R (stress-r.json) | 55 | 1.7e-8 | 21% | poisson_tiny_known_means, poisson_sparse, poisson_large, poisson_offset_-1000, and 1 more |
+| `Phit\fit_probit` | R (probit-r.json) | 78 | 6.3e-8 | 17% | n=120, p=3, n=120, p=2, n=120, p=1 |
+| `Phit\fit_probit` | R (r-compatibility.json) | 52 | 1.8e-5 | 20% | probit_intercept_individual, probit_intercept_grouped, probit_no_intercept_individual, probit_no_intercept_grouped |
+| `Phit\fit_probit` | R (stress-r.json) | 44 | 7.4e-11 | 0% | probit_rare, probit_offset_-1000, probit_offset_1000, probit_extreme_known_predictors |
+| `Phit\stat_quantile_array` | R (descriptive-r.json) | 8 | 0.0e+0 | 0% | small, integers, offset, tiny, and 4 more |
+| `Phit\stat_quantile` | R (descriptive-r.json) | 80 | 0.0e+0 | 0% | small, integers, offset, tiny, and 4 more |
+| `Phit\stat_sd` | R (descriptive-r.json) | 8 | 3.9e-16 | 0% | small, integers, offset, tiny, and 4 more |
+| `Phit\stat_var` | R (descriptive-r.json) | 16 | 5.2e-16 | 0% | small, integers, offset, tiny, and 4 more |
+| `Phit\stat_weighted_mean` | R (descriptive-r.json) | 2 | 2.1e-16 | 0% | analytic, counts |
+| `Phit\stat_weighted_var` | R (descriptive-r.json) | 6 | 1.9e-16 | 0% | analytic, counts |
 
 The GLM differences from R (up to about 2·10⁻⁵ relative in the probit
 r-compatibility case) come from R's own stopping rule (`glm` stops when the
@@ -93,7 +93,7 @@ are compared relative to |b| + 10⁻³·max |b|.
 The least-squares steps reproduce the extension's arithmetic: Householder QR
 with nalgebra's operation order (including its eight-way blocked dot products
 and sign handling), solves and (R'R)⁻¹ by back-substitution on R, weighted OLS
-rows factored in decreasing-weight order (php-stats 91ee538), the R⁻¹R⁻ᵀ
+rows factored in decreasing-weight order (phit 91ee538), the R⁻¹R⁻ᵀ
 product as matrixmultiply's fused kernel computes it once p exceeds 5, and the
 extension's order of multiplication in every derived statistic. The two
 implementations therefore take the same path through every iterative fit and
@@ -132,7 +132,7 @@ some such cases both report non-convergence (1006).
 
 ### Weighted least squares with a dominating weight
 
-Before php-stats 91ee538 the extension's OLS was wrong when one prior weight was
+Before phit 91ee538 the extension's OLS was wrong when one prior weight was
 far larger than the rest. For y = (1, 2, 2.5, 4, 4.5, 6) on x = 1, …, 6 with
 weights (1, 2, 3, 4, 5, 10¹⁸), it returned (319.6, −52.27) instead of the
 exact (−0.4, 1.0667). The extension now orders rows by weight and solves R by
@@ -208,7 +208,7 @@ stress test records the bound.
 
 cdflib's incomplete beta and gamma routines never return for some extreme
 arguments and panic in the deep asymptotic regime of the incomplete gamma.
-Since php-stats bd98bf7 the extension returns a failure up front for those
+Since phit bd98bf7 the extension returns a failure up front for those
 regimes, and the polyfill applies the same conditions. They are an overflowing
 a + b, a beta parameter above 1e300 with x or 1 − x below 1e-300, and a gamma
 shape or point above 1e300. A panic inside either routine also becomes a
@@ -219,7 +219,7 @@ implementations on a grid of parameters from 1e-300 to `PHP_FLOAT_MAX` for F,
 beta, gamma, chi-square, t, Poisson, and the negative binomial by mean. The
 values or exception codes agree on every point.
 
-For `stats_t_quantile` at very small df, the quantile search used to step from
+For `Phit\dist_t_quantile` at very small df, the quantile search used to step from
 a very large starting point by ±2 and could take seconds per call. Both the
 extension (since 0aafc26) and the polyfill now search that run of points by
 exponential probing and bisection. The visited points are the same, so the
@@ -227,7 +227,7 @@ results equal those of the original walk.
 
 ## Formula interface
 
-`stats_model_matrix`, `stats_lm`, and `stats_glm` port the extension's formula
+`Phit\model_matrix`, `Phit\fit_lm`, and `Phit\fit_glm` port the extension's formula
 parser, term expansion, evaluation, and coding. The fits reuse the polyfill's
 OLS and GLM code described above.
 
@@ -241,9 +241,9 @@ exactly.
 
 | Function | Comparisons | Max relative error | Tolerance used | Datasets |
 |---|---:|---:|---:|---|
-| `stats_model_matrix` | 266 | 6.7e-16 | 0% | housing, schools, cbpp, synthetic, small |
-| `stats_lm` | 238 | 2.7e-12 | 0% | housing, schools, synthetic |
-| `stats_glm` | 240 | 5.9e-10 | 1% | learning, cbpp, clinic, synthetic |
+| `Phit\model_matrix` | 266 | 6.7e-16 | 0% | housing, schools, cbpp, synthetic, small |
+| `Phit\fit_lm` | 238 | 2.7e-12 | 0% | housing, schools, synthetic |
+| `Phit\fit_glm` | 240 | 5.9e-10 | 1% | learning, cbpp, clinic, synthetic |
 
 ### Against the extension
 
@@ -258,7 +258,7 @@ every group.
 
 ### Prediction
 
-`stats_predict` ports the extension's prediction design (the fitted factor
+`Phit\predict` ports the extension's prediction design (the fitted factor
 levels and `poly()` recurrence coefficients from `predvars`) and its
 prediction code. The extension's `predict.php` passes unchanged against the
 polyfill: 25 cases against R's `predict()` for lm, glm, lmer, and glmer fits,
@@ -284,10 +284,10 @@ counts agree exactly.
 
 ## Posterior draws
 
-`stats_draw_moments`, `stats_draw_covariance_map`, and `stats_draw_affine`
+`Phit\draws_moments`, `Phit\draws_covariance_map`, and `Phit\draws_affine`
 follow the extension's operation order: Neumaier sums, nalgebra's Cholesky
 factorization, triangular solve, and partially pivoted LU. For
-`stats_draw_affine` with more than five rows and columns, nalgebra multiplies
+`Phit\draws_affine` with more than five rows and columns, nalgebra multiplies
 through matrixmultiply, whose aarch64 kernel accumulates each product with a
 fused multiply-add. PHP has no `fma()`, so the polyfill emulates a correctly
 rounded one (Boldo and Melquiond's round-to-odd algorithm). The emulation
@@ -296,7 +296,7 @@ matched exact rational arithmetic on 200,000 random cases.
 The results are identical to the extension's in the randomized parity suite.
 Without the fused accumulation, roughly 40 to 90 percent of the
 entries in a typical affine transform would differ in the last bit. The
-numerical-rank check in `stats_draw_affine` compares singular values with a
+numerical-rank check in `Phit\draws_affine` compares singular values with a
 tolerance. The polyfill computes them with a one-sided Jacobi method, not
 nalgebra's bidiagonal SVD, so a matrix whose smallest singular value lies
 within rounding of the threshold could be classified differently. Against the
@@ -304,8 +304,8 @@ NumPy references in `draws-python.json`, all cases agree within 1e-11.
 
 ## Mixed models
 
-`stats_lmm`, `stats_lmm_fit`, `stats_logistic_mixed`, `stats_lmer`, and
-`stats_glmer` port the extension's stats-core code (mixed.rs, lmm.rs,
+`Phit\fit_mixed_intercept`, `Phit\fit_mixed`, `Phit\fit_logistic_mixed`, `Phit\fit_lmer`, and
+`Phit\fit_glmer` port the extension's stats-core code (mixed.rs, lmm.rs,
 logistic_mixed.rs, and the formula front end) together with the numerical
 libraries it relies on, each reproduced to the bit and checked against the
 compiled Rust library on randomized problems:
@@ -339,9 +339,9 @@ the main quantities:
 
 | Function | Reference | Coefficients | Std. errors | Variance components | Log-likelihood |
 |---|---|---:|---:|---:|---:|
-| `stats_lmm` | lmm-r.json (6 fits) | 5.4e-9 | 2.8e-8 | 7.8e-8 | 2.4e-16 |
-| `stats_lmm` | lmm-public-r.json (4 public datasets) | 1.7e-9 | 4.5e-8 | 1.2e-7 | 4.0e-16 |
-| `stats_logistic_mixed` | logistic-mixed-r.json (28 fits) | 1.7e-6 | 2.2e-5 | 1.2e-6 | 3.1e-9 |
+| `Phit\fit_mixed_intercept` | lmm-r.json (6 fits) | 5.4e-9 | 2.8e-8 | 7.8e-8 | 2.4e-16 |
+| `Phit\fit_mixed_intercept` | lmm-public-r.json (4 public datasets) | 1.7e-9 | 4.5e-8 | 1.2e-7 | 4.0e-16 |
+| `Phit\fit_logistic_mixed` | logistic-mixed-r.json (28 fits) | 1.7e-6 | 2.2e-5 | 1.2e-6 | 3.1e-9 |
 
 The binomial standard errors differ from lme4 by up to 2·10⁻⁵ relative because
 both programs differentiate the approximate likelihood numerically, with
@@ -356,29 +356,29 @@ Ultra with PHP 8.5.10, in the same process as the extension:
 
 | Fit | Extension | Polyfill | Polyfill, tracing JIT |
 |---|---:|---:|---:|
-| `stats_lmm`, sleepstudy (n = 180) | 0.2 ms | 2.6 ms | 8.4 ms |
-| `stats_logistic_mixed`, n = 185, Laplace | 1.3 ms | 26 ms | 36 ms |
-| `stats_logistic_mixed`, n = 185, 9 quadrature points | 2.1 ms | 41 ms | 42 ms |
-| `stats_lmm_fit`, random slopes, q = 24 | 0.7 ms | 37 ms | 163 ms |
-| `stats_lmm_fit`, nested, q = 84 | 7.8 ms | 604 ms | 130 ms |
-| `stats_lmm_fit`, four nested levels, q = 120 | 103 ms | 8.0 s | 1.4 s |
+| `Phit\fit_mixed_intercept`, sleepstudy (n = 180) | 0.2 ms | 2.6 ms | 8.4 ms |
+| `Phit\fit_logistic_mixed`, n = 185, Laplace | 1.3 ms | 26 ms | 36 ms |
+| `Phit\fit_logistic_mixed`, n = 185, 9 quadrature points | 2.1 ms | 41 ms | 42 ms |
+| `Phit\fit_mixed`, random slopes, q = 24 | 0.7 ms | 37 ms | 163 ms |
+| `Phit\fit_mixed`, nested, q = 84 | 7.8 ms | 604 ms | 130 ms |
+| `Phit\fit_mixed`, four nested levels, q = 120 | 103 ms | 8.0 s | 1.4 s |
 
-Here q is the number of random coefficients. `stats_lmm_fit` and `stats_lmer`
+Here q is the number of random coefficients. `Phit\fit_mixed` and `Phit\fit_lmer`
 repeat a dense QR of a matrix with about n + q rows and q + p columns at every
 optimizer step, so their cost grows roughly with q³. The JIT helps large fits
 and costs compilation time on small ones.
 
 ## Not provided
 
-`stats_read_csv` needs the native extension and is left undefined; phibble's
-PHP reader is the fallback. `PhpStats\Polyfill\Polyfill::supports()` reports
+`Phit\read_csv` needs the native extension and is left undefined; phibble's
+PHP reader is the fallback. `Phit\Polyfill\Polyfill::supports()` reports
 which functions are available.
 
 ## Known differences from the extension
 
 - The listwise-deletion warning is raised with `E_USER_WARNING`, because PHP
   code cannot raise `E_WARNING`. The message text is identical, including the
-  `stats_ols(): ` prefix.
+  `Phit\fit_ols(): ` prefix.
 - A scalar argument of the wrong type follows PHP's rules for a userland
   function. In files without `strict_types`, numeric strings and booleans are
   coerced, and other values raise `TypeError`. The extension raises an

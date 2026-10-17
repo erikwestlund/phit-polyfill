@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill;
+namespace Phit\Polyfill;
 
-use PhpStats\Polyfill\Internal\LinearMixed;
-use PhpStats\Polyfill\Internal\LogisticRandomIntercept;
-use PhpStats\Polyfill\Internal\Limits;
-use PhpStats\Polyfill\Internal\ModelData;
-use PhpStats\Polyfill\Internal\RandomIntercept;
+use Phit\Polyfill\Internal\LinearMixed;
+use Phit\Polyfill\Internal\LogisticRandomIntercept;
+use Phit\Polyfill\Internal\Limits;
+use Phit\Polyfill\Internal\ModelData;
+use Phit\Polyfill\Internal\RandomIntercept;
 
 /**
- * Mixed models: stats_lmm, stats_lmm_fit, and stats_logistic_mixed (the
+ * Mixed models: Phit\fit_mixed_intercept, Phit\fit_mixed, and Phit\fit_logistic_mixed (the
  * extension's lib.rs glue around stats-core mixed.rs, lmm.rs, and
  * logistic_mixed.rs).
  */
 final class MixedModels
 {
-    /** stats_lmm */
+    /** Phit\fit_mixed_intercept */
     public static function lmm(array $x, array $y, array $groups, string $missing = 'drop', bool $intercept = true): array
     {
         $data = ModelData::prepare($x, $y, $missing, 'continuous', null, null, $intercept, $groups);
@@ -52,10 +52,10 @@ final class MixedModels
             'converged' => true,
         ];
 
-        return $data->finish($output, 'stats_lmm', 'profile_variance_search');
+        return $data->finish($output, 'Phit\fit_mixed_intercept', 'profile_variance_search');
     }
 
-    /** stats_lmm_fit */
+    /** Phit\fit_mixed */
     public static function lmmFit(
         array $x,
         array $y,
@@ -189,11 +189,11 @@ final class MixedModels
         );
 
         return ModelData::accounting($n, $retained, $dropped)
-            ->finish(self::lmmOutput($result, $reml, $termLabels), 'stats_lmm_fit', $method);
+            ->finish(self::lmmOutput($result, $reml, $termLabels), 'Phit\fit_mixed', $method);
     }
 
     /**
-     * The stats_lmm_fit / stats_lmer result table.
+     * The Phit\fit_mixed / Phit\fit_lmer result table.
      *
      * @param  list<list<int|string>>  $termLabels
      */
@@ -239,7 +239,7 @@ final class MixedModels
         ];
     }
 
-    /** stats_logistic_mixed */
+    /** Phit\fit_logistic_mixed */
     public static function logisticMixed(
         array $x,
         array $y,
@@ -276,11 +276,11 @@ final class MixedModels
             'tolerance' => $tolerance,
         ]);
 
-        return $data->finish(self::logisticMixedOutput($r, $labels), 'stats_logistic_mixed', 'bobyqa');
+        return $data->finish(self::logisticMixedOutput($r, $labels), 'Phit\fit_logistic_mixed', 'bobyqa');
     }
 
     /**
-     * The stats_logistic_mixed / stats_glmer result table.
+     * The Phit\fit_logistic_mixed / Phit\fit_glmer result table.
      *
      * @param  list<int|string>  $labels
      */

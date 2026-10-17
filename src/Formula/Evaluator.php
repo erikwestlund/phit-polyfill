@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Formula;
+namespace Phit\Polyfill\Formula;
 
-use PhpStats\Polyfill\ErrorCode;
+use Phit\Polyfill\ErrorCode;
 
 /**
  * Evaluates formula variables over all input rows, before missing-value

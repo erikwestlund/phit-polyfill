@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Distribution;
+namespace Phit\Polyfill\Distribution;
 
 /**
  * Negative binomial distribution: failures before the `size`-th success,
@@ -58,91 +58,91 @@ final class NegativeBinomial
         return new self($size, $p, $q, -log1p($mu / $size), $mu == 0.0 ? -INF : -log1p($size / $mu));
     }
 
-    /** stats_nbinom_pmf */
+    /** Phit\dist_nbinom_pmf */
     public static function pmf(float $k, float $size, float $prob): float
     {
         return Support::point($k, self::create($size, $prob)->pmfAt(...));
     }
 
-    /** stats_nbinom_pmf_array */
+    /** Phit\dist_nbinom_pmf_array */
     public static function pmfArray(array $counts, float $size, float $prob): array
     {
         return Support::points($counts, self::create($size, $prob)->pmfAt(...));
     }
 
-    /** stats_nbinom_logpmf */
+    /** Phit\dist_nbinom_logpmf */
     public static function logpmf(float $k, float $size, float $prob): float
     {
         return Support::point($k, self::create($size, $prob)->logpmfAt(...));
     }
 
-    /** stats_nbinom_logpmf_array */
+    /** Phit\dist_nbinom_logpmf_array */
     public static function logpmfArray(array $counts, float $size, float $prob): array
     {
         return Support::points($counts, self::create($size, $prob)->logpmfAt(...));
     }
 
-    /** stats_nbinom_cdf */
+    /** Phit\dist_nbinom_cdf */
     public static function cdf(float $k, float $size, float $prob): float
     {
         return Support::point($k, self::create($size, $prob)->cdfAt(...));
     }
 
-    /** stats_nbinom_cdf_array */
+    /** Phit\dist_nbinom_cdf_array */
     public static function cdfArray(array $counts, float $size, float $prob): array
     {
         return Support::points($counts, self::create($size, $prob)->cdfAt(...));
     }
 
-    /** stats_nbinom_logcdf */
+    /** Phit\dist_nbinom_logcdf */
     public static function logcdf(float $k, float $size, float $prob): float
     {
         return Support::point($k, self::create($size, $prob)->logcdfAt(...));
     }
 
-    /** stats_nbinom_logcdf_array */
+    /** Phit\dist_nbinom_logcdf_array */
     public static function logcdfArray(array $counts, float $size, float $prob): array
     {
         return Support::points($counts, self::create($size, $prob)->logcdfAt(...));
     }
 
-    /** stats_nbinom_sf */
+    /** Phit\dist_nbinom_sf */
     public static function sf(float $k, float $size, float $prob): float
     {
         return Support::point($k, self::create($size, $prob)->sfAt(...));
     }
 
-    /** stats_nbinom_sf_array */
+    /** Phit\dist_nbinom_sf_array */
     public static function sfArray(array $counts, float $size, float $prob): array
     {
         return Support::points($counts, self::create($size, $prob)->sfAt(...));
     }
 
-    /** stats_nbinom_logsf */
+    /** Phit\dist_nbinom_logsf */
     public static function logsf(float $k, float $size, float $prob): float
     {
         return Support::point($k, self::create($size, $prob)->logsfAt(...));
     }
 
-    /** stats_nbinom_logsf_array */
+    /** Phit\dist_nbinom_logsf_array */
     public static function logsfArray(array $counts, float $size, float $prob): array
     {
         return Support::points($counts, self::create($size, $prob)->logsfAt(...));
     }
 
-    /** stats_nbinom_quantile */
+    /** Phit\dist_nbinom_quantile */
     public static function quantile(float $p, float $size, float $prob): float
     {
         return Support::probability($p, self::create($size, $prob)->quantileAt(...));
     }
 
-    /** stats_nbinom_quantile_array */
+    /** Phit\dist_nbinom_quantile_array */
     public static function quantileArray(array $probabilities, float $size, float $prob): array
     {
         return Support::probabilities($probabilities, self::create($size, $prob)->quantileAt(...));
     }
 
-    /** stats_nbinom_rng */
+    /** Phit\dist_nbinom_rng */
     public static function rng(int $n, int $seed, float $size, float $prob): array
     {
         return Support::sample($n, $seed, self::create($size, $prob)->quantileAt(...));

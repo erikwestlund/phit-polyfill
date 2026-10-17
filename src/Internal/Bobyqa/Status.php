@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Internal\Bobyqa;
+namespace Phit\Polyfill\Internal\Bobyqa;
 
 /**
  * Why the solver stopped (or why construction failed), the crate's Status.

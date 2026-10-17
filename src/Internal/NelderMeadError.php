@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Internal;
+namespace Phit\Polyfill\Internal;
 
 /**
  * An argmin `Error` (anyhow::Error): the message is its Display text.

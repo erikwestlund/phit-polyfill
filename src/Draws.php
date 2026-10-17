@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill;
+namespace Phit\Polyfill;
 
-use PhpStats\Polyfill\Internal\Dense;
-use PhpStats\Polyfill\Internal\LeastSquares;
+use Phit\Polyfill\Internal\Dense;
+use Phit\Polyfill\Internal\LeastSquares;
 
 /**
- * Posterior-draw kernels: stats_draw_moments, stats_draw_covariance_map, and
- * stats_draw_affine (stats-core draws.rs and the extension's draws.rs glue).
+ * Posterior-draw kernels: Phit\draws_moments, Phit\draws_covariance_map, and
+ * Phit\draws_affine (stats-core draws.rs and the extension's draws.rs glue).
  * The factorizations follow nalgebra's operation order.
  */
 final class Draws
 {
-    /** stats_draw_moments */
+    /** Phit\draws_moments */
     public static function moments(array $draws, ?array $weights = null, string $normalization = 'population'): array
     {
         $unbiased = match ($normalization) {
@@ -97,7 +97,7 @@ final class Draws
         return ['mean' => $mean, 'covariance' => $covariance];
     }
 
-    /** stats_draw_covariance_map */
+    /** Phit\draws_covariance_map */
     public static function covarianceMap(array $source_covariance, array $target_covariance): array
     {
         $source = self::covarianceFactor(self::matrix($source_covariance));
@@ -139,7 +139,7 @@ final class Draws
         return ['matrix' => $a, 'log_abs_det' => self::finite(self::sum($terms))];
     }
 
-    /** stats_draw_affine */
+    /** Phit\draws_affine */
     public static function affine(array $draws, array $matrix, array $shift): array
     {
         $draws = self::matrix($draws);

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-use PhpStats\Polyfill\Polyfill;
+use Phit\Polyfill\Polyfill;
 
-// Extreme-parameter grid, after the extension's fuzzing of cdflib (php-stats
+// Extreme-parameter grid, after the extension's fuzzing of cdflib (phit
 // bd98bf7): regimes where cdflib hangs or panics must fail fast with 1006 in
 // both implementations, and everything else must agree exactly.
 
 beforeEach(function () {
-    if (! extension_loaded('php_stats')) {
-        $this->markTestSkipped('php_stats extension not loaded');
+    if (! extension_loaded('phit')) {
+        $this->markTestSkipped('phit extension not loaded');
     }
 });
 
@@ -29,7 +29,7 @@ function extremeOutcome(callable $f, array $arguments): mixed
 it('agrees with the extension on extreme parameters', function (string $family, array $operations, int $parameters) {
     $checked = 0;
     foreach ($operations as $operation) {
-        $fn = "stats_{$family}_$operation";
+        $fn = "Phit\\dist_{$family}_$operation";
         $points = $operation === 'quantile' ? [1e-300, 1e-10, 0.3, 0.5, 0.9, 1.0 - 1e-12] : [0.0, 1e-300, 0.5, 2.0, 1e30, 1e300];
         if ($family === 'beta' && $operation !== 'quantile') {
             $points = [1e-300, 1e-10, 0.5, 1.0 - 1e-12];

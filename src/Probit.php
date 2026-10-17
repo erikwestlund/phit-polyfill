@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill;
+namespace Phit\Polyfill;
 
-use PhpStats\Polyfill\Internal\Family\ProbitFamily;
+use Phit\Polyfill\Internal\Family\ProbitFamily;
 
 /**
- * Binary or grouped-binomial probit regression by Fisher scoring (stats_probit).
+ * Binary or grouped-binomial probit regression by Fisher scoring (Phit\fit_probit).
  */
 final class Probit
 {
@@ -19,6 +19,6 @@ final class Probit
         ?array $offset = null,
         bool $intercept = true,
     ): array {
-        return (new ProbitFamily())->run($x, $y, $missing, $weights, $offset, $intercept, 'binary', 'stats_probit');
+        return (new ProbitFamily())->run($x, $y, $missing, $weights, $offset, $intercept, 'binary', 'Phit\fit_probit');
     }
 }

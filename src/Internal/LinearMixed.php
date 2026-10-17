@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Internal;
+namespace Phit\Polyfill\Internal;
 
-use PhpStats\Polyfill\ErrorCode;
+use Phit\Polyfill\ErrorCode;
 
 /**
  * Gaussian mixed models by square-root penalized least squares (stats-core
- * lmm.rs, behind stats_lmm_fit and stats_lmer): explicit random-design terms,
+ * lmm.rs, behind Phit\fit_mixed and Phit\fit_lmer): explicit random-design terms,
  * a dense QR summary of the weighted [Z, X, y - offset], and the relative
  * covariance factors theta optimized by BOBYQA or Nelder-Mead.
  *
@@ -134,7 +134,7 @@ final class LinearMixed
         }
         // A dense square-root summary, not lme4's sparse Cholesky: bounded explicitly.
         if ($q > 512 || $n * ($q + $p + 1) > 50_000_000) {
-            throw ErrorCode::exception(ErrorCode::UNSUPPORTED, 'general mixed-model dense design limit exceeded (q <= 512, n*(q+p+1) <= 50000000); use stats_lmm for large random-intercept fits');
+            throw ErrorCode::exception(ErrorCode::UNSUPPORTED, 'general mixed-model dense design limit exceeded (q <= 512, n*(q+p+1) <= 50000000); use fit_mixed_intercept for large random-intercept fits');
         }
         $scales = [];
         for ($j = 0; $j < $p; $j++) {

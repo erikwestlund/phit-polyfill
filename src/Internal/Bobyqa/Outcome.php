@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Internal\Bobyqa;
+namespace Phit\Polyfill\Internal\Bobyqa;
 
 /**
  * The result of one Bobyqa::minimize call.

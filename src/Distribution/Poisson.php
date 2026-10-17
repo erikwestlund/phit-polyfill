@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Distribution;
+namespace Phit\Polyfill\Distribution;
 
 /** Poisson distribution with mean `lambda`. */
 final class Poisson
@@ -20,91 +20,91 @@ final class Poisson
         return new self($lambda);
     }
 
-    /** stats_poisson_pmf */
+    /** Phit\dist_poisson_pmf */
     public static function pmf(float $k, float $lambda): float
     {
         return Support::point($k, self::create($lambda)->pmfAt(...));
     }
 
-    /** stats_poisson_pmf_array */
+    /** Phit\dist_poisson_pmf_array */
     public static function pmfArray(array $counts, float $lambda): array
     {
         return Support::points($counts, self::create($lambda)->pmfAt(...));
     }
 
-    /** stats_poisson_logpmf */
+    /** Phit\dist_poisson_logpmf */
     public static function logpmf(float $k, float $lambda): float
     {
         return Support::point($k, self::create($lambda)->logpmfAt(...));
     }
 
-    /** stats_poisson_logpmf_array */
+    /** Phit\dist_poisson_logpmf_array */
     public static function logpmfArray(array $counts, float $lambda): array
     {
         return Support::points($counts, self::create($lambda)->logpmfAt(...));
     }
 
-    /** stats_poisson_cdf */
+    /** Phit\dist_poisson_cdf */
     public static function cdf(float $k, float $lambda): float
     {
         return Support::point($k, self::create($lambda)->cdfAt(...));
     }
 
-    /** stats_poisson_cdf_array */
+    /** Phit\dist_poisson_cdf_array */
     public static function cdfArray(array $counts, float $lambda): array
     {
         return Support::points($counts, self::create($lambda)->cdfAt(...));
     }
 
-    /** stats_poisson_logcdf */
+    /** Phit\dist_poisson_logcdf */
     public static function logcdf(float $k, float $lambda): float
     {
         return Support::point($k, self::create($lambda)->logcdfAt(...));
     }
 
-    /** stats_poisson_logcdf_array */
+    /** Phit\dist_poisson_logcdf_array */
     public static function logcdfArray(array $counts, float $lambda): array
     {
         return Support::points($counts, self::create($lambda)->logcdfAt(...));
     }
 
-    /** stats_poisson_sf */
+    /** Phit\dist_poisson_sf */
     public static function sf(float $k, float $lambda): float
     {
         return Support::point($k, self::create($lambda)->sfAt(...));
     }
 
-    /** stats_poisson_sf_array */
+    /** Phit\dist_poisson_sf_array */
     public static function sfArray(array $counts, float $lambda): array
     {
         return Support::points($counts, self::create($lambda)->sfAt(...));
     }
 
-    /** stats_poisson_logsf */
+    /** Phit\dist_poisson_logsf */
     public static function logsf(float $k, float $lambda): float
     {
         return Support::point($k, self::create($lambda)->logsfAt(...));
     }
 
-    /** stats_poisson_logsf_array */
+    /** Phit\dist_poisson_logsf_array */
     public static function logsfArray(array $counts, float $lambda): array
     {
         return Support::points($counts, self::create($lambda)->logsfAt(...));
     }
 
-    /** stats_poisson_quantile */
+    /** Phit\dist_poisson_quantile */
     public static function quantile(float $p, float $lambda): float
     {
         return Support::probability($p, self::create($lambda)->quantileAt(...));
     }
 
-    /** stats_poisson_quantile_array */
+    /** Phit\dist_poisson_quantile_array */
     public static function quantileArray(array $probabilities, float $lambda): array
     {
         return Support::probabilities($probabilities, self::create($lambda)->quantileAt(...));
     }
 
-    /** stats_poisson_rng */
+    /** Phit\dist_poisson_rng */
     public static function rng(int $n, int $seed, float $lambda): array
     {
         return Support::sample($n, $seed, self::create($lambda)->quantileAt(...));

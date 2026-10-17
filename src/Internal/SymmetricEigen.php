@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Internal;
+namespace Phit\Polyfill\Internal;
 
 /**
  * nalgebra 0.35.0's SymmetricEigen::new for a dynamically sized f64 matrix:

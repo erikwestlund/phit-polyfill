@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill;
+namespace Phit\Polyfill;
 
-use PhpStats\Polyfill\Formula\Design;
-use PhpStats\Polyfill\Formula\Frontend;
-use PhpStats\Polyfill\Internal\LinearMixed;
-use PhpStats\Polyfill\Internal\LogisticRandomIntercept;
-use PhpStats\Polyfill\Internal\ModelData;
+use Phit\Polyfill\Formula\Design;
+use Phit\Polyfill\Formula\Frontend;
+use Phit\Polyfill\Internal\LinearMixed;
+use Phit\Polyfill\Internal\LogisticRandomIntercept;
+use Phit\Polyfill\Internal\ModelData;
 
 /**
- * lme4-style formula interfaces over the mixed-model cores: stats_lmer and
- * stats_glmer (the extension's formula.rs).
+ * lme4-style formula interfaces over the mixed-model cores: Phit\fit_lmer and
+ * Phit\fit_glmer (the extension's formula.rs).
  */
 final class MixedFormula
 {
-    /** stats_lmer */
+    /** Phit\fit_lmer */
     public static function lmer(
         string $formula,
         mixed $data,
@@ -47,8 +47,8 @@ final class MixedFormula
             }
         }
         [$design, $w] = Frontend::prepare($formula, $data, $missing, $weights, true);
-        self::requireRandom($design, 'stats_lmer');
-        $y = Frontend::numericResponse($design, 'stats_lmer');
+        self::requireRandom($design, 'Phit\fit_lmer');
+        $y = Frontend::numericResponse($design, 'Phit\fit_lmer');
         $terms = [];
         $termLabels = [];
         foreach ($design->random as $term) {
@@ -78,10 +78,10 @@ final class MixedFormula
         }
         $output = Frontend::addNames($output, $design);
 
-        return Frontend::finish($output, $design, 'stats_lmer', $optimizer);
+        return Frontend::finish($output, $design, 'Phit\fit_lmer', $optimizer);
     }
 
-    /** stats_glmer */
+    /** Phit\fit_glmer */
     public static function glmer(
         string $formula,
         mixed $data,
@@ -98,12 +98,12 @@ final class MixedFormula
         Frontend::stringArgument($link, 'link');
         Frontend::stringArgument($missing, 'missing');
         if ($family !== 'binomial' || ($link !== '' && $link !== 'logit')) {
-            throw ErrorCode::exception(ErrorCode::UNSUPPORTED, "stats_glmer supports family 'binomial' with the logit link only (got '$family'/'$link')");
+            throw ErrorCode::exception(ErrorCode::UNSUPPORTED, "Phit\\fit_glmer supports family 'binomial' with the logit link only (got '$family'/'$link')");
         }
         [$design, $w] = Frontend::prepare($formula, $data, $missing, $weights, true);
-        self::requireRandom($design, 'stats_glmer');
+        self::requireRandom($design, 'Phit\fit_glmer');
         if (count($design->random) !== 1 || $design->random[0]['columns'] !== ['(Intercept)']) {
-            throw ErrorCode::exception(ErrorCode::UNSUPPORTED, 'stats_glmer supports exactly one random intercept, (1 | g); random slopes and several terms are not implemented');
+            throw ErrorCode::exception(ErrorCode::UNSUPPORTED, 'Phit\fit_glmer supports exactly one random intercept, (1 | g); random slopes and several terms are not implemented');
         }
         $y = Glm::binomialResponse($design, $w);
         [$indices, $labels] = ModelData::groupIndices($design->random[0]['groups']);
@@ -128,13 +128,13 @@ final class MixedFormula
         ]];
         $output = Frontend::addNames($output, $design);
 
-        return Frontend::finish($output, $design, 'stats_glmer', 'bobyqa');
+        return Frontend::finish($output, $design, 'Phit\fit_glmer', 'bobyqa');
     }
 
     private static function requireRandom(Design $design, string $function): void
     {
         if ($design->random === []) {
-            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, "$function needs at least one random-effect term such as (1 | g); use stats_lm or stats_glm for fixed effects only");
+            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, "$function needs at least one random-effect term such as (1 | g); use Phit\\fit_lm or Phit\\fit_glm for fixed effects only");
         }
     }
 }

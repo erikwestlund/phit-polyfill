@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Distribution;
+namespace Phit\Polyfill\Distribution;
 
 /** Beta distribution with shape parameters α and β. */
 final class Beta
@@ -15,91 +15,91 @@ final class Beta
         return new self(Support::positive('alpha', $alpha), Support::positive('beta', $beta));
     }
 
-    /** stats_beta_pdf */
+    /** Phit\dist_beta_pdf */
     public static function pdf(float $x, float $alpha, float $beta): float
     {
         return Support::point($x, self::create($alpha, $beta)->pdfAt(...));
     }
 
-    /** stats_beta_pdf_array */
+    /** Phit\dist_beta_pdf_array */
     public static function pdfArray(array $values, float $alpha, float $beta): array
     {
         return Support::points($values, self::create($alpha, $beta)->pdfAt(...));
     }
 
-    /** stats_beta_logpdf */
+    /** Phit\dist_beta_logpdf */
     public static function logpdf(float $x, float $alpha, float $beta): float
     {
         return Support::point($x, self::create($alpha, $beta)->logpdfAt(...));
     }
 
-    /** stats_beta_logpdf_array */
+    /** Phit\dist_beta_logpdf_array */
     public static function logpdfArray(array $values, float $alpha, float $beta): array
     {
         return Support::points($values, self::create($alpha, $beta)->logpdfAt(...));
     }
 
-    /** stats_beta_cdf */
+    /** Phit\dist_beta_cdf */
     public static function cdf(float $x, float $alpha, float $beta): float
     {
         return Support::point($x, self::create($alpha, $beta)->cdfAt(...));
     }
 
-    /** stats_beta_cdf_array */
+    /** Phit\dist_beta_cdf_array */
     public static function cdfArray(array $values, float $alpha, float $beta): array
     {
         return Support::points($values, self::create($alpha, $beta)->cdfAt(...));
     }
 
-    /** stats_beta_logcdf */
+    /** Phit\dist_beta_logcdf */
     public static function logcdf(float $x, float $alpha, float $beta): float
     {
         return Support::point($x, self::create($alpha, $beta)->logcdfAt(...));
     }
 
-    /** stats_beta_logcdf_array */
+    /** Phit\dist_beta_logcdf_array */
     public static function logcdfArray(array $values, float $alpha, float $beta): array
     {
         return Support::points($values, self::create($alpha, $beta)->logcdfAt(...));
     }
 
-    /** stats_beta_sf */
+    /** Phit\dist_beta_sf */
     public static function sf(float $x, float $alpha, float $beta): float
     {
         return Support::point($x, self::create($alpha, $beta)->sfAt(...));
     }
 
-    /** stats_beta_sf_array */
+    /** Phit\dist_beta_sf_array */
     public static function sfArray(array $values, float $alpha, float $beta): array
     {
         return Support::points($values, self::create($alpha, $beta)->sfAt(...));
     }
 
-    /** stats_beta_logsf */
+    /** Phit\dist_beta_logsf */
     public static function logsf(float $x, float $alpha, float $beta): float
     {
         return Support::point($x, self::create($alpha, $beta)->logsfAt(...));
     }
 
-    /** stats_beta_logsf_array */
+    /** Phit\dist_beta_logsf_array */
     public static function logsfArray(array $values, float $alpha, float $beta): array
     {
         return Support::points($values, self::create($alpha, $beta)->logsfAt(...));
     }
 
-    /** stats_beta_quantile */
+    /** Phit\dist_beta_quantile */
     public static function quantile(float $p, float $alpha, float $beta): float
     {
         return Support::probability($p, self::create($alpha, $beta)->quantileAt(...));
     }
 
-    /** stats_beta_quantile_array */
+    /** Phit\dist_beta_quantile_array */
     public static function quantileArray(array $probabilities, float $alpha, float $beta): array
     {
         return Support::probabilities($probabilities, self::create($alpha, $beta)->quantileAt(...));
     }
 
-    /** stats_beta_rng */
+    /** Phit\dist_beta_rng */
     public static function rng(int $n, int $seed, float $alpha, float $beta): array
     {
         return Support::sample($n, $seed, self::create($alpha, $beta)->quantileAt(...));

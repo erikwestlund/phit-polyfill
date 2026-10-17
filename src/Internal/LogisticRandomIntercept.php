@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Internal;
+namespace Phit\Polyfill\Internal;
 
-use PhpStats\Polyfill\Distribution\Support;
-use PhpStats\Polyfill\ErrorCode;
-use PhpStats\Polyfill\Internal\Family\LogisticFamily;
+use Phit\Polyfill\Distribution\Support;
+use Phit\Polyfill\ErrorCode;
+use Phit\Polyfill\Internal\Family\LogisticFamily;
 
 /**
  * Binomial logit with one Gaussian random intercept, by marginal maximum
  * likelihood with the Laplace approximation or adaptive Gauss-Hermite
- * quadrature (stats-core logistic_mixed.rs, behind stats_logistic_mixed and
- * stats_glmer). BOBYQA maximizes over the scaled fixed effects and tau.
+ * quadrature (stats-core logistic_mixed.rs, behind Phit\fit_logistic_mixed and
+ * Phit\fit_glmer). BOBYQA maximizes over the scaled fixed effects and tau.
  *
  * @internal
  */

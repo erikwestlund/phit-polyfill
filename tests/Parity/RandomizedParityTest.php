@@ -10,7 +10,7 @@ declare(strict_types=1);
 // PARITY_SEED picks the generator seed (default 20261016) and
 // PARITY_ITERATIONS the rounds per function group (default 60).
 
-use PhpStats\Polyfill\Polyfill;
+use Phit\Polyfill\Polyfill;
 
 if (! function_exists('randomParityOutcome')) {
     function randomParityOutcome(callable $call): array
@@ -92,8 +92,8 @@ if (! function_exists('randomParityOutcome')) {
 }
 
 beforeEach(function () {
-    if (! extension_loaded('php_stats')) {
-        $this->markTestSkipped('php_stats extension not loaded');
+    if (! extension_loaded('phit')) {
+        $this->markTestSkipped('phit extension not loaded');
     }
 });
 
@@ -131,7 +131,7 @@ it('samples exactly like the extension', function () {
                 $n = [-1, 1000001][mt_rand(0, 1)];
             }
             $seed = mt_rand(0, 3) > 0 ? mt_rand(0, PHP_INT_MAX) : [0, -1, 1][mt_rand(0, 2)];
-            randomParityCompare("stats_{$family}_rng", [$n, $seed, ...$params]);
+            randomParityCompare("Phit\\dist_{$family}_rng", [$n, $seed, ...$params]);
             $calls++;
         }
     }
@@ -152,9 +152,9 @@ it('computes draw kernels exactly like the extension', function () {
             }
         }
         $weights = mt_rand(0, 2) > 0 ? null : array_map(fn () => mt_rand(0, 4) > 0 ? randomUniform(0, 5) : 0.0, range(1, $n));
-        randomParityCompare('stats_draw_moments', [$draws, $weights, ['population', 'unbiased'][mt_rand(0, 1)]]);
+        randomParityCompare('Phit\draws_moments', [$draws, $weights, ['population', 'unbiased'][mt_rand(0, 1)]]);
 
-        randomParityCompare('stats_draw_covariance_map', [randomCovariance($p), randomCovariance(mt_rand(0, 8) > 0 ? $p : $p + 1)]);
+        randomParityCompare('Phit\draws_covariance_map', [randomCovariance($p), randomCovariance(mt_rand(0, 8) > 0 ? $p : $p + 1)]);
 
         $matrix = [];
         for ($i = 0; $i < $p; $i++) {
@@ -174,9 +174,9 @@ it('computes draw kernels exactly like the extension', function () {
                 $input[$i][$j] = randomUniform(-3, 3);
             }
         }
-        randomParityCompare('stats_draw_affine', [$input, $matrix, $shift]);
+        randomParityCompare('Phit\draws_affine', [$input, $matrix, $shift]);
     }
-    randomParityCompare('stats_hello', []);
+    randomParityCompare('Phit\hello', []);
     expect(true)->toBeTrue();
 });
 
@@ -223,15 +223,15 @@ it('fits regressions exactly like the extension', function () {
         $intercept = mt_rand(0, 5) > 0;
         set_error_handler(fn () => true);
         try {
-            randomParityCompare('stats_ols', [$x, $y, 'drop', $weights, $offset, $intercept]);
-            randomParityCompare('stats_logistic', [$x, $binary, 'drop', $weights, $offset, $intercept]);
-            randomParityCompare('stats_probit', [$x, $binary, 'drop', $weights, $offset, $intercept]);
-            randomParityCompare('stats_poisson', [$x, $counts, 'drop', $weights, $offset, $intercept]);
+            randomParityCompare('Phit\fit_ols', [$x, $y, 'drop', $weights, $offset, $intercept]);
+            randomParityCompare('Phit\fit_logistic', [$x, $binary, 'drop', $weights, $offset, $intercept]);
+            randomParityCompare('Phit\fit_probit', [$x, $binary, 'drop', $weights, $offset, $intercept]);
+            randomParityCompare('Phit\fit_poisson', [$x, $counts, 'drop', $weights, $offset, $intercept]);
             $values = array_map(fn () => randomUniform(-5, 5) * 10 ** mt_rand(-3, 6), range(1, $n));
-            randomParityCompare('stats_mean', [$values]);
-            randomParityCompare('stats_var', [$values]);
-            randomParityCompare('stats_quantile', [$values, randomUniform(0, 1)]);
-            randomParityCompare('stats_cor', [$values, $y]);
+            randomParityCompare('Phit\stat_mean', [$values]);
+            randomParityCompare('Phit\stat_var', [$values]);
+            randomParityCompare('Phit\stat_quantile', [$values, randomUniform(0, 1)]);
+            randomParityCompare('Phit\stat_cor', [$values, $y]);
         } finally {
             restore_error_handler();
         }
@@ -248,13 +248,13 @@ it('fits mixed models exactly like the extension', function () {
         [$x, $y, $binary, , $labels] = randomDesign($n, $p, $groups);
         set_error_handler(fn () => true);
         try {
-            randomParityCompare('stats_lmm', [$x, $y, $labels]);
+            randomParityCompare('Phit\fit_mixed_intercept', [$x, $y, $labels]);
             $intercepts = array_fill(0, $n, [1.0]);
             $slopes = array_map(fn ($row) => [1.0, $row[0] ?? 0.0], $x);
-            randomParityCompare('stats_lmm_fit', [$x, $y, [['z' => $intercepts, 'groups' => $labels]], 'reml' => mt_rand(0, 1) === 1]);
-            randomParityCompare('stats_lmm_fit', [$x, $y, [['z' => $slopes, 'groups' => $labels, 'correlated' => mt_rand(0, 1) === 1]],
+            randomParityCompare('Phit\fit_mixed', [$x, $y, [['z' => $intercepts, 'groups' => $labels]], 'reml' => mt_rand(0, 1) === 1]);
+            randomParityCompare('Phit\fit_mixed', [$x, $y, [['z' => $slopes, 'groups' => $labels, 'correlated' => mt_rand(0, 1) === 1]],
                 'optimizer' => mt_rand(0, 2) === 0 ? 'nelder_mead' : 'bobyqa']);
-            randomParityCompare('stats_logistic_mixed', [$x, $binary, $labels, 'quadrature_points' => [1, 1, 3, 9][mt_rand(0, 3)]]);
+            randomParityCompare('Phit\fit_logistic_mixed', [$x, $binary, $labels, 'quadrature_points' => [1, 1, 3, 9][mt_rand(0, 3)]]);
             $data = ['y' => $y, 'b' => $binary, 'g' => array_map('strval', $labels)];
             foreach ($x as $i => $row) {
                 foreach ($row as $j => $v) {
@@ -262,8 +262,8 @@ it('fits mixed models exactly like the extension', function () {
                 }
             }
             $rhs = implode(' + ', array_map(fn ($j) => "x$j", range(0, $p - 1)));
-            randomParityCompare('stats_lmer', ["y ~ $rhs + (1 | g)", $data]);
-            randomParityCompare('stats_glmer', ["b ~ $rhs + (1 | g)", $data]);
+            randomParityCompare('Phit\fit_lmer', ["y ~ $rhs + (1 | g)", $data]);
+            randomParityCompare('Phit\fit_glmer', ["b ~ $rhs + (1 | g)", $data]);
         } finally {
             restore_error_handler();
         }
@@ -298,11 +298,11 @@ it('predicts exactly like the extension', function () {
         set_error_handler(fn () => true);
         try {
             foreach ([
-                fn () => stats_lm("y ~ $rhs", $train),
-                fn () => stats_glm("b ~ $rhs", $train, family: 'binomial'),
-                fn () => stats_glm("b ~ $rhs", $train, family: 'binomial', link: 'probit'),
-                fn () => stats_lmer('y ~ x + (1 | f)', $train),
-                fn () => stats_glmer('b ~ x + (1 | f)', $train),
+                fn () => \Phit\fit_lm("y ~ $rhs", $train),
+                fn () => \Phit\fit_glm("b ~ $rhs", $train, family: 'binomial'),
+                fn () => \Phit\fit_glm("b ~ $rhs", $train, family: 'binomial', link: 'probit'),
+                fn () => \Phit\fit_lmer('y ~ x + (1 | f)', $train),
+                fn () => \Phit\fit_glmer('b ~ x + (1 | f)', $train),
             ] as $fit) {
                 try {
                     $fits[] = $fit();
@@ -315,7 +315,7 @@ it('predicts exactly like the extension', function () {
         }
         foreach ($fits as $fit) {
             foreach ([[], ['type' => 'response', 'se_fit' => true], ['interval' => 'prediction', 'level' => 0.9], ['random' => false], ['allow_new_levels' => true]] as $options) {
-                randomParityCompare('stats_predict', [$fit, $new, ...$options]);
+                randomParityCompare('Phit\predict', [$fit, $new, ...$options]);
             }
         }
     }

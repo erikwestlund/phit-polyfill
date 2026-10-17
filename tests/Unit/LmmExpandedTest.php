@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-// Port of the extension's tests/lmm-expanded.php: stats_lmm_fit with random
+// Port of the extension's tests/lmm-expanded.php: Phit\fit_mixed with random
 // slopes, crossed, nested, weighted and boundary models against lme4's four
 // optimizers (lmm-expanded-r.json), each fitted with BOBYQA and with the native
 // Nelder-Mead simplex, plus union deletion, invalid inputs and typed group
@@ -71,11 +71,11 @@ function lmmExpandedMissingCase(): array
     return $c;
 }
 
-describe('stats_lmm_fit against lme4 optimizers', function () {
+describe('Phit\fit_mixed against lme4 optimizers', function () {
     foreach (loadFixture('lmm-expanded-r.json')['cases'] as $c) {
         $slow = ! in_array($c['name'], LMM_EXPANDED_ALWAYS, true);
         it("matches lme4 on {$c['name']} with BOBYQA and Nelder-Mead", function () use ($c) {
-            $r = pf('stats_lmm_fit', x: $c['x'], y: $c['y'], random: $c['terms'], reml: $c['reml'],
+            $r = pf('Phit\fit_mixed', x: $c['x'], y: $c['y'], random: $c['terms'], reml: $c['reml'],
                 weights: $c['weights'], offset: $c['offset'], intercept: false);
             $r['terms'] = lmmExpandedTerms($r['random'], $c['terms']);
             foreach ($c['references'] as $optimizer => $ref) {
@@ -87,7 +87,7 @@ describe('stats_lmm_fit against lme4 optimizers', function () {
                 }
             }
 
-            $nm = pf('stats_lmm_fit', $c['x'], $c['y'], $c['terms'], reml: $c['reml'],
+            $nm = pf('Phit\fit_mixed', $c['x'], $c['y'], $c['terms'], reml: $c['reml'],
                 weights: $c['weights'], offset: $c['offset'], optimizer: 'nelder_mead', intercept: false);
             $nm['terms'] = lmmExpandedTerms($nm['random'], $c['terms']);
             foreach ($c['references']['Nelder_Mead']['result'] as $k => $v) {
@@ -107,10 +107,10 @@ describe('stats_lmm_fit against lme4 optimizers', function () {
     }
 });
 
-describe('stats_lmm_fit inputs', function () {
+describe('Phit\fit_mixed inputs', function () {
     it('deletes the union of missing rows across all inputs with one warning', function () {
         $c = lmmExpandedMissingCase();
-        $warnings = warnings(fn () => pf('stats_lmm_fit', $c['x'], $c['y'], $c['terms'],
+        $warnings = warnings(fn () => pf('Phit\fit_mixed', $c['x'], $c['y'], $c['terms'],
             weights: $c['weights'], offset: $c['offset'], intercept: false), $r);
         expect($r['dropped_rows'])->toBe([1, 3, 5, 7])
             ->and($warnings)->toHaveCount(1)
@@ -118,7 +118,7 @@ describe('stats_lmm_fit inputs', function () {
 
         $select = fn ($v) => array_values(array_filter($v, fn ($i) => ! in_array($i, [1, 3, 5, 7], true), ARRAY_FILTER_USE_KEY));
         $terms = array_map(fn ($t) => ['z' => $select($t['z']), 'groups' => $select($t['groups']), 'correlated' => $t['correlated']], $c['terms']);
-        $complete = pf('stats_lmm_fit', $select($c['x']), $select($c['y']), $terms,
+        $complete = pf('Phit\fit_mixed', $select($c['x']), $select($c['y']), $terms,
             weights: $select($c['weights']), offset: $select($c['offset']), intercept: false);
         mixedCompare($r['fitted'], $complete['fitted'], 'all retained rows aligned');
     });
@@ -135,13 +135,13 @@ describe('stats_lmm_fit inputs', function () {
             ['start' => [-1]], ['max_evaluations' => -1], ['max_evaluations' => 4],
         ] as $i => $options) {
             $arguments = array_replace(['x' => $c['x'], 'y' => $c['y'], 'random' => $c['terms'], 'weights' => $c['weights'], 'offset' => $c['offset']], $options);
-            expect(thrownCode(fn () => pf('stats_lmm_fit', ...$arguments, intercept: false)))
+            expect(thrownCode(fn () => pf('Phit\fit_mixed', ...$arguments, intercept: false)))
                 ->not->toBeNull("invalid general mixed inputs case $i");
         }
     });
 
     it('keeps integer and string labels distinct', function () {
-        $typed = pf('stats_lmm_fit', array_fill(0, 8, [1]), [-3, -2, -1, 1, 2, 3, 4, 5],
+        $typed = pf('Phit\fit_mixed', array_fill(0, 8, [1]), [-3, -2, -1, 1, 2, 3, 4, 5],
             [['z' => array_fill(0, 8, [1]), 'groups' => [1, 1, '1', '1', 'A', 'A', 'B', 'B']]], intercept: false);
         expect($typed['random'][0]['group_labels'])->toBe([1, '1', 'A', 'B']);
     });

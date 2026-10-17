@@ -67,8 +67,8 @@ function parityVector(int $n, string $kind): array
 }
 
 beforeEach(function () {
-    if (! extension_loaded('php_stats')) {
-        $this->markTestSkipped('php_stats extension not loaded');
+    if (! extension_loaded('phit')) {
+        $this->markTestSkipped('phit extension not loaded');
     }
 });
 
@@ -76,26 +76,26 @@ it('agrees on fixture inputs', function () {
     $fixture = loadFixture('descriptive-r.json');
     foreach ($fixture['descriptive'] as $c) {
         foreach (['mean', 'median'] as $f) {
-            parityCompare("stats_$f", [$c['values']]);
+            parityCompare("Phit\\stat_$f", [$c['values']]);
         }
         foreach (['var', 'sd'] as $f) {
-            parityCompare("stats_$f", [$c['values']]);
-            parityCompare("stats_$f", [$c['values'], 'population']);
+            parityCompare("Phit\\stat_$f", [$c['values']]);
+            parityCompare("Phit\\stat_$f", [$c['values'], 'population']);
         }
-        parityCompare('stats_quantile_array', [$c['values'], $c['quantile_probabilities']]);
+        parityCompare('Phit\stat_quantile_array', [$c['values'], $c['quantile_probabilities']]);
         foreach ($c['quantile_probabilities'] as $p) {
-            parityCompare('stats_quantile', [$c['values'], $p]);
+            parityCompare('Phit\stat_quantile', [$c['values'], $p]);
         }
     }
     foreach ($fixture['pairs'] as $c) {
-        parityCompare('stats_cov', [$c['x'], $c['y']]);
-        parityCompare('stats_cov', [$c['x'], $c['y'], 'population']);
-        parityCompare('stats_cor', [$c['x'], $c['y']]);
+        parityCompare('Phit\stat_cov', [$c['x'], $c['y']]);
+        parityCompare('Phit\stat_cov', [$c['x'], $c['y'], 'population']);
+        parityCompare('Phit\stat_cor', [$c['x'], $c['y']]);
     }
     foreach ($fixture['weighted'] as $c) {
-        parityCompare('stats_weighted_mean', [$c['values'], $c['weights']]);
+        parityCompare('Phit\stat_weighted_mean', [$c['values'], $c['weights']]);
         foreach (['frequency', 'reliability', 'population'] as $t) {
-            parityCompare('stats_weighted_var', [$c['values'], $c['weights'], $t]);
+            parityCompare('Phit\stat_weighted_var', [$c['values'], $c['weights'], $t]);
         }
     }
 });
@@ -110,20 +110,20 @@ it('agrees on seeded random inputs', function () {
                 $w = array_map(fn () => mt_rand(0, 40) / 8.0 + ($rep === 1 ? 1 : 0), range(1, $n));
                 $p = array_map(fn () => mt_rand(0, 1000) / 1000.0, range(1, 5));
                 foreach (['mean', 'median'] as $f) {
-                    parityCompare("stats_$f", [$x]);
+                    parityCompare("Phit\\stat_$f", [$x]);
                 }
                 foreach (['var', 'sd'] as $f) {
-                    parityCompare("stats_$f", [$x]);
-                    parityCompare("stats_$f", [$x, 'population']);
+                    parityCompare("Phit\\stat_$f", [$x]);
+                    parityCompare("Phit\\stat_$f", [$x, 'population']);
                 }
-                parityCompare('stats_quantile', [$x, $p[0]]);
-                parityCompare('stats_quantile_array', [$x, [...$p, 0, 1, 0.5]]);
-                parityCompare('stats_cov', [$x, $y]);
-                parityCompare('stats_cov', [$x, $y, 'population']);
-                parityCompare('stats_cor', [$x, $y]);
-                parityCompare('stats_weighted_mean', [$x, $w]);
+                parityCompare('Phit\stat_quantile', [$x, $p[0]]);
+                parityCompare('Phit\stat_quantile_array', [$x, [...$p, 0, 1, 0.5]]);
+                parityCompare('Phit\stat_cov', [$x, $y]);
+                parityCompare('Phit\stat_cov', [$x, $y, 'population']);
+                parityCompare('Phit\stat_cor', [$x, $y]);
+                parityCompare('Phit\stat_weighted_mean', [$x, $w]);
                 foreach (['frequency', 'reliability', 'population'] as $t) {
-                    parityCompare('stats_weighted_var', [$x, $w, $t]);
+                    parityCompare('Phit\stat_weighted_var', [$x, $w, $t]);
                 }
                 // Missing values, dropped and raised.
                 $xm = $x;
@@ -133,16 +133,16 @@ it('agrees on seeded random inputs', function () {
                 $ym[mt_rand(0, $n - 1)] = NAN;
                 $wm[mt_rand(0, $n - 1)] = mt_rand(0, 1) ? null : NAN;
                 foreach (['drop', 'raise'] as $m) {
-                    parityCompare('stats_mean', [$xm, $m]);
-                    parityCompare('stats_median', [$xm, $m]);
-                    parityCompare('stats_var', [$xm, 'sample', $m]);
-                    parityCompare('stats_sd', [$xm, 'population', $m]);
-                    parityCompare('stats_quantile', [$xm, 0.3, $m]);
-                    parityCompare('stats_quantile_array', [$xm, [0.1, 0.9], $m]);
-                    parityCompare('stats_cov', [$xm, $ym, 'sample', $m]);
-                    parityCompare('stats_cor', [$xm, $ym, $m]);
-                    parityCompare('stats_weighted_mean', [$xm, $wm, $m]);
-                    parityCompare('stats_weighted_var', [$xm, $wm, 'reliability', $m]);
+                    parityCompare('Phit\stat_mean', [$xm, $m]);
+                    parityCompare('Phit\stat_median', [$xm, $m]);
+                    parityCompare('Phit\stat_var', [$xm, 'sample', $m]);
+                    parityCompare('Phit\stat_sd', [$xm, 'population', $m]);
+                    parityCompare('Phit\stat_quantile', [$xm, 0.3, $m]);
+                    parityCompare('Phit\stat_quantile_array', [$xm, [0.1, 0.9], $m]);
+                    parityCompare('Phit\stat_cov', [$xm, $ym, 'sample', $m]);
+                    parityCompare('Phit\stat_cor', [$xm, $ym, $m]);
+                    parityCompare('Phit\stat_weighted_mean', [$xm, $wm, $m]);
+                    parityCompare('Phit\stat_weighted_var', [$xm, $wm, 'reliability', $m]);
                 }
             }
         }
@@ -157,44 +157,44 @@ it('agrees on invalid inputs and options', function () {
     $types = ['sample', 'population', 'frequency', 'reliability', 'bogus'];
     foreach ($inputs as $a) {
         foreach ($options as $m) {
-            parityCompare('stats_mean', [$a, $m]);
-            parityCompare('stats_median', [$a, $m]);
-            parityCompare('stats_quantile', [$a, 0.5, $m]);
-            parityCompare('stats_quantile_array', [$a, [0.5], $m]);
+            parityCompare('Phit\stat_mean', [$a, $m]);
+            parityCompare('Phit\stat_median', [$a, $m]);
+            parityCompare('Phit\stat_quantile', [$a, 0.5, $m]);
+            parityCompare('Phit\stat_quantile_array', [$a, [0.5], $m]);
             foreach ($types as $t) {
-                parityCompare('stats_var', [$a, $t, $m]);
-                parityCompare('stats_sd', [$a, $t, $m]);
+                parityCompare('Phit\stat_var', [$a, $t, $m]);
+                parityCompare('Phit\stat_sd', [$a, $t, $m]);
             }
         }
         foreach ($inputs as $b) {
             foreach (['raise', 'drop', 'ignore'] as $m) {
-                parityCompare('stats_cor', [$a, $b, $m]);
-                parityCompare('stats_weighted_mean', [$a, $b, $m]);
+                parityCompare('Phit\stat_cor', [$a, $b, $m]);
+                parityCompare('Phit\stat_weighted_mean', [$a, $b, $m]);
                 foreach ($types as $t) {
-                    parityCompare('stats_cov', [$a, $b, $t, $m]);
-                    parityCompare('stats_weighted_var', [$a, $b, $t, $m]);
+                    parityCompare('Phit\stat_cov', [$a, $b, $t, $m]);
+                    parityCompare('Phit\stat_weighted_var', [$a, $b, $t, $m]);
                 }
             }
         }
         foreach ([[1], [null], [INF], ['x'], [NAN], [-0.5], [1.5], [], [0, 1, 0.5], [true], ['a' => 1.0, 'b' => 0]] as $p) {
-            parityCompare('stats_quantile_array', [$a, $p]);
+            parityCompare('Phit\stat_quantile_array', [$a, $p]);
         }
         foreach ([0, 1, 0.5, -0.1, 1.1, NAN, INF, -INF] as $p) {
-            parityCompare('stats_quantile', [$a, $p]);
+            parityCompare('Phit\stat_quantile', [$a, $p]);
         }
     }
     foreach ([[1, 2], [0, 0], [-1, 2], [1, null], [1, NAN], [1, INF], [PHP_FLOAT_MAX, PHP_FLOAT_MAX], [0.25, 0.5], [0, 2]] as $w) {
         foreach ([[1, 2], [1, null], [-1e200, 1e200]] as $v) {
             foreach (['frequency', 'reliability', 'population', 'x'] as $t) {
                 foreach (['raise', 'drop'] as $m) {
-                    parityCompare('stats_weighted_var', [$v, $w, $t, $m]);
-                    parityCompare('stats_weighted_mean', [$v, $w, $m]);
+                    parityCompare('Phit\stat_weighted_var', [$v, $w, $t, $m]);
+                    parityCompare('Phit\stat_weighted_mean', [$v, $w, $m]);
                 }
             }
         }
     }
-    parityCompare('stats_cor', [[2, 2], [1, 3]]);
-    parityCompare('stats_cor', [[1, 2, 3], [1, 2]]);
+    parityCompare('Phit\stat_cor', [[2, 2], [1, 3]]);
+    parityCompare('Phit\stat_cor', [[1, 2, 3], [1, 2]]);
 });
 
 it('reports the largest relative difference', function () {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Internal\Bobyqa;
+namespace Phit\Polyfill\Internal\Bobyqa;
 
 /**
  * The crate's Config: PRIMA's defaults for an n-dimensional problem, each field

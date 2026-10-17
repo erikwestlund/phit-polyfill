@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill;
+namespace Phit\Polyfill;
 
-use PhpStats\Polyfill\Internal\Family\PoissonFamily;
+use Phit\Polyfill\Internal\Family\PoissonFamily;
 
 /**
- * Poisson count regression with exposure offsets by damped Newton IRLS (stats_poisson).
+ * Poisson count regression with exposure offsets by damped Newton IRLS (Phit\fit_poisson).
  */
 final class Poisson
 {
@@ -19,6 +19,6 @@ final class Poisson
         ?array $offset = null,
         bool $intercept = true,
     ): array {
-        return (new PoissonFamily())->run($x, $y, $missing, $weights, $offset, $intercept, 'count', 'stats_poisson');
+        return (new PoissonFamily())->run($x, $y, $missing, $weights, $offset, $intercept, 'count', 'Phit\fit_poisson');
     }
 }

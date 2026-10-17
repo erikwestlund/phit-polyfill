@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Distribution;
+namespace Phit\Polyfill\Distribution;
 
-use PhpStats\Polyfill\ErrorCode;
+use Phit\Polyfill\ErrorCode;
 
 /** Binomial distribution: successes in `size` trials with success probability `prob`. */
 final class Binomial
@@ -37,91 +37,91 @@ final class Binomial
         return new self((float) $size, $prob, 1.0 - $prob, log($prob), log1p(-$prob));
     }
 
-    /** stats_binomial_pmf */
+    /** Phit\dist_binomial_pmf */
     public static function pmf(float $k, int $size, float $prob): float
     {
         return Support::point($k, self::create($size, $prob)->pmfAt(...));
     }
 
-    /** stats_binomial_pmf_array */
+    /** Phit\dist_binomial_pmf_array */
     public static function pmfArray(array $counts, int $size, float $prob): array
     {
         return Support::points($counts, self::create($size, $prob)->pmfAt(...));
     }
 
-    /** stats_binomial_logpmf */
+    /** Phit\dist_binomial_logpmf */
     public static function logpmf(float $k, int $size, float $prob): float
     {
         return Support::point($k, self::create($size, $prob)->logpmfAt(...));
     }
 
-    /** stats_binomial_logpmf_array */
+    /** Phit\dist_binomial_logpmf_array */
     public static function logpmfArray(array $counts, int $size, float $prob): array
     {
         return Support::points($counts, self::create($size, $prob)->logpmfAt(...));
     }
 
-    /** stats_binomial_cdf */
+    /** Phit\dist_binomial_cdf */
     public static function cdf(float $k, int $size, float $prob): float
     {
         return Support::point($k, self::create($size, $prob)->cdfAt(...));
     }
 
-    /** stats_binomial_cdf_array */
+    /** Phit\dist_binomial_cdf_array */
     public static function cdfArray(array $counts, int $size, float $prob): array
     {
         return Support::points($counts, self::create($size, $prob)->cdfAt(...));
     }
 
-    /** stats_binomial_logcdf */
+    /** Phit\dist_binomial_logcdf */
     public static function logcdf(float $k, int $size, float $prob): float
     {
         return Support::point($k, self::create($size, $prob)->logcdfAt(...));
     }
 
-    /** stats_binomial_logcdf_array */
+    /** Phit\dist_binomial_logcdf_array */
     public static function logcdfArray(array $counts, int $size, float $prob): array
     {
         return Support::points($counts, self::create($size, $prob)->logcdfAt(...));
     }
 
-    /** stats_binomial_sf */
+    /** Phit\dist_binomial_sf */
     public static function sf(float $k, int $size, float $prob): float
     {
         return Support::point($k, self::create($size, $prob)->sfAt(...));
     }
 
-    /** stats_binomial_sf_array */
+    /** Phit\dist_binomial_sf_array */
     public static function sfArray(array $counts, int $size, float $prob): array
     {
         return Support::points($counts, self::create($size, $prob)->sfAt(...));
     }
 
-    /** stats_binomial_logsf */
+    /** Phit\dist_binomial_logsf */
     public static function logsf(float $k, int $size, float $prob): float
     {
         return Support::point($k, self::create($size, $prob)->logsfAt(...));
     }
 
-    /** stats_binomial_logsf_array */
+    /** Phit\dist_binomial_logsf_array */
     public static function logsfArray(array $counts, int $size, float $prob): array
     {
         return Support::points($counts, self::create($size, $prob)->logsfAt(...));
     }
 
-    /** stats_binomial_quantile */
+    /** Phit\dist_binomial_quantile */
     public static function quantile(float $p, int $size, float $prob): float
     {
         return Support::probability($p, self::create($size, $prob)->quantileAt(...));
     }
 
-    /** stats_binomial_quantile_array */
+    /** Phit\dist_binomial_quantile_array */
     public static function quantileArray(array $probabilities, int $size, float $prob): array
     {
         return Support::probabilities($probabilities, self::create($size, $prob)->quantileAt(...));
     }
 
-    /** stats_binomial_rng */
+    /** Phit\dist_binomial_rng */
     public static function rng(int $n, int $seed, int $size, float $prob): array
     {
         return Support::sample($n, $seed, self::create($size, $prob)->quantileAt(...));

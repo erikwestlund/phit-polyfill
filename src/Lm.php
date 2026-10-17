@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill;
+namespace Phit\Polyfill;
 
-use PhpStats\Polyfill\Formula\Frontend;
+use Phit\Polyfill\Formula\Frontend;
 
 /**
- * Linear model from a formula: the stats_ols core plus coefficient names (stats_lm).
+ * Linear model from a formula: the Phit\fit_ols core plus coefficient names (Phit\fit_lm).
  */
 final class Lm
 {
@@ -16,12 +16,12 @@ final class Lm
         Frontend::stringArgument($formula, 'formula');
         Frontend::stringArgument($missing, 'missing');
         [$design, $w] = Frontend::prepare($formula, $data, $missing, $weights, true);
-        Frontend::rejectRandom($design, 'stats_lm');
-        $y = Frontend::numericResponse($design, 'stats_lm');
+        Frontend::rejectRandom($design, 'Phit\fit_lm');
+        $y = Frontend::numericResponse($design, 'Phit\fit_lm');
         $offset = $design->offset ?? array_fill(0, count($y), 0.0);
         $output = Ols::fitWithData($design->x, $y, $w, $offset);
         $output = Frontend::addNames($output, $design);
 
-        return Frontend::finish($output, $design, 'stats_lm', 'scaled_svd');
+        return Frontend::finish($output, $design, 'Phit\fit_lm', 'scaled_svd');
     }
 }

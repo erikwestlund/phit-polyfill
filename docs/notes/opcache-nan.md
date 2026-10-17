@@ -1,6 +1,6 @@
 # OPcache folds negated float comparisons incorrectly for NaN
 
-Recorded 2026-10-16 while porting the php_stats distribution quantiles. Nothing
+Recorded 2026-10-16 while porting the phit distribution quantiles. Nothing
 has been reported upstream.
 
 ## Summary
@@ -81,12 +81,12 @@ total order, which does not hold for floats when NaN is involved.
 ## How it showed up here
 
 The polyfill's continuous quantile search ports the extension's bracket
-expansion. In php-stats bd98bf7 the extension stops the search when a tail
+expansion. In phit bd98bf7 the extension stops the search when a tail
 evaluation returns NaN. The port first expressed the stop condition as
 `!($g($v) > 0.0)`. Under OPcache that became `$g($v) <= 0.0`, which is false
 for NaN. As a result the search kept walking to −∞ and returned `-INF`, while
 the extension raised exception 1006. The case was
-`stats_t_quantile(1 - 0.999999999999, 1e299)`. With OPcache disabled the
+`Phit\dist_t_quantile(1 - 0.999999999999, 1e299)`. With OPcache disabled the
 polyfill matched the extension.
 
 The problem first looked intermittent, because tests that ran within two

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Distribution;
+namespace Phit\Polyfill\Distribution;
 
 /** Exponential distribution with rate λ (mean 1/λ). */
 final class Exponential
@@ -15,91 +15,91 @@ final class Exponential
         return new self(Support::positive('rate', $rate));
     }
 
-    /** stats_exponential_pdf */
+    /** Phit\dist_exponential_pdf */
     public static function pdf(float $x, float $rate = 1.0): float
     {
         return Support::point($x, self::create($rate)->pdfAt(...));
     }
 
-    /** stats_exponential_pdf_array */
+    /** Phit\dist_exponential_pdf_array */
     public static function pdfArray(array $values, float $rate = 1.0): array
     {
         return Support::points($values, self::create($rate)->pdfAt(...));
     }
 
-    /** stats_exponential_logpdf */
+    /** Phit\dist_exponential_logpdf */
     public static function logpdf(float $x, float $rate = 1.0): float
     {
         return Support::point($x, self::create($rate)->logpdfAt(...));
     }
 
-    /** stats_exponential_logpdf_array */
+    /** Phit\dist_exponential_logpdf_array */
     public static function logpdfArray(array $values, float $rate = 1.0): array
     {
         return Support::points($values, self::create($rate)->logpdfAt(...));
     }
 
-    /** stats_exponential_cdf */
+    /** Phit\dist_exponential_cdf */
     public static function cdf(float $x, float $rate = 1.0): float
     {
         return Support::point($x, self::create($rate)->cdfAt(...));
     }
 
-    /** stats_exponential_cdf_array */
+    /** Phit\dist_exponential_cdf_array */
     public static function cdfArray(array $values, float $rate = 1.0): array
     {
         return Support::points($values, self::create($rate)->cdfAt(...));
     }
 
-    /** stats_exponential_logcdf */
+    /** Phit\dist_exponential_logcdf */
     public static function logcdf(float $x, float $rate = 1.0): float
     {
         return Support::point($x, self::create($rate)->logcdfAt(...));
     }
 
-    /** stats_exponential_logcdf_array */
+    /** Phit\dist_exponential_logcdf_array */
     public static function logcdfArray(array $values, float $rate = 1.0): array
     {
         return Support::points($values, self::create($rate)->logcdfAt(...));
     }
 
-    /** stats_exponential_sf */
+    /** Phit\dist_exponential_sf */
     public static function sf(float $x, float $rate = 1.0): float
     {
         return Support::point($x, self::create($rate)->sfAt(...));
     }
 
-    /** stats_exponential_sf_array */
+    /** Phit\dist_exponential_sf_array */
     public static function sfArray(array $values, float $rate = 1.0): array
     {
         return Support::points($values, self::create($rate)->sfAt(...));
     }
 
-    /** stats_exponential_logsf */
+    /** Phit\dist_exponential_logsf */
     public static function logsf(float $x, float $rate = 1.0): float
     {
         return Support::point($x, self::create($rate)->logsfAt(...));
     }
 
-    /** stats_exponential_logsf_array */
+    /** Phit\dist_exponential_logsf_array */
     public static function logsfArray(array $values, float $rate = 1.0): array
     {
         return Support::points($values, self::create($rate)->logsfAt(...));
     }
 
-    /** stats_exponential_quantile */
+    /** Phit\dist_exponential_quantile */
     public static function quantile(float $p, float $rate = 1.0): float
     {
         return Support::probability($p, self::create($rate)->quantileAt(...));
     }
 
-    /** stats_exponential_quantile_array */
+    /** Phit\dist_exponential_quantile_array */
     public static function quantileArray(array $probabilities, float $rate = 1.0): array
     {
         return Support::probabilities($probabilities, self::create($rate)->quantileAt(...));
     }
 
-    /** stats_exponential_rng */
+    /** Phit\dist_exponential_rng */
     public static function rng(int $n, int $seed, float $rate = 1.0): array
     {
         return Support::sample($n, $seed, self::create($rate)->quantileAt(...));

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Internal;
+namespace Phit\Polyfill\Internal;
 
-use PhpStats\Polyfill\Distribution\Support;
-use PhpStats\Polyfill\ErrorCode;
+use Phit\Polyfill\Distribution\Support;
+use Phit\Polyfill\ErrorCode;
 
 /**
  * Validation and listwise deletion shared by the regression functions, in the
@@ -255,7 +255,7 @@ final class ModelData
         if (($output['singular'] ?? null) === true) {
             $warnings[] = 'random-effect covariance is singular or near singular';
         }
-        if (in_array($function, ['stats_logistic_mixed', 'stats_glmer'], true) && ($output['quadrature_points'] ?? null) === 1) {
+        if (in_array($function, ['Phit\fit_logistic_mixed', 'Phit\fit_glmer'], true) && ($output['quadrature_points'] ?? null) === 1) {
             $warnings[] = 'Laplace integration is approximate; assess quadrature sensitivity for rare events or small groups';
         }
         $diagnostics['warnings'] = $warnings;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Distribution;
+namespace Phit\Polyfill\Distribution;
 
 /** Gamma distribution with shape k and scale θ (mean kθ). */
 final class Gamma
@@ -15,91 +15,91 @@ final class Gamma
         return new self(Support::positive('shape', $shape), Support::positive('scale', $scale));
     }
 
-    /** stats_gamma_pdf */
+    /** Phit\dist_gamma_pdf */
     public static function pdf(float $x, float $shape, float $scale = 1.0): float
     {
         return Support::point($x, self::create($shape, $scale)->pdfAt(...));
     }
 
-    /** stats_gamma_pdf_array */
+    /** Phit\dist_gamma_pdf_array */
     public static function pdfArray(array $values, float $shape, float $scale = 1.0): array
     {
         return Support::points($values, self::create($shape, $scale)->pdfAt(...));
     }
 
-    /** stats_gamma_logpdf */
+    /** Phit\dist_gamma_logpdf */
     public static function logpdf(float $x, float $shape, float $scale = 1.0): float
     {
         return Support::point($x, self::create($shape, $scale)->logpdfAt(...));
     }
 
-    /** stats_gamma_logpdf_array */
+    /** Phit\dist_gamma_logpdf_array */
     public static function logpdfArray(array $values, float $shape, float $scale = 1.0): array
     {
         return Support::points($values, self::create($shape, $scale)->logpdfAt(...));
     }
 
-    /** stats_gamma_cdf */
+    /** Phit\dist_gamma_cdf */
     public static function cdf(float $x, float $shape, float $scale = 1.0): float
     {
         return Support::point($x, self::create($shape, $scale)->cdfAt(...));
     }
 
-    /** stats_gamma_cdf_array */
+    /** Phit\dist_gamma_cdf_array */
     public static function cdfArray(array $values, float $shape, float $scale = 1.0): array
     {
         return Support::points($values, self::create($shape, $scale)->cdfAt(...));
     }
 
-    /** stats_gamma_logcdf */
+    /** Phit\dist_gamma_logcdf */
     public static function logcdf(float $x, float $shape, float $scale = 1.0): float
     {
         return Support::point($x, self::create($shape, $scale)->logcdfAt(...));
     }
 
-    /** stats_gamma_logcdf_array */
+    /** Phit\dist_gamma_logcdf_array */
     public static function logcdfArray(array $values, float $shape, float $scale = 1.0): array
     {
         return Support::points($values, self::create($shape, $scale)->logcdfAt(...));
     }
 
-    /** stats_gamma_sf */
+    /** Phit\dist_gamma_sf */
     public static function sf(float $x, float $shape, float $scale = 1.0): float
     {
         return Support::point($x, self::create($shape, $scale)->sfAt(...));
     }
 
-    /** stats_gamma_sf_array */
+    /** Phit\dist_gamma_sf_array */
     public static function sfArray(array $values, float $shape, float $scale = 1.0): array
     {
         return Support::points($values, self::create($shape, $scale)->sfAt(...));
     }
 
-    /** stats_gamma_logsf */
+    /** Phit\dist_gamma_logsf */
     public static function logsf(float $x, float $shape, float $scale = 1.0): float
     {
         return Support::point($x, self::create($shape, $scale)->logsfAt(...));
     }
 
-    /** stats_gamma_logsf_array */
+    /** Phit\dist_gamma_logsf_array */
     public static function logsfArray(array $values, float $shape, float $scale = 1.0): array
     {
         return Support::points($values, self::create($shape, $scale)->logsfAt(...));
     }
 
-    /** stats_gamma_quantile */
+    /** Phit\dist_gamma_quantile */
     public static function quantile(float $p, float $shape, float $scale = 1.0): float
     {
         return Support::probability($p, self::create($shape, $scale)->quantileAt(...));
     }
 
-    /** stats_gamma_quantile_array */
+    /** Phit\dist_gamma_quantile_array */
     public static function quantileArray(array $probabilities, float $shape, float $scale = 1.0): array
     {
         return Support::probabilities($probabilities, self::create($shape, $scale)->quantileAt(...));
     }
 
-    /** stats_gamma_rng */
+    /** Phit\dist_gamma_rng */
     public static function rng(int $n, int $seed, float $shape, float $scale = 1.0): array
     {
         return Support::sample($n, $seed, self::create($shape, $scale)->quantileAt(...));

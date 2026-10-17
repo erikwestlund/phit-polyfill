@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill;
+namespace Phit\Polyfill;
 
-use PhpStats\Polyfill\Formula\Design;
-use PhpStats\Polyfill\Formula\Frontend;
+use Phit\Polyfill\Formula\Design;
+use Phit\Polyfill\Formula\Frontend;
 
 /**
- * R's model.matrix() for a formula over named columns (stats_model_matrix).
+ * R's model.matrix() for a formula over named columns (Phit\model_matrix).
  */
 final class ModelMatrix
 {
@@ -47,7 +47,7 @@ final class ModelMatrix
         if ($dropped > 0) {
             // E_USER_WARNING with the "fn(): " prefix PHP adds to native warnings.
             trigger_error(
-                "stats_model_matrix(): stats_model_matrix dropped $dropped of {$design->nInput} observations with missing values (listwise deletion)",
+                "Phit\\model_matrix(): Phit\\model_matrix dropped $dropped of {$design->nInput} observations with missing values (listwise deletion)",
                 E_USER_WARNING,
             );
         }

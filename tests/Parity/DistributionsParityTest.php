@@ -180,8 +180,8 @@ if (! function_exists('distParityOutcome')) {
 }
 
 beforeEach(function () {
-    if (! extension_loaded('php_stats')) {
-        $this->markTestSkipped('php_stats extension not loaded');
+    if (! extension_loaded('phit')) {
+        $this->markTestSkipped('phit extension not loaded');
     }
 });
 
@@ -190,7 +190,7 @@ dataset('parity families', DIST_PARITY_FAMILIES);
 it('polyfills every distribution function', function (string $family) {
     foreach (distParityOperations($family) as $op) {
         foreach (['', '_array'] as $suffix) {
-            expect(\PhpStats\Polyfill\Polyfill::supports("stats_{$family}_{$op}{$suffix}"))->toBeTrue();
+            expect(\Phit\Polyfill\Polyfill::supports("Phit\\dist_{$family}_{$op}{$suffix}"))->toBeTrue();
         }
     }
 })->with('parity families');
@@ -205,7 +205,7 @@ it('agrees with the extension on the fixture inputs', function (string $family) 
             if ($family === 'binomial') {
                 $params['size'] = (int) $params['size'];
             }
-            $fn = "stats_{$family}_{$case['operation']}";
+            $fn = "Phit\\dist_{$family}_{$case['operation']}";
             $input = array_map(distParityDecode(...), $case['input']);
             distParityCompare($family, $fn.'_array', [$input, ...$params]);
             foreach ($input as $x) {
@@ -223,7 +223,7 @@ it('agrees with the extension on seeded random inputs', function (string $family
         $probabilities = distParityProbabilities();
         foreach (distParityOperations($family) as $op) {
             $input = $op === 'quantile' ? $probabilities : $points;
-            $fn = "stats_{$family}_{$op}";
+            $fn = "Phit\\dist_{$family}_{$op}";
             distParityCompare($family, $fn.'_array', [$input, ...$params]);
             foreach ($input as $x) {
                 distParityCompare($family, $fn, [$x, ...$params]);
@@ -241,7 +241,7 @@ it('raises the same exceptions on invalid input', function (string $family) {
         'binomial' => [10, 0.3],
         'nbinom' => [3.0, 0.4],
     };
-    // Not PHP_FLOAT_MAX: the extension never returns from e.g. stats_f_cdf(2, DBL_MAX, 3)
+    // Not PHP_FLOAT_MAX: the extension never returns from e.g. Phit\dist_f_cdf(2, DBL_MAX, 3)
     // (a NaN-driven infinite loop in cdflib's beta_frac); the polyfill reports 1006 there.
     $bad = [NAN, INF, -INF, 0.0, -0.0, -1.0, 5e-324, 1.5, 2.0, 1e300];
     $cases = [];
@@ -261,7 +261,7 @@ it('raises the same exceptions on invalid input', function (string $family) {
     }
     foreach ($cases as $params) {
         foreach (distParityOperations($family) as $op) {
-            $fn = "stats_{$family}_{$op}";
+            $fn = "Phit\\dist_{$family}_{$op}";
             foreach ([0.5, 2.0, NAN, -INF] as $x) {
                 distParityCompare($family, $fn, [$x, ...$params]);
             }
@@ -269,7 +269,7 @@ it('raises the same exceptions on invalid input', function (string $family) {
         }
     }
     foreach (distParityOperations($family) as $op) {
-        $fn = "stats_{$family}_{$op}";
+        $fn = "Phit\\dist_{$family}_{$op}";
         foreach ([-0.1, 1.1, NAN, INF, -INF] as $x) {
             distParityCompare($family, $fn, [$x, ...$valid]);
         }
@@ -282,15 +282,15 @@ it('raises the same exceptions on invalid input', function (string $family) {
 it('agrees on Student t quantiles with tiny df (long upstream bracket walks)', function () {
     foreach ([[0.3, 0.01], [0.1, 0.01], [0.45, 0.02], [0.2, 0.05], [0.01, 0.05], [0.7, 0.01],
         [0.3937733622238847, 0.0038418888682897044]] as [$p, $df]) {
-        distParityCompare('t', 'stats_t_quantile', [$p, $df]);
+        distParityCompare('t', 'Phit\dist_t_quantile', [$p, $df]);
     }
-    distParityCompare('t', 'stats_t_quantile_array', [[1e-300, 0.01, 0.25, 0.5, 0.75, 0.99], 0.02]);
+    distParityCompare('t', 'Phit\dist_t_quantile_array', [[1e-300, 0.01, 0.25, 0.5, 0.75, 0.99], 0.02]);
 });
 
 it('agrees in the indeterminate incomplete-gamma regime (a Rust panic upstream)', function () {
-    distParityCompare('gamma', 'stats_gamma_cdf', [1e30, 1e30]);
-    distParityCompare('chisquare', 'stats_chisquare_sf', [2e30, 2e30]);
-    distParityCompare('poisson', 'stats_poisson_cdf', [1e30, 1e30]);
+    distParityCompare('gamma', 'Phit\dist_gamma_cdf', [1e30, 1e30]);
+    distParityCompare('chisquare', 'Phit\dist_chisquare_sf', [2e30, 2e30]);
+    distParityCompare('poisson', 'Phit\dist_poisson_cdf', [1e30, 1e30]);
 });
 
 it('reports the largest relative difference per family', function () {

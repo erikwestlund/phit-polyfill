@@ -1,10 +1,10 @@
 {
-    "name": "erikwestlund/php-stats-polyfill",
-    "description": "Pure-PHP polyfill for the php_stats native extension: descriptive statistics, OLS/logistic/probit/Poisson regression and probability distributions",
+    "name": "phpstats/phit-polyfill",
+    "description": "Pure-PHP polyfill for the phit native extension: descriptive statistics, OLS/logistic/probit/Poisson regression and probability distributions",
     "type": "library",
     "license": "MIT",
-    "keywords": ["statistics", "polyfill", "regression", "distributions", "phpstats"],
-    "homepage": "https://phpstats.org",
+    "keywords": ["statistics", "polyfill", "regression", "distributions", "phit"],
+    "homepage": "https://phpstats.github.io/phit/",
     "require": {
         "php": "^8.3"
     },
@@ -12,11 +12,11 @@
         "pestphp/pest": "^4.0"
     },
     "provide": {
-        "ext-php_stats": "*"
+        "ext-phit": "*"
     },
     "autoload": {
         "psr-4": {
-            "PhpStats\\Polyfill\\": "src/"
+            "Phit\\Polyfill\\": "src/"
         },
         "files": [
             "bootstrap.php"
@@ -24,12 +24,12 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "PhpStats\\Polyfill\\Tests\\": "tests/"
+            "Phit\\Polyfill\\Tests\\": "tests/"
         }
     },
     "scripts": {
         "test": "\"$HOME/Library/Application Support/Herd/bin/php85\" vendor/bin/pest",
-        "test:ext": "\"$HOME/Library/Application Support/Herd/bin/php85\" -d extension=.ext/libphp_stats.dylib vendor/bin/pest"
+        "test:ext": "\"$HOME/Library/Application Support/Herd/bin/php85\" -d extension=.ext/libphit.dylib vendor/bin/pest"
     },
     "config": {
         "sort-packages": true,

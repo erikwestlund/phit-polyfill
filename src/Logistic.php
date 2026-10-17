@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill;
+namespace Phit\Polyfill;
 
-use PhpStats\Polyfill\Internal\Family\LogisticFamily;
+use Phit\Polyfill\Internal\Family\LogisticFamily;
 
 /**
- * Binary or grouped-binomial logistic regression by damped Newton IRLS (stats_logistic).
+ * Binary or grouped-binomial logistic regression by damped Newton IRLS (Phit\fit_logistic).
  */
 final class Logistic
 {
@@ -19,6 +19,6 @@ final class Logistic
         ?array $offset = null,
         bool $intercept = true,
     ): array {
-        return (new LogisticFamily())->run($x, $y, $missing, $weights, $offset, $intercept, 'binary', 'stats_logistic');
+        return (new LogisticFamily())->run($x, $y, $missing, $weights, $offset, $intercept, 'binary', 'Phit\fit_logistic');
     }
 }

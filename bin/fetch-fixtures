@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Copy the reference fixtures from the pinned php_stats commit into tests/fixtures.
-# Usage: bin/fetch-fixtures [path-to-php-stat-models-checkout]
+# Copy the reference fixtures from the pinned phit commit into tests/fixtures.
+# Usage: bin/fetch-fixtures [path-to-phit-checkout]
 # Without a path, the repository in tests/fixtures/REFERENCE is cloned to a temp dir.
 # The copies are committed as-is; never edit them by hand.
 set -euo pipefail
@@ -8,7 +8,7 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 pin="$root/tests/fixtures/REFERENCE"
 commit="$(sed -n 's/^commit=//p' "$pin")"
 repository="$(sed -n 's/^repository=//p' "$pin")"
-source="${1:-${PHP_STATS_REPO:-}}"
+source="${1:-${PHIT_REPO:-}}"
 if [ -z "$source" ]; then
     source="$(mktemp -d)"
     trap 'rm -rf "$source"' EXIT

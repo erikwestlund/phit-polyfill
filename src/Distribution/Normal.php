@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Distribution;
+namespace Phit\Polyfill\Distribution;
 
 /** Normal distribution with mean and standard deviation. */
 final class Normal
@@ -17,91 +17,91 @@ final class Normal
         return new self(Support::finite('mean', $mean), Support::positive('sd', $sd));
     }
 
-    /** stats_normal_pdf */
+    /** Phit\dist_normal_pdf */
     public static function pdf(float $x, float $mean = 0.0, float $sd = 1.0): float
     {
         return Support::point($x, self::create($mean, $sd)->pdfAt(...));
     }
 
-    /** stats_normal_pdf_array */
+    /** Phit\dist_normal_pdf_array */
     public static function pdfArray(array $values, float $mean = 0.0, float $sd = 1.0): array
     {
         return Support::points($values, self::create($mean, $sd)->pdfAt(...));
     }
 
-    /** stats_normal_logpdf */
+    /** Phit\dist_normal_logpdf */
     public static function logpdf(float $x, float $mean = 0.0, float $sd = 1.0): float
     {
         return Support::point($x, self::create($mean, $sd)->logpdfAt(...));
     }
 
-    /** stats_normal_logpdf_array */
+    /** Phit\dist_normal_logpdf_array */
     public static function logpdfArray(array $values, float $mean = 0.0, float $sd = 1.0): array
     {
         return Support::points($values, self::create($mean, $sd)->logpdfAt(...));
     }
 
-    /** stats_normal_cdf */
+    /** Phit\dist_normal_cdf */
     public static function cdf(float $x, float $mean = 0.0, float $sd = 1.0): float
     {
         return Support::point($x, self::create($mean, $sd)->cdfAt(...));
     }
 
-    /** stats_normal_cdf_array */
+    /** Phit\dist_normal_cdf_array */
     public static function cdfArray(array $values, float $mean = 0.0, float $sd = 1.0): array
     {
         return Support::points($values, self::create($mean, $sd)->cdfAt(...));
     }
 
-    /** stats_normal_logcdf */
+    /** Phit\dist_normal_logcdf */
     public static function logcdf(float $x, float $mean = 0.0, float $sd = 1.0): float
     {
         return Support::point($x, self::create($mean, $sd)->logcdfAt(...));
     }
 
-    /** stats_normal_logcdf_array */
+    /** Phit\dist_normal_logcdf_array */
     public static function logcdfArray(array $values, float $mean = 0.0, float $sd = 1.0): array
     {
         return Support::points($values, self::create($mean, $sd)->logcdfAt(...));
     }
 
-    /** stats_normal_sf */
+    /** Phit\dist_normal_sf */
     public static function sf(float $x, float $mean = 0.0, float $sd = 1.0): float
     {
         return Support::point($x, self::create($mean, $sd)->sfAt(...));
     }
 
-    /** stats_normal_sf_array */
+    /** Phit\dist_normal_sf_array */
     public static function sfArray(array $values, float $mean = 0.0, float $sd = 1.0): array
     {
         return Support::points($values, self::create($mean, $sd)->sfAt(...));
     }
 
-    /** stats_normal_logsf */
+    /** Phit\dist_normal_logsf */
     public static function logsf(float $x, float $mean = 0.0, float $sd = 1.0): float
     {
         return Support::point($x, self::create($mean, $sd)->logsfAt(...));
     }
 
-    /** stats_normal_logsf_array */
+    /** Phit\dist_normal_logsf_array */
     public static function logsfArray(array $values, float $mean = 0.0, float $sd = 1.0): array
     {
         return Support::points($values, self::create($mean, $sd)->logsfAt(...));
     }
 
-    /** stats_normal_quantile */
+    /** Phit\dist_normal_quantile */
     public static function quantile(float $p, float $mean = 0.0, float $sd = 1.0): float
     {
         return Support::probability($p, self::create($mean, $sd)->quantileAt(...));
     }
 
-    /** stats_normal_quantile_array */
+    /** Phit\dist_normal_quantile_array */
     public static function quantileArray(array $probabilities, float $mean = 0.0, float $sd = 1.0): array
     {
         return Support::probabilities($probabilities, self::create($mean, $sd)->quantileAt(...));
     }
 
-    /** stats_normal_rng */
+    /** Phit\dist_normal_rng */
     public static function rng(int $n, int $seed, float $mean = 0.0, float $sd = 1.0): array
     {
         return Support::sample($n, $seed, self::create($mean, $sd)->quantileAt(...));

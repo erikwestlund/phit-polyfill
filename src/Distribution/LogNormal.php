@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Distribution;
+namespace Phit\Polyfill\Distribution;
 
 /** Log-normal distribution: ln X ~ Normal(meanlog, sdlog). */
 final class LogNormal
@@ -15,91 +15,91 @@ final class LogNormal
         return new self(Support::finite('meanlog', $meanlog), Support::positive('sdlog', $sdlog));
     }
 
-    /** stats_lognormal_pdf */
+    /** Phit\dist_lognormal_pdf */
     public static function pdf(float $x, float $meanlog = 0.0, float $sdlog = 1.0): float
     {
         return Support::point($x, self::create($meanlog, $sdlog)->pdfAt(...));
     }
 
-    /** stats_lognormal_pdf_array */
+    /** Phit\dist_lognormal_pdf_array */
     public static function pdfArray(array $values, float $meanlog = 0.0, float $sdlog = 1.0): array
     {
         return Support::points($values, self::create($meanlog, $sdlog)->pdfAt(...));
     }
 
-    /** stats_lognormal_logpdf */
+    /** Phit\dist_lognormal_logpdf */
     public static function logpdf(float $x, float $meanlog = 0.0, float $sdlog = 1.0): float
     {
         return Support::point($x, self::create($meanlog, $sdlog)->logpdfAt(...));
     }
 
-    /** stats_lognormal_logpdf_array */
+    /** Phit\dist_lognormal_logpdf_array */
     public static function logpdfArray(array $values, float $meanlog = 0.0, float $sdlog = 1.0): array
     {
         return Support::points($values, self::create($meanlog, $sdlog)->logpdfAt(...));
     }
 
-    /** stats_lognormal_cdf */
+    /** Phit\dist_lognormal_cdf */
     public static function cdf(float $x, float $meanlog = 0.0, float $sdlog = 1.0): float
     {
         return Support::point($x, self::create($meanlog, $sdlog)->cdfAt(...));
     }
 
-    /** stats_lognormal_cdf_array */
+    /** Phit\dist_lognormal_cdf_array */
     public static function cdfArray(array $values, float $meanlog = 0.0, float $sdlog = 1.0): array
     {
         return Support::points($values, self::create($meanlog, $sdlog)->cdfAt(...));
     }
 
-    /** stats_lognormal_logcdf */
+    /** Phit\dist_lognormal_logcdf */
     public static function logcdf(float $x, float $meanlog = 0.0, float $sdlog = 1.0): float
     {
         return Support::point($x, self::create($meanlog, $sdlog)->logcdfAt(...));
     }
 
-    /** stats_lognormal_logcdf_array */
+    /** Phit\dist_lognormal_logcdf_array */
     public static function logcdfArray(array $values, float $meanlog = 0.0, float $sdlog = 1.0): array
     {
         return Support::points($values, self::create($meanlog, $sdlog)->logcdfAt(...));
     }
 
-    /** stats_lognormal_sf */
+    /** Phit\dist_lognormal_sf */
     public static function sf(float $x, float $meanlog = 0.0, float $sdlog = 1.0): float
     {
         return Support::point($x, self::create($meanlog, $sdlog)->sfAt(...));
     }
 
-    /** stats_lognormal_sf_array */
+    /** Phit\dist_lognormal_sf_array */
     public static function sfArray(array $values, float $meanlog = 0.0, float $sdlog = 1.0): array
     {
         return Support::points($values, self::create($meanlog, $sdlog)->sfAt(...));
     }
 
-    /** stats_lognormal_logsf */
+    /** Phit\dist_lognormal_logsf */
     public static function logsf(float $x, float $meanlog = 0.0, float $sdlog = 1.0): float
     {
         return Support::point($x, self::create($meanlog, $sdlog)->logsfAt(...));
     }
 
-    /** stats_lognormal_logsf_array */
+    /** Phit\dist_lognormal_logsf_array */
     public static function logsfArray(array $values, float $meanlog = 0.0, float $sdlog = 1.0): array
     {
         return Support::points($values, self::create($meanlog, $sdlog)->logsfAt(...));
     }
 
-    /** stats_lognormal_quantile */
+    /** Phit\dist_lognormal_quantile */
     public static function quantile(float $p, float $meanlog = 0.0, float $sdlog = 1.0): float
     {
         return Support::probability($p, self::create($meanlog, $sdlog)->quantileAt(...));
     }
 
-    /** stats_lognormal_quantile_array */
+    /** Phit\dist_lognormal_quantile_array */
     public static function quantileArray(array $probabilities, float $meanlog = 0.0, float $sdlog = 1.0): array
     {
         return Support::probabilities($probabilities, self::create($meanlog, $sdlog)->quantileAt(...));
     }
 
-    /** stats_lognormal_rng */
+    /** Phit\dist_lognormal_rng */
     public static function rng(int $n, int $seed, float $meanlog = 0.0, float $sdlog = 1.0): array
     {
         return Support::sample($n, $seed, self::create($meanlog, $sdlog)->quantileAt(...));

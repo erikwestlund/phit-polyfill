@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Distribution;
+namespace Phit\Polyfill\Distribution;
 
 /** F distribution with numerator df1 and denominator df2 degrees of freedom. */
 final class FisherF
@@ -15,91 +15,91 @@ final class FisherF
         return new self(Support::positive('df1', $df1), Support::positive('df2', $df2));
     }
 
-    /** stats_f_pdf */
+    /** Phit\dist_f_pdf */
     public static function pdf(float $x, float $df1, float $df2): float
     {
         return Support::point($x, self::create($df1, $df2)->pdfAt(...));
     }
 
-    /** stats_f_pdf_array */
+    /** Phit\dist_f_pdf_array */
     public static function pdfArray(array $values, float $df1, float $df2): array
     {
         return Support::points($values, self::create($df1, $df2)->pdfAt(...));
     }
 
-    /** stats_f_logpdf */
+    /** Phit\dist_f_logpdf */
     public static function logpdf(float $x, float $df1, float $df2): float
     {
         return Support::point($x, self::create($df1, $df2)->logpdfAt(...));
     }
 
-    /** stats_f_logpdf_array */
+    /** Phit\dist_f_logpdf_array */
     public static function logpdfArray(array $values, float $df1, float $df2): array
     {
         return Support::points($values, self::create($df1, $df2)->logpdfAt(...));
     }
 
-    /** stats_f_cdf */
+    /** Phit\dist_f_cdf */
     public static function cdf(float $x, float $df1, float $df2): float
     {
         return Support::point($x, self::create($df1, $df2)->cdfAt(...));
     }
 
-    /** stats_f_cdf_array */
+    /** Phit\dist_f_cdf_array */
     public static function cdfArray(array $values, float $df1, float $df2): array
     {
         return Support::points($values, self::create($df1, $df2)->cdfAt(...));
     }
 
-    /** stats_f_logcdf */
+    /** Phit\dist_f_logcdf */
     public static function logcdf(float $x, float $df1, float $df2): float
     {
         return Support::point($x, self::create($df1, $df2)->logcdfAt(...));
     }
 
-    /** stats_f_logcdf_array */
+    /** Phit\dist_f_logcdf_array */
     public static function logcdfArray(array $values, float $df1, float $df2): array
     {
         return Support::points($values, self::create($df1, $df2)->logcdfAt(...));
     }
 
-    /** stats_f_sf */
+    /** Phit\dist_f_sf */
     public static function sf(float $x, float $df1, float $df2): float
     {
         return Support::point($x, self::create($df1, $df2)->sfAt(...));
     }
 
-    /** stats_f_sf_array */
+    /** Phit\dist_f_sf_array */
     public static function sfArray(array $values, float $df1, float $df2): array
     {
         return Support::points($values, self::create($df1, $df2)->sfAt(...));
     }
 
-    /** stats_f_logsf */
+    /** Phit\dist_f_logsf */
     public static function logsf(float $x, float $df1, float $df2): float
     {
         return Support::point($x, self::create($df1, $df2)->logsfAt(...));
     }
 
-    /** stats_f_logsf_array */
+    /** Phit\dist_f_logsf_array */
     public static function logsfArray(array $values, float $df1, float $df2): array
     {
         return Support::points($values, self::create($df1, $df2)->logsfAt(...));
     }
 
-    /** stats_f_quantile */
+    /** Phit\dist_f_quantile */
     public static function quantile(float $p, float $df1, float $df2): float
     {
         return Support::probability($p, self::create($df1, $df2)->quantileAt(...));
     }
 
-    /** stats_f_quantile_array */
+    /** Phit\dist_f_quantile_array */
     public static function quantileArray(array $probabilities, float $df1, float $df2): array
     {
         return Support::probabilities($probabilities, self::create($df1, $df2)->quantileAt(...));
     }
 
-    /** stats_f_rng */
+    /** Phit\dist_f_rng */
     public static function rng(int $n, int $seed, float $df1, float $df2): array
     {
         return Support::sample($n, $seed, self::create($df1, $df2)->quantileAt(...));

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Formula;
+namespace Phit\Polyfill\Formula;
 
-use PhpStats\Polyfill\ErrorCode;
+use Phit\Polyfill\ErrorCode;
 
 /**
  * Named data columns for a formula, converted from PHP values as the

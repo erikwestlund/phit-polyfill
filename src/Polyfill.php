@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill;
+namespace Phit\Polyfill;
 
 /**
- * Which php_stats functions this package implements, and where.
+ * Which phit functions this package implements, and where.
  */
 final class Polyfill
 {
     /**
      * Whether the polyfill implements $fn. Functions it does not implement
-     * (mixed models, random draws, stats_hello, ...) need the native extension.
+     * (mixed models, random draws, Phit\hello, ...) need the native extension.
      */
     public static function supports(string $fn): bool
     {
@@ -37,9 +37,9 @@ final class Polyfill
         return array_keys(FunctionMap::MAP);
     }
 
-    /** Whether the native php_stats extension is loaded. */
+    /** Whether the native phit extension is loaded. */
     public static function nativeLoaded(): bool
     {
-        return \extension_loaded('php_stats');
+        return \extension_loaded('phit');
     }
 }

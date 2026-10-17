@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use PhpStats\Polyfill\Distribution\Support;
+use Phit\Polyfill\Distribution\Support;
 
 // PHP 8.3's round() pre-rounds its argument to 15 significant digits, so
 // round(0.49999999999999994) is 1.0 there and 0.0 on PHP 8.4 and Rust. Source

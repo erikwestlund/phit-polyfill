@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Internal\Family;
+namespace Phit\Polyfill\Internal\Family;
 
 /** @internal */
 final class LogisticFamily extends Binary

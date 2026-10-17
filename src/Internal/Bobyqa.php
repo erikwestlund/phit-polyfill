@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Internal;
+namespace Phit\Polyfill\Internal;
 
-use PhpStats\Polyfill\Internal\Bobyqa\Bobyqb;
-use PhpStats\Polyfill\Internal\Bobyqa\BobyqaException;
-use PhpStats\Polyfill\Internal\Bobyqa\Config;
-use PhpStats\Polyfill\Internal\Bobyqa\Linalg;
-use PhpStats\Polyfill\Internal\Bobyqa\Outcome;
-use PhpStats\Polyfill\Internal\Bobyqa\RestartState;
-use PhpStats\Polyfill\Internal\Bobyqa\Status;
-use PhpStats\Polyfill\Internal\Bobyqa\Util;
+use Phit\Polyfill\Internal\Bobyqa\Bobyqb;
+use Phit\Polyfill\Internal\Bobyqa\BobyqaException;
+use Phit\Polyfill\Internal\Bobyqa\Config;
+use Phit\Polyfill\Internal\Bobyqa\Linalg;
+use Phit\Polyfill\Internal\Bobyqa\Outcome;
+use Phit\Polyfill\Internal\Bobyqa\RestartState;
+use Phit\Polyfill\Internal\Bobyqa\Status;
+use Phit\Polyfill\Internal\Bobyqa\Util;
 
 /**
  * A port of the Rust crate bobyqa 0.3.2 (Powell's BOBYQA, ported from PRIMA),

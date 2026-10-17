@@ -48,7 +48,7 @@ jobs:
           php -d opcache.enable_cli=1 -i | grep -iE '^opcache\.(enable_cli|jit|jit_buffer_size|optimization_level|opt_debug_level|memory_consumption|file_update_protection) '
 
       # The extension is not installed here, so the parity suite is skipped and
-      # the global stats_* functions come from the polyfill. OPcache's optimizer
+      # the Phit\ functions come from the polyfill. OPcache's optimizer
       # is exercised explicitly (see docs/notes/opcache-nan.md); with
       # file_update_protection=0 it also optimizes freshly checked-out files.
       - name: Run tests

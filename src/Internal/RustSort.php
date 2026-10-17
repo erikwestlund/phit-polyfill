@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Internal;
+namespace Phit\Polyfill\Internal;
 
 /**
  * Rust 1.99's `slice::sort_unstable_by` (core::slice::sort::unstable) for

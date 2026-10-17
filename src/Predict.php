@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill;
+namespace Phit\Polyfill;
 
-use PhpStats\Polyfill\Distribution\Normal;
-use PhpStats\Polyfill\Distribution\StudentT;
-use PhpStats\Polyfill\Formula\Data;
-use PhpStats\Polyfill\Formula\Design;
-use PhpStats\Polyfill\Formula\Frontend;
+use Phit\Polyfill\Distribution\Normal;
+use Phit\Polyfill\Distribution\StudentT;
+use Phit\Polyfill\Formula\Data;
+use Phit\Polyfill\Formula\Design;
+use Phit\Polyfill\Formula\Frontend;
 
 /**
- * stats_predict: predictions for new data from a formula fit, as R's
+ * Phit\predict: predictions for new data from a formula fit, as R's
  * predict() does for lm, glm, and merMod objects (the extension's
  * formula.rs). The fit's formula is rebuilt over the new data with the
  * fitted factor levels and poly() bases from its predvars.
  */
 final class Predict
 {
-    /** stats_predict */
+    /** Phit\predict */
     public static function predict(
         array $fit,
         mixed $newdata,
@@ -55,7 +55,7 @@ final class Predict
             ($interval === 'confidence' || $interval === 'prediction') && $isLm => $interval === 'prediction',
             $interval === 'confidence' || $interval === 'prediction' => throw ErrorCode::exception(
                 ErrorCode::UNSUPPORTED,
-                'intervals are available for stats_lm fits; use se_fit for GLMs',
+                'intervals are available for Phit\fit_lm fits; use se_fit for GLMs',
             ),
             default => throw ErrorCode::exception(ErrorCode::INVALID_INPUT, "interval must be 'none', 'confidence' or 'prediction'"),
         };
@@ -186,7 +186,7 @@ final class Predict
                 foreach ($weights as $w) {
                     if ($w != 1.0) {
                         // Userland code cannot raise E_WARNING; the text matches the extension's.
-                        trigger_error('stats_predict(): stats_predict assumes constant prediction variance even though the model fit is weighted', E_USER_WARNING);
+                        trigger_error('Phit\predict(): Phit\predict assumes constant prediction variance even though the model fit is weighted', E_USER_WARNING);
                         break;
                     }
                 }
@@ -214,7 +214,7 @@ final class Predict
 
     private static function malformed(string $detail): \Exception
     {
-        return ErrorCode::exception(ErrorCode::INVALID_INPUT, "fit must be a result of stats_lm, stats_glm, stats_lmer or stats_glmer: $detail");
+        return ErrorCode::exception(ErrorCode::INVALID_INPUT, "fit must be a result of Phit\\fit_lm, Phit\\fit_glm, Phit\\fit_lmer or Phit\\fit_glmer: $detail");
     }
 
     /** @return list<float> */
@@ -299,7 +299,7 @@ final class Predict
             throw $malformed();
         }
         if (is_array($fit['random_effects'] ?? null)) {
-            // stats_glmer: one random intercept with top-level effects and labels.
+            // Phit\fit_glmer: one random intercept with top-level effects and labels.
             $labels = $fit['group_labels'] ?? null;
             if (! is_array($labels)) {
                 throw $malformed();

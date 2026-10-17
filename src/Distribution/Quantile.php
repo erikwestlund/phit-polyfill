@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Distribution;
+namespace Phit\Polyfill\Distribution;
 
 /**
  * Port of stats-core's distributions/quantile.rs: safeguarded Newton on the

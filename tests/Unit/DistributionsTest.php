@@ -106,7 +106,7 @@ it('matches the R references (mpmath where R is adjudicated wrong)', function (s
             continue;
         }
         $params = distParams($case);
-        $scalar = 'stats_'.$case['distribution'].'_'.$case['operation'];
+        $scalar = 'Phit\dist_'.$case['distribution'].'_'.$case['operation'];
         $input = array_map(distDecode(...), $case['input']);
         $batch = pf($scalar.'_array', $input, ...$params);
         expect(array_is_list($batch) && count($batch) === count($input))->toBeTrue("$scalar batch shape");
@@ -155,7 +155,7 @@ it('matches SciPy wherever SciPy agrees with the mpmath reference', function (st
             continue;
         }
         $params = distParams($case);
-        $scalar = 'stats_'.$case['distribution'].'_'.$case['operation'];
+        $scalar = 'Phit\dist_'.$case['distribution'].'_'.$case['operation'];
         $reference = $independent['cases'][$caseIndex];
         foreach ($case['input'] as $i => $raw) {
             $x = distDecode($raw);
@@ -175,16 +175,16 @@ it('matches SciPy wherever SciPy agrees with the mpmath reference', function (st
 
 it('satisfies continuous identities: F(Q(p)) = p, F + S = 1, exp(log f) = f, monotone CDF', function (string $name, array $params) {
     foreach ([1e-12, 0.001, 0.025, 0.3, 0.5, 0.8, 0.975, 0.999] as $p) {
-        $q = pf("stats_{$name}_quantile", $p, ...$params);
-        $back = pf("stats_{$name}_cdf", $q, ...$params);
+        $q = pf("Phit\\dist_{$name}_quantile", $p, ...$params);
+        $back = pf("Phit\\dist_{$name}_cdf", $q, ...$params);
         expect(abs($back - $p) <= 1e-12 * $p + 1e-15)->toBeTrue("$name F(Q($p)) = $back");
-        $sum = $back + pf("stats_{$name}_sf", $q, ...$params);
+        $sum = $back + pf("Phit\\dist_{$name}_sf", $q, ...$params);
         expect(abs($sum - 1.0) <= 4 * PHP_FLOAT_EPSILON)->toBeTrue("$name F + S at $q");
-        $f = pf("stats_{$name}_pdf", $q, ...$params);
-        expect(abs(exp(pf("stats_{$name}_logpdf", $q, ...$params)) - $f) <= 1e-13 * $f)->toBeTrue("$name exp(logpdf)");
+        $f = pf("Phit\\dist_{$name}_pdf", $q, ...$params);
+        expect(abs(exp(pf("Phit\\dist_{$name}_logpdf", $q, ...$params)) - $f) <= 1e-13 * $f)->toBeTrue("$name exp(logpdf)");
     }
-    $grid = array_map(fn ($p) => pf("stats_{$name}_quantile", $p, ...$params), range(0.01, 0.99, 0.01));
-    $cdf = pf("stats_{$name}_cdf_array", $grid, ...$params);
+    $grid = array_map(fn ($p) => pf("Phit\\dist_{$name}_quantile", $p, ...$params), range(0.01, 0.99, 0.01));
+    $cdf = pf("Phit\\dist_{$name}_cdf_array", $grid, ...$params);
     for ($i = 1; $i < count($cdf); $i++) {
         expect($cdf[$i] >= $cdf[$i - 1])->toBeTrue("$name CDF monotone");
     }
@@ -197,134 +197,134 @@ it('satisfies continuous identities: F(Q(p)) = p, F + S = 1, exp(log f) = f, mon
 it('satisfies discrete identities and step-function conventions', function (string $name, array $params) {
     $total = 0.0;
     foreach (range(0, 200) as $k) {
-        $total += pf("stats_{$name}_pmf", $k, ...$params);
+        $total += pf("Phit\\dist_{$name}_pmf", $k, ...$params);
     }
     expect(abs($total - 1.0) < 1e-12)->toBeTrue("$name pmf sums to one");
     foreach ([0.01, 0.2, 0.5, 0.9, 0.999] as $p) {
-        $q = pf("stats_{$name}_quantile", $p, ...$params);
-        expect(pf("stats_{$name}_cdf", $q, ...$params) >= $p)->toBeTrue("$name F(Q(p)) >= p");
-        expect($q == 0 || pf("stats_{$name}_cdf", $q - 1, ...$params) < $p)->toBeTrue("$name Q(p) is the smallest such k");
+        $q = pf("Phit\\dist_{$name}_quantile", $p, ...$params);
+        expect(pf("Phit\\dist_{$name}_cdf", $q, ...$params) >= $p)->toBeTrue("$name F(Q(p)) >= p");
+        expect($q == 0 || pf("Phit\\dist_{$name}_cdf", $q - 1, ...$params) < $p)->toBeTrue("$name Q(p) is the smallest such k");
     }
     // Step-function conventions: cdf floors x; P(X > k) excludes k; pmf is 0 off the integers.
-    expect(pf("stats_{$name}_cdf", 2.7, ...$params))->toBe(pf("stats_{$name}_cdf", 2, ...$params));
-    $sf = pf("stats_{$name}_sf", 2, ...$params);
-    expect(abs($sf - (1 - pf("stats_{$name}_cdf", 2, ...$params))) < 1e-15)->toBeTrue("$name sf is P(X > k)");
-    expect(abs(pf("stats_{$name}_sf", 1, ...$params) - ($sf + pf("stats_{$name}_pmf", 2, ...$params))) < 1e-15)
+    expect(pf("Phit\\dist_{$name}_cdf", 2.7, ...$params))->toBe(pf("Phit\\dist_{$name}_cdf", 2, ...$params));
+    $sf = pf("Phit\\dist_{$name}_sf", 2, ...$params);
+    expect(abs($sf - (1 - pf("Phit\\dist_{$name}_cdf", 2, ...$params))) < 1e-15)->toBeTrue("$name sf is P(X > k)");
+    expect(abs(pf("Phit\\dist_{$name}_sf", 1, ...$params) - ($sf + pf("Phit\\dist_{$name}_pmf", 2, ...$params))) < 1e-15)
         ->toBeTrue("$name P(X >= k) = sf(k - 1)");
-    expect(pf("stats_{$name}_pmf", 2.5, ...$params))->toBe(0.0)
-        ->and(pf("stats_{$name}_logpmf", 2.5, ...$params))->toBe(-INF)
-        ->and(pf("stats_{$name}_pmf", -1, ...$params))->toBe(0.0)
-        ->and(pf("stats_{$name}_sf", -1, ...$params))->toBe(1.0);
+    expect(pf("Phit\\dist_{$name}_pmf", 2.5, ...$params))->toBe(0.0)
+        ->and(pf("Phit\\dist_{$name}_logpmf", 2.5, ...$params))->toBe(-INF)
+        ->and(pf("Phit\\dist_{$name}_pmf", -1, ...$params))->toBe(0.0)
+        ->and(pf("Phit\\dist_{$name}_sf", -1, ...$params))->toBe(1.0);
 })->with([
     ['binomial', [10, 0.3]], ['poisson', [4.5]], ['nbinom', [3.0, 0.4]], ['nbinom_mu', [2.0, 4.5]],
 ]);
 
 it('keeps extreme tails finite on the log scale', function () {
-    $sf = pf('stats_normal_sf', 40.0);
+    $sf = pf('Phit\dist_normal_sf', 40.0);
     expect($sf === 0.0 || $sf < 1e-300)->toBeTrue('normal tail underflows')
-        ->and(abs(pf('stats_normal_logsf', 40.0) - -804.6084420137538) < 1e-11)->toBeTrue('normal log tail')
-        ->and(abs(pf('stats_normal_logcdf', -1e10) - -5e19) < 1e5)->toBeTrue('normal log tail at -1e10')
-        ->and(is_finite(pf('stats_t_logsf', 1e5, 100.0)))->toBeTrue()
-        ->and(is_finite(pf('stats_chisquare_logsf', 1e4, 0.5)))->toBeTrue()
-        ->and(is_finite(pf('stats_poisson_logsf', 1e7, 3.2)))->toBeTrue()
-        ->and(is_finite(pf('stats_binomial_logcdf', 0, 1000, 0.999)))->toBeTrue()
-        ->and(pf('stats_t_quantile', 0.5, 3))->toBe(0.0)
-        ->and(pf('stats_normal_quantile', 0.5))->toBe(0.0);
+        ->and(abs(pf('Phit\dist_normal_logsf', 40.0) - -804.6084420137538) < 1e-11)->toBeTrue('normal log tail')
+        ->and(abs(pf('Phit\dist_normal_logcdf', -1e10) - -5e19) < 1e5)->toBeTrue('normal log tail at -1e10')
+        ->and(is_finite(pf('Phit\dist_t_logsf', 1e5, 100.0)))->toBeTrue()
+        ->and(is_finite(pf('Phit\dist_chisquare_logsf', 1e4, 0.5)))->toBeTrue()
+        ->and(is_finite(pf('Phit\dist_poisson_logsf', 1e7, 3.2)))->toBeTrue()
+        ->and(is_finite(pf('Phit\dist_binomial_logcdf', 0, 1000, 0.999)))->toBeTrue()
+        ->and(pf('Phit\dist_t_quantile', 0.5, 3))->toBe(0.0)
+        ->and(pf('Phit\dist_normal_quantile', 0.5))->toBe(0.0);
 });
 
 it('handles boundaries: infinite points and endpoint quantiles', function () {
-    expect(pf('stats_normal_cdf', INF))->toBe(1.0)
-        ->and(pf('stats_normal_cdf', -INF))->toBe(0.0)
-        ->and(pf('stats_normal_pdf', INF))->toBe(0.0)
-        ->and(pf('stats_normal_quantile', 0.0))->toBe(-INF)
-        ->and(pf('stats_normal_quantile', 1.0))->toBe(INF)
-        ->and(pf('stats_gamma_quantile', 0.0, 2.0))->toBe(0.0)
-        ->and(pf('stats_beta_quantile', 1.0, 2.0, 3.0))->toBe(1.0)
-        ->and(pf('stats_binomial_quantile', 1.0, 7, 0.0))->toBe(0.0)
-        ->and(pf('stats_poisson_quantile', 1.0, 3.0))->toBe(INF)
-        ->and(pf('stats_binomial_quantile', 1.0, 7, 0.4))->toBe(7.0)
-        ->and(pf('stats_gamma_pdf', 0.0, 0.5))->toBe(INF)
-        ->and(pf('stats_gamma_pdf', 0.0, 1.0, 2.0))->toBe(0.5)
-        ->and(pf('stats_gamma_pdf', -1.0, 2.0))->toBe(0.0)
-        ->and(pf('stats_poisson_pmf', 0, 0.0))->toBe(1.0)
-        ->and(pf('stats_binomial_pmf', 3, 3, 1.0))->toBe(1.0)
-        ->and(pf('stats_nbinom_mu_pmf', 0, 1e308, 1e308))->toBe(0.0)
-        ->and(pf('stats_nbinom_mu_logpmf', 0, 1e308, 1e308))->toBe(-1e308 * log(2.0))
-        ->and(pf('stats_nbinom_mu_cdf', 0, 1e308, 1e308))->toBe(0.0)
-        ->and(pf('stats_nbinom_mu_sf', 0, 1e308, 1e308))->toBe(1.0)
-        ->and(pf('stats_nbinom_mu_pmf', 0, 3.0, 0.0))->toBe(1.0);
+    expect(pf('Phit\dist_normal_cdf', INF))->toBe(1.0)
+        ->and(pf('Phit\dist_normal_cdf', -INF))->toBe(0.0)
+        ->and(pf('Phit\dist_normal_pdf', INF))->toBe(0.0)
+        ->and(pf('Phit\dist_normal_quantile', 0.0))->toBe(-INF)
+        ->and(pf('Phit\dist_normal_quantile', 1.0))->toBe(INF)
+        ->and(pf('Phit\dist_gamma_quantile', 0.0, 2.0))->toBe(0.0)
+        ->and(pf('Phit\dist_beta_quantile', 1.0, 2.0, 3.0))->toBe(1.0)
+        ->and(pf('Phit\dist_binomial_quantile', 1.0, 7, 0.0))->toBe(0.0)
+        ->and(pf('Phit\dist_poisson_quantile', 1.0, 3.0))->toBe(INF)
+        ->and(pf('Phit\dist_binomial_quantile', 1.0, 7, 0.4))->toBe(7.0)
+        ->and(pf('Phit\dist_gamma_pdf', 0.0, 0.5))->toBe(INF)
+        ->and(pf('Phit\dist_gamma_pdf', 0.0, 1.0, 2.0))->toBe(0.5)
+        ->and(pf('Phit\dist_gamma_pdf', -1.0, 2.0))->toBe(0.0)
+        ->and(pf('Phit\dist_poisson_pmf', 0, 0.0))->toBe(1.0)
+        ->and(pf('Phit\dist_binomial_pmf', 3, 3, 1.0))->toBe(1.0)
+        ->and(pf('Phit\dist_nbinom_mu_pmf', 0, 1e308, 1e308))->toBe(0.0)
+        ->and(pf('Phit\dist_nbinom_mu_logpmf', 0, 1e308, 1e308))->toBe(-1e308 * log(2.0))
+        ->and(pf('Phit\dist_nbinom_mu_cdf', 0, 1e308, 1e308))->toBe(0.0)
+        ->and(pf('Phit\dist_nbinom_mu_sf', 0, 1e308, 1e308))->toBe(1.0)
+        ->and(pf('Phit\dist_nbinom_mu_pmf', 0, 3.0, 0.0))->toBe(1.0);
 });
 
 it('supports defaults, integer arguments and named arguments', function () {
-    expect(pf('stats_normal_cdf', 1.96))->toBe(pf('stats_normal_cdf', x: 1.96, mean: 0, sd: 1))
-        ->and(pf('stats_t_quantile', 0.975, 30))->toBe(pf('stats_t_quantile', p: 0.975, df: 30.0))
-        ->and(pf('stats_gamma_cdf', 2.0, 2.0))->toBe(pf('stats_gamma_cdf', 2.0, shape: 2.0, scale: 1.0))
-        ->and(pf('stats_exponential_cdf', 1.0))->toBe(pf('stats_exponential_cdf', 1.0, rate: 1.0));
+    expect(pf('Phit\dist_normal_cdf', 1.96))->toBe(pf('Phit\dist_normal_cdf', x: 1.96, mean: 0, sd: 1))
+        ->and(pf('Phit\dist_t_quantile', 0.975, 30))->toBe(pf('Phit\dist_t_quantile', p: 0.975, df: 30.0))
+        ->and(pf('Phit\dist_gamma_cdf', 2.0, 2.0))->toBe(pf('Phit\dist_gamma_cdf', 2.0, shape: 2.0, scale: 1.0))
+        ->and(pf('Phit\dist_exponential_cdf', 1.0))->toBe(pf('Phit\dist_exponential_cdf', 1.0, rate: 1.0));
 });
 
 it('validates batch input: empty arrays, order, keys and element types', function () {
-    expect(pf('stats_normal_cdf_array', []))->toBe([])
-        ->and(pf('stats_normal_cdf_array', ['b' => 1.0, 'a' => -1.0]))
-        ->toBe([pf('stats_normal_cdf', 1.0), pf('stats_normal_cdf', -1.0)])
-        ->and(pf('stats_poisson_logpmf_array', counts: [3, 4], lambda: 4.5))
-        ->toBe([pf('stats_poisson_logpmf', 3, 4.5), pf('stats_poisson_logpmf', 4, 4.5)])
-        ->and(distCode(fn () => pf('stats_normal_cdf_array', [], sd: -1.0)))->toBe(1001);
+    expect(pf('Phit\dist_normal_cdf_array', []))->toBe([])
+        ->and(pf('Phit\dist_normal_cdf_array', ['b' => 1.0, 'a' => -1.0]))
+        ->toBe([pf('Phit\dist_normal_cdf', 1.0), pf('Phit\dist_normal_cdf', -1.0)])
+        ->and(pf('Phit\dist_poisson_logpmf_array', counts: [3, 4], lambda: 4.5))
+        ->toBe([pf('Phit\dist_poisson_logpmf', 3, 4.5), pf('Phit\dist_poisson_logpmf', 4, 4.5)])
+        ->and(distCode(fn () => pf('Phit\dist_normal_cdf_array', [], sd: -1.0)))->toBe(1001);
     foreach ([[1.0, 'x'], [1.0, null], [true], [[1.0]], ['1.5']] as $bad) {
-        expect(distCode(fn () => pf('stats_normal_cdf_array', $bad)))->toBe(1001);
+        expect(distCode(fn () => pf('Phit\dist_normal_cdf_array', $bad)))->toBe(1001);
     }
-    expect(distCode(fn () => pf('stats_normal_cdf_array', [1.0, NAN])))->toBe(1003)
-        ->and(distCode(fn () => pf('stats_normal_quantile_array', [0.5, 1.5])))->toBe(1001)
-        ->and(distCode(fn () => pf('stats_normal_quantile_array', [0.5, NAN])))->toBe(1003)
+    expect(distCode(fn () => pf('Phit\dist_normal_cdf_array', [1.0, NAN])))->toBe(1003)
+        ->and(distCode(fn () => pf('Phit\dist_normal_quantile_array', [0.5, 1.5])))->toBe(1001)
+        ->and(distCode(fn () => pf('Phit\dist_normal_quantile_array', [0.5, NAN])))->toBe(1003)
         // The first bad element decides the error.
-        ->and(distCode(fn () => pf('stats_normal_cdf_array', [NAN, 'x'])))->toBe(1003)
-        ->and(distCode(fn () => pf('stats_normal_cdf_array', ['x', NAN])))->toBe(1001);
+        ->and(distCode(fn () => pf('Phit\dist_normal_cdf_array', [NAN, 'x'])))->toBe(1003)
+        ->and(distCode(fn () => pf('Phit\dist_normal_cdf_array', ['x', NAN])))->toBe(1001);
 });
 
 it('raises 1001 for invalid parameters and probabilities', function (Closure $f) {
     expect(distCode($f))->toBe(1001);
 })->with([
-    'normal sd 0' => fn () => pf('stats_normal_cdf', 0.0, 0.0, 0.0),
-    'normal sd < 0' => fn () => pf('stats_normal_cdf', 0.0, 0.0, -1.0),
-    't df 0' => fn () => pf('stats_t_cdf', 0.0, 0.0),
-    'chisquare df < 0' => fn () => pf('stats_chisquare_cdf', 1.0, -2.0),
-    'f df1 0' => fn () => pf('stats_f_cdf', 1.0, 0.0, 3.0),
-    'beta alpha 0' => fn () => pf('stats_beta_cdf', 0.5, 0.0, 1.0),
-    'gamma scale 0' => fn () => pf('stats_gamma_cdf', 1.0, 2.0, 0.0),
-    'exponential rate < 0' => fn () => pf('stats_exponential_cdf', 1.0, -1.0),
-    'lognormal sdlog 0' => fn () => pf('stats_lognormal_cdf', 1.0, 0.0, 0.0),
-    'logistic scale < 0' => fn () => pf('stats_logistic_cdf', 1.0, 0.0, -2.0),
-    'binomial size < 0' => fn () => pf('stats_binomial_pmf', 1, -1, 0.5),
-    'binomial prob > 1' => fn () => pf('stats_binomial_pmf', 1, 3, 1.5),
-    'poisson lambda < 0' => fn () => pf('stats_poisson_pmf', 1, -0.5),
-    'nbinom size 0' => fn () => pf('stats_nbinom_pmf', 1, 0.0, 0.5),
-    'nbinom prob 0' => fn () => pf('stats_nbinom_pmf', 1, 2.0, 0.0),
-    'nbinom_mu mu < 0' => fn () => pf('stats_nbinom_mu_pmf', 1, 2.0, -1.0),
-    'quantile p < 0' => fn () => pf('stats_normal_quantile', -0.1),
-    'quantile p > 1' => fn () => pf('stats_poisson_quantile', 1.1, 2.0),
-    'chisquare df/2 underflows' => fn () => pf('stats_chisquare_cdf', 1.0, 5e-324),
+    'normal sd 0' => fn () => pf('Phit\dist_normal_cdf', 0.0, 0.0, 0.0),
+    'normal sd < 0' => fn () => pf('Phit\dist_normal_cdf', 0.0, 0.0, -1.0),
+    't df 0' => fn () => pf('Phit\dist_t_cdf', 0.0, 0.0),
+    'chisquare df < 0' => fn () => pf('Phit\dist_chisquare_cdf', 1.0, -2.0),
+    'f df1 0' => fn () => pf('Phit\dist_f_cdf', 1.0, 0.0, 3.0),
+    'beta alpha 0' => fn () => pf('Phit\dist_beta_cdf', 0.5, 0.0, 1.0),
+    'gamma scale 0' => fn () => pf('Phit\dist_gamma_cdf', 1.0, 2.0, 0.0),
+    'exponential rate < 0' => fn () => pf('Phit\dist_exponential_cdf', 1.0, -1.0),
+    'lognormal sdlog 0' => fn () => pf('Phit\dist_lognormal_cdf', 1.0, 0.0, 0.0),
+    'logistic scale < 0' => fn () => pf('Phit\dist_logistic_cdf', 1.0, 0.0, -2.0),
+    'binomial size < 0' => fn () => pf('Phit\dist_binomial_pmf', 1, -1, 0.5),
+    'binomial prob > 1' => fn () => pf('Phit\dist_binomial_pmf', 1, 3, 1.5),
+    'poisson lambda < 0' => fn () => pf('Phit\dist_poisson_pmf', 1, -0.5),
+    'nbinom size 0' => fn () => pf('Phit\dist_nbinom_pmf', 1, 0.0, 0.5),
+    'nbinom prob 0' => fn () => pf('Phit\dist_nbinom_pmf', 1, 2.0, 0.0),
+    'nbinom_mu mu < 0' => fn () => pf('Phit\dist_nbinom_mu_pmf', 1, 2.0, -1.0),
+    'quantile p < 0' => fn () => pf('Phit\dist_normal_quantile', -0.1),
+    'quantile p > 1' => fn () => pf('Phit\dist_poisson_quantile', 1.1, 2.0),
+    'chisquare df/2 underflows' => fn () => pf('Phit\dist_chisquare_cdf', 1.0, 5e-324),
 ]);
 
 it('raises 1003 for nonfinite parameters and NaN inputs', function (Closure $f) {
     expect(distCode($f))->toBe(1003);
 })->with([
-    'NaN point' => fn () => pf('stats_normal_cdf', NAN),
-    'infinite mean' => fn () => pf('stats_normal_cdf', 0.0, INF),
-    'NaN probability' => fn () => pf('stats_t_quantile', NAN, 3.0),
-    'NaN count' => fn () => pf('stats_poisson_pmf', NAN, 2.0),
-    'NaN shape' => fn () => pf('stats_gamma_pdf', 1.0, NAN),
-    'infinite df' => fn () => pf('stats_t_cdf', 1.0, INF),
-    'NaN binomial prob beats size limit' => fn () => pf('stats_binomial_pmf', 1, 2 ** 54, NAN),
+    'NaN point' => fn () => pf('Phit\dist_normal_cdf', NAN),
+    'infinite mean' => fn () => pf('Phit\dist_normal_cdf', 0.0, INF),
+    'NaN probability' => fn () => pf('Phit\dist_t_quantile', NAN, 3.0),
+    'NaN count' => fn () => pf('Phit\dist_poisson_pmf', NAN, 2.0),
+    'NaN shape' => fn () => pf('Phit\dist_gamma_pdf', 1.0, NAN),
+    'infinite df' => fn () => pf('Phit\dist_t_cdf', 1.0, INF),
+    'NaN binomial prob beats size limit' => fn () => pf('Phit\dist_binomial_pmf', 1, 2 ** 54, NAN),
 ]);
 
 it('raises 1007 for binomial sizes beyond 2^53', function () {
-    expect(distCode(fn () => pf('stats_binomial_pmf', 1, 2 ** 54, 0.5)))->toBe(1007)
-        ->and(distCode(fn () => pf('stats_binomial_cdf_array', [], 2 ** 53 + 1, 0.5)))->toBe(1007)
-        ->and(pf('stats_binomial_cdf', 0, 2 ** 53, 0.0))->toBe(1.0);
+    expect(distCode(fn () => pf('Phit\dist_binomial_pmf', 1, 2 ** 54, 0.5)))->toBe(1007)
+        ->and(distCode(fn () => pf('Phit\dist_binomial_cdf_array', [], 2 ** 53 + 1, 0.5)))->toBe(1007)
+        ->and(pf('Phit\dist_binomial_cdf', 0, 2 ** 53, 0.0))->toBe(1.0);
 });
 
 it('throws plain exceptions carrying the error code', function () {
     try {
-        pf('stats_normal_cdf', 0.0, 0.0, -1.0);
+        pf('Phit\dist_normal_cdf', 0.0, 0.0, -1.0);
         $this->fail('expected an exception');
     } catch (\Exception $e) {
         expect(get_class($e))->toBe(\Exception::class)->and($e->getCode())->toBe(1001);
@@ -346,15 +346,15 @@ it('returns lists with the same order for every batch function', function (strin
     $discrete = in_array($family, ['binomial', 'poisson', 'nbinom', 'nbinom_mu'], true);
     foreach ([$discrete ? 'pmf' : 'pdf', $discrete ? 'logpmf' : 'logpdf', 'cdf', 'logcdf', 'sf', 'logsf', 'quantile'] as $op) {
         $input = $op === 'quantile' ? ['a' => 0.1, 'b' => 0.9, 3 => 0.5] : $values;
-        $batch = pf("stats_{$family}_{$op}_array", $input, ...$params);
-        $scalars = array_map(fn ($v) => pf("stats_{$family}_{$op}", $v, ...$params), array_values($input));
+        $batch = pf("Phit\\dist_{$family}_{$op}_array", $input, ...$params);
+        $scalars = array_map(fn ($v) => pf("Phit\\dist_{$family}_{$op}", $v, ...$params), array_values($input));
         expect($batch)->toBe($scalars);
     }
 })->with('distribution families');
 
 it('finds the same quantile bracket as the literal upstream step-by-2 walk', function () {
-    $bracket = (new ReflectionClass(\PhpStats\Polyfill\Distribution\Quantile::class))->getMethod('bracket');
-    $expand = (new ReflectionClass(\PhpStats\Polyfill\Distribution\Quantile::class))->getMethod('expand');
+    $bracket = (new ReflectionClass(\Phit\Polyfill\Distribution\Quantile::class))->getMethod('bracket');
+    $expand = (new ReflectionClass(\Phit\Polyfill\Distribution\Quantile::class))->getMethod('expand');
     // Literal port of the extension's loop (quantile.rs), for comparison.
     $walk = function (float $x, float $direction, Closure $stop) use ($expand): ?array {
         $before = $x;
@@ -385,23 +385,23 @@ it('finds the same quantile bracket as the literal upstream step-by-2 walk', fun
     }
 });
 
-// php-stats bd98bf7: a NaN tail stops the quantile bracket search and fails with
+// phit bd98bf7: a NaN tail stops the quantile bracket search and fails with
 // 1006 instead of walking to ±INF. The stop test checks NaN explicitly, because
 // with opcache enabled a negated comparison did not treat NaN as stopping.
 it('fails a quantile whose tail evaluation fails during bracketing', function () {
-    expect(thrownCode(fn () => pf('stats_t_quantile', 1.0 - 0.999999999999, 1e299)))->toBe(1006)
-        ->and(thrownCode(fn () => pf('stats_t_quantile', 0.999999999999, 1e299)))->toBe(1006)
-        ->and(thrownCode(fn () => pf('stats_f_quantile', 0.999999999999, 1e-10, 1e299)))->toBe(1006);
+    expect(thrownCode(fn () => pf('Phit\dist_t_quantile', 1.0 - 0.999999999999, 1e299)))->toBe(1006)
+        ->and(thrownCode(fn () => pf('Phit\dist_t_quantile', 0.999999999999, 1e299)))->toBe(1006)
+        ->and(thrownCode(fn () => pf('Phit\dist_f_quantile', 0.999999999999, 1e-10, 1e299)))->toBe(1006);
 });
 
 it('fails fast on the cdflib regimes that hang or panic upstream', function (string $fn, array $arguments) {
     expect(thrownCode(fn () => pf($fn, ...$arguments)))->toBe(1006);
 })->with([
-    'F cdf, df2 = MAX' => ['stats_f_cdf', [2.0, 3.0, PHP_FLOAT_MAX]],
-    'NB(mu) cdf, size = MAX' => ['stats_nbinom_mu_cdf', [2.0, PHP_FLOAT_MAX, 3.0]],
-    'beta quantile, beta = MAX' => ['stats_beta_quantile', [1e-10, 1.5, PHP_FLOAT_MAX]],
-    'gamma cdf, shape = x = 1e30' => ['stats_gamma_cdf', [1e30, 1e30]],
-    'chi-square cdf, df = x = 2e30' => ['stats_chisquare_cdf', [2e30, 2e30]],
-    'Poisson cdf, lambda = k = 1e30' => ['stats_poisson_cdf', [1e30, 1e30]],
-    'beta cdf, alpha = beta = 1e308' => ['stats_beta_cdf', [0.5, 1e308, 1e308]],
+    'F cdf, df2 = MAX' => ['Phit\dist_f_cdf', [2.0, 3.0, PHP_FLOAT_MAX]],
+    'NB(mu) cdf, size = MAX' => ['Phit\dist_nbinom_mu_cdf', [2.0, PHP_FLOAT_MAX, 3.0]],
+    'beta quantile, beta = MAX' => ['Phit\dist_beta_quantile', [1e-10, 1.5, PHP_FLOAT_MAX]],
+    'gamma cdf, shape = x = 1e30' => ['Phit\dist_gamma_cdf', [1e30, 1e30]],
+    'chi-square cdf, df = x = 2e30' => ['Phit\dist_chisquare_cdf', [2e30, 2e30]],
+    'Poisson cdf, lambda = k = 1e30' => ['Phit\dist_poisson_cdf', [1e30, 1e30]],
+    'beta cdf, alpha = beta = 1e308' => ['Phit\dist_beta_cdf', [0.5, 1e308, 1e308]],
 ]);

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Formula;
+namespace Phit\Polyfill\Formula;
 
-use PhpStats\Polyfill\ErrorCode;
-use PhpStats\Polyfill\Internal\ModelData;
+use Phit\Polyfill\ErrorCode;
+use Phit\Polyfill\Internal\ModelData;
 
 /**
- * The PHP glue shared by stats_model_matrix, stats_lm and stats_glm, in the
+ * The PHP glue shared by Phit\model_matrix, Phit\fit_lm and Phit\fit_glm, in the
  * extension's order: argument checks, missing policy, data, weights, design.
  *
  * @internal
@@ -88,7 +88,7 @@ final class Frontend
         if ($design->random !== []) {
             throw ErrorCode::exception(
                 ErrorCode::UNSUPPORTED,
-                "$function does not fit random-effect terms such as ({$design->random[0]['label']}); use stats_lmer, or stats_lmm_fit with stats_model_matrix()['random']",
+                "$function does not fit random-effect terms such as ({$design->random[0]['label']}); use Phit\\fit_lmer, or Phit\\fit_mixed with Phit\\model_matrix()['random']",
             );
         }
     }
@@ -123,7 +123,7 @@ final class Frontend
             $named[$name] = $output['coefficients'][$j];
         }
         $output['named'] = $named;
-        // Factor levels and poly() coefficients that stats_predict() reuses.
+        // Factor levels and poly() coefficients that Phit\predict() reuses.
         $output['predvars'] = $design->predvars;
 
         return $output;

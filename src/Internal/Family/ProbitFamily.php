@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Internal\Family;
+namespace Phit\Polyfill\Internal\Family;
 
-use PhpStats\Polyfill\ErrorCode;
-use PhpStats\Polyfill\Internal\Statrs;
+use Phit\Polyfill\ErrorCode;
+use Phit\Polyfill\Internal\Statrs;
 
 /** @internal */
 final class ProbitFamily extends Binary

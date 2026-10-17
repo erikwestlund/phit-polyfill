@@ -18,7 +18,7 @@
     "cases": [
         {
             "model": "ols",
-            "function": "stats_ols",
+            "function": "Phit\\fit_ols",
             "n": 10000,
             "p": 10,
             "implementations": {
@@ -44,7 +44,7 @@
         },
         {
             "model": "logistic",
-            "function": "stats_logistic",
+            "function": "Phit\\fit_logistic",
             "n": 10000,
             "p": 10,
             "implementations": {
@@ -65,7 +65,7 @@
         },
         {
             "model": "ols",
-            "function": "stats_ols",
+            "function": "Phit\\fit_ols",
             "n": 100000,
             "p": 10,
             "implementations": {
@@ -91,7 +91,7 @@
         },
         {
             "model": "logistic",
-            "function": "stats_logistic",
+            "function": "Phit\\fit_logistic",
             "n": 100000,
             "p": 10,
             "implementations": {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use PhpStats\Polyfill\Internal\Fma;
+use Phit\Polyfill\Internal\Fma;
 
 // Port of the extension's tests/draws.php against the NumPy reference cases
 // in draws-python.json (1e-11 absolute plus relative).
@@ -50,11 +50,11 @@ it('matches the reference draw cases', function () use ($fixture) {
         $name = $case['name'];
         switch ($case['operation']) {
             case 'moments':
-                $result = pf('stats_draw_moments', draws: $case['draws'], weights: $case['weights'], normalization: $case['normalization']);
+                $result = pf('Phit\draws_moments', draws: $case['draws'], weights: $case['weights'], normalization: $case['normalization']);
                 drawClose($result, $case['expected'], $name);
                 break;
             case 'covariance_map':
-                $result = pf('stats_draw_covariance_map', source_covariance: $case['source_covariance'], target_covariance: $case['target_covariance']);
+                $result = pf('Phit\draws_covariance_map', source_covariance: $case['source_covariance'], target_covariance: $case['target_covariance']);
                 drawClose($result, $case['expected'], $name);
                 $a = $result['matrix'];
                 $cov = drawMultiply(drawMultiply($a, $case['source_covariance']), drawTranspose($a));
@@ -67,11 +67,11 @@ it('matches the reference draw cases', function () use ($fixture) {
                         }
                     }
                 }
-                $reverse = pf('stats_draw_covariance_map', $case['target_covariance'], $case['source_covariance']);
+                $reverse = pf('Phit\draws_covariance_map', $case['target_covariance'], $case['source_covariance']);
                 drawClose($result['log_abs_det'] + $reverse['log_abs_det'], 0, "$name reverse logdet");
                 break;
             case 'affine':
-                $result = pf('stats_draw_affine', draws: $case['draws'], matrix: $case['matrix'], shift: $case['shift']);
+                $result = pf('Phit\draws_affine', draws: $case['draws'], matrix: $case['matrix'], shift: $case['shift']);
                 drawClose($result, $case['expected'], $name);
                 foreach ($result['draws'] as $i => $row) {
                     foreach ($row as $j => $v) {
@@ -81,7 +81,7 @@ it('matches the reference draw cases', function () use ($fixture) {
                         }
                     }
                 }
-                $back = pf('stats_draw_affine', $result['draws'], $case['inverse'], $case['inverse_shift']);
+                $back = pf('Phit\draws_affine', $result['draws'], $case['inverse'], $case['inverse_shift']);
                 drawClose($back['draws'], $case['draws'], "$name round trip");
                 drawClose($result['log_abs_det'] + $back['log_abs_det'], 0, "$name round trip logdet");
                 break;
@@ -96,19 +96,19 @@ it('returns the result keys of the API contract', function () {
     $id = [[1, 0], [0, 1]];
     $schema = loadFixture('php-api.json');
     foreach ([
-        'stats_draw_moments' => pf('stats_draw_moments', $x),
-        'stats_draw_covariance_map' => pf('stats_draw_covariance_map', $id, $id),
-        'stats_draw_affine' => pf('stats_draw_affine', $x, $id, [0, 0]),
+        'Phit\draws_moments' => pf('Phit\draws_moments', $x),
+        'Phit\draws_covariance_map' => pf('Phit\draws_covariance_map', $id, $id),
+        'Phit\draws_affine' => pf('Phit\draws_affine', $x, $id, [0, 0]),
     ] as $name => $result) {
         $keys = array_keys($result);
         sort($keys);
         expect($keys)->toBe($schema[$name]['result_keys']);
     }
-    drawClose(pf('stats_draw_moments', $x), pf('stats_draw_moments', $x, [1, 1], 'population'), 'defaults');
-    $subnormal = pf('stats_draw_affine', [[1], [2]], [[1e-310]], [0]);
+    drawClose(pf('Phit\draws_moments', $x), pf('Phit\draws_moments', $x, [1, 1], 'population'), 'defaults');
+    $subnormal = pf('Phit\draws_affine', [[1], [2]], [[1e-310]], [0]);
     expect($subnormal['draws'])->toBe([[1e-310], [2e-310]]);
     drawClose($subnormal['log_abs_det'], log(1e-310), 'subnormal log determinant');
-    drawClose(pf('stats_draw_affine', ['second' => [9 => 3, 2 => 4], 'first' => [1, 2]], $id, [0, 0])['draws'],
+    drawClose(pf('Phit\draws_affine', ['second' => [9 => 3, 2 => 4], 'first' => [1, 2]], $id, [0, 0])['draws'],
         [[3, 4], [1, 2]], 'draw order and literal columns');
 });
 
@@ -117,62 +117,62 @@ it('applies the strict input contract', function () {
     $id = [[1, 0], [0, 1]];
     $code = fn (callable $f) => thrownCode($f);
     foreach ([null, '1', true, []] as $bad) {
-        expect($code(fn () => pf('stats_draw_moments', [[1, 2], [3, $bad]], [1, 0])))->toBe(1001)
-            ->and($code(fn () => pf('stats_draw_moments', $x, [1, $bad])))->toBe(1001)
-            ->and($code(fn () => pf('stats_draw_covariance_map', [[1, $bad], [0, 1]], $id)))->toBe(1001)
-            ->and($code(fn () => pf('stats_draw_covariance_map', $id, [[1, 0], [$bad, 1]])))->toBe(1001)
-            ->and($code(fn () => pf('stats_draw_affine', [[1, $bad]], $id, [0, 0])))->toBe(1001)
-            ->and($code(fn () => pf('stats_draw_affine', $x, [[1, 0], [$bad, 1]], [0, 0])))->toBe(1001)
-            ->and($code(fn () => pf('stats_draw_affine', $x, $id, [0, $bad])))->toBe(1001);
+        expect($code(fn () => pf('Phit\draws_moments', [[1, 2], [3, $bad]], [1, 0])))->toBe(1001)
+            ->and($code(fn () => pf('Phit\draws_moments', $x, [1, $bad])))->toBe(1001)
+            ->and($code(fn () => pf('Phit\draws_covariance_map', [[1, $bad], [0, 1]], $id)))->toBe(1001)
+            ->and($code(fn () => pf('Phit\draws_covariance_map', $id, [[1, 0], [$bad, 1]])))->toBe(1001)
+            ->and($code(fn () => pf('Phit\draws_affine', [[1, $bad]], $id, [0, 0])))->toBe(1001)
+            ->and($code(fn () => pf('Phit\draws_affine', $x, [[1, 0], [$bad, 1]], [0, 0])))->toBe(1001)
+            ->and($code(fn () => pf('Phit\draws_affine', $x, $id, [0, $bad])))->toBe(1001);
     }
     foreach ([NAN, INF, -INF] as $bad) {
-        expect($code(fn () => pf('stats_draw_moments', [[1, 2], [3, $bad]], [1, 0])))->toBe(1003)
-            ->and($code(fn () => pf('stats_draw_moments', $x, [1, $bad])))->toBe(1003)
-            ->and($code(fn () => pf('stats_draw_covariance_map', [[1, 0], [0, $bad]], $id)))->toBe(1003)
-            ->and($code(fn () => pf('stats_draw_covariance_map', $id, [[1, 0], [0, $bad]])))->toBe(1003)
-            ->and($code(fn () => pf('stats_draw_affine', [[1, $bad]], $id, [0, 0])))->toBe(1003)
-            ->and($code(fn () => pf('stats_draw_affine', $x, [[1, 0], [0, $bad]], [0, 0])))->toBe(1003)
-            ->and($code(fn () => pf('stats_draw_affine', $x, $id, [0, $bad])))->toBe(1003);
+        expect($code(fn () => pf('Phit\draws_moments', [[1, 2], [3, $bad]], [1, 0])))->toBe(1003)
+            ->and($code(fn () => pf('Phit\draws_moments', $x, [1, $bad])))->toBe(1003)
+            ->and($code(fn () => pf('Phit\draws_covariance_map', [[1, 0], [0, $bad]], $id)))->toBe(1003)
+            ->and($code(fn () => pf('Phit\draws_covariance_map', $id, [[1, 0], [0, $bad]])))->toBe(1003)
+            ->and($code(fn () => pf('Phit\draws_affine', [[1, $bad]], $id, [0, 0])))->toBe(1003)
+            ->and($code(fn () => pf('Phit\draws_affine', $x, [[1, 0], [0, $bad]], [0, 0])))->toBe(1003)
+            ->and($code(fn () => pf('Phit\draws_affine', $x, $id, [0, $bad])))->toBe(1003);
     }
     foreach ([[], [[]]] as $bad) {
-        expect($code(fn () => pf('stats_draw_moments', $bad)))->toBe(1001)
-            ->and($code(fn () => pf('stats_draw_covariance_map', $bad, $id)))->toBe(1001)
-            ->and($code(fn () => pf('stats_draw_affine', $bad, $id, [0, 0])))->toBe(1001);
+        expect($code(fn () => pf('Phit\draws_moments', $bad)))->toBe(1001)
+            ->and($code(fn () => pf('Phit\draws_covariance_map', $bad, $id)))->toBe(1001)
+            ->and($code(fn () => pf('Phit\draws_affine', $bad, $id, [0, 0])))->toBe(1001);
     }
     $cases = [
-        [fn () => pf('stats_draw_moments', [1, 2]), 1001],
-        [fn () => pf('stats_draw_moments', [[1], [2, 3]]), 1002],
-        [fn () => pf('stats_draw_moments', $x, [1]), 1002],
-        [fn () => pf('stats_draw_moments', $x, [0, 0]), 1001],
-        [fn () => pf('stats_draw_moments', $x, [-1, 2]), 1001],
-        [fn () => pf('stats_draw_moments', $x, [1, 0], 'unbiased'), 1001],
-        [fn () => pf('stats_draw_moments', $x, [1, 1e-30], 'unbiased'), 1001],
-        [fn () => pf('stats_draw_moments', [[1]], normalization: 'unbiased'), 1001],
-        [fn () => pf('stats_draw_moments', $x, normalization: 'sample'), 1001],
-        [fn () => pf('stats_draw_covariance_map', [[1]], $id), 1002],
-        [fn () => pf('stats_draw_covariance_map', [[1, 0]], $id), 1002],
-        [fn () => pf('stats_draw_covariance_map', [[1, 0], [0]], $id), 1002],
-        [fn () => pf('stats_draw_covariance_map', [[1, 0.2], [0.3, 1]], $id), 1001],
-        [fn () => pf('stats_draw_covariance_map', [[1, 0.2 + 1e-12], [0.2, 1]], $id), 1001],
-        [fn () => pf('stats_draw_affine', $x, [[1, 2], [2, 4]], [0, 0]), 1004],
-        [fn () => pf('stats_draw_affine', $x, [[1, 1], [1, 1 + 1e-15]], [0, 0]), 1004],
-        [fn () => pf('stats_draw_affine', $x, [[1, 2]], [0, 0]), 1002],
-        [fn () => pf('stats_draw_affine', $x, [[1, 0], [0]], [0, 0]), 1002],
-        [fn () => pf('stats_draw_affine', [[1], [2, 3]], $id, [0, 0]), 1002],
-        [fn () => pf('stats_draw_affine', $x, $id, [0]), 1002],
-        [fn () => pf('stats_draw_affine', [[PHP_FLOAT_MAX]], [[2]], [0]), 1003],
-        [fn () => pf('stats_draw_moments', [[-1e200], [1e200]]), 1003],
-        [fn () => pf('stats_draw_moments', [[1], [null]]), 1001],
+        [fn () => pf('Phit\draws_moments', [1, 2]), 1001],
+        [fn () => pf('Phit\draws_moments', [[1], [2, 3]]), 1002],
+        [fn () => pf('Phit\draws_moments', $x, [1]), 1002],
+        [fn () => pf('Phit\draws_moments', $x, [0, 0]), 1001],
+        [fn () => pf('Phit\draws_moments', $x, [-1, 2]), 1001],
+        [fn () => pf('Phit\draws_moments', $x, [1, 0], 'unbiased'), 1001],
+        [fn () => pf('Phit\draws_moments', $x, [1, 1e-30], 'unbiased'), 1001],
+        [fn () => pf('Phit\draws_moments', [[1]], normalization: 'unbiased'), 1001],
+        [fn () => pf('Phit\draws_moments', $x, normalization: 'sample'), 1001],
+        [fn () => pf('Phit\draws_covariance_map', [[1]], $id), 1002],
+        [fn () => pf('Phit\draws_covariance_map', [[1, 0]], $id), 1002],
+        [fn () => pf('Phit\draws_covariance_map', [[1, 0], [0]], $id), 1002],
+        [fn () => pf('Phit\draws_covariance_map', [[1, 0.2], [0.3, 1]], $id), 1001],
+        [fn () => pf('Phit\draws_covariance_map', [[1, 0.2 + 1e-12], [0.2, 1]], $id), 1001],
+        [fn () => pf('Phit\draws_affine', $x, [[1, 2], [2, 4]], [0, 0]), 1004],
+        [fn () => pf('Phit\draws_affine', $x, [[1, 1], [1, 1 + 1e-15]], [0, 0]), 1004],
+        [fn () => pf('Phit\draws_affine', $x, [[1, 2]], [0, 0]), 1002],
+        [fn () => pf('Phit\draws_affine', $x, [[1, 0], [0]], [0, 0]), 1002],
+        [fn () => pf('Phit\draws_affine', [[1], [2, 3]], $id, [0, 0]), 1002],
+        [fn () => pf('Phit\draws_affine', $x, $id, [0]), 1002],
+        [fn () => pf('Phit\draws_affine', [[PHP_FLOAT_MAX]], [[2]], [0]), 1003],
+        [fn () => pf('Phit\draws_moments', [[-1e200], [1e200]]), 1003],
+        [fn () => pf('Phit\draws_moments', [[1], [null]]), 1001],
     ];
     foreach ($cases as $i => [$f, $expected]) {
         expect($code($f))->toBe($expected, "case $i");
     }
     foreach ([[[1, 1], [1, 1]], [[1, 2], [2, 1]], [[-1, 0], [0, 1]], [[0, 0], [0, 1]], [[1, 1 - 1e-15], [1 - 1e-15, 1]]] as $singular) {
-        expect($code(fn () => pf('stats_draw_covariance_map', $singular, $id)))->toBe(1005)
-            ->and($code(fn () => pf('stats_draw_covariance_map', $id, $singular)))->toBe(1005);
+        expect($code(fn () => pf('Phit\draws_covariance_map', $singular, $id)))->toBe(1005)
+            ->and($code(fn () => pf('Phit\draws_covariance_map', $id, $singular)))->toBe(1005);
     }
-    expect(pf('stats_draw_covariance_map', [[1, 0.2 + 1e-15], [0.2, 1]], $id))->toBeArray();
-    drawClose(pf('stats_draw_moments', [[1, 2], [3, 4]], [1, 0]), ['mean' => [1, 2], 'covariance' => [[0, 0], [0, 0]]], 'one effective draw');
+    expect(pf('Phit\draws_covariance_map', [[1, 0.2 + 1e-15], [0.2, 1]], $id))->toBeArray();
+    drawClose(pf('Phit\draws_moments', [[1, 2], [3, 4]], [1, 0]), ['mean' => [1, 2], 'covariance' => [[0, 0], [0, 0]]], 'one effective draw');
 });
 
 it('emulates a correctly rounded fused multiply-add', function () {
@@ -187,5 +187,5 @@ it('emulates a correctly rounded fused multiply-add', function () {
 });
 
 it('says hello like the extension', function () {
-    expect(pf('stats_hello'))->toBe('Hello from Rust!');
+    expect(pf('Phit\hello'))->toBe('Hello from Rust!');
 });

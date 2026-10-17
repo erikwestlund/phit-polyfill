@@ -1,9 +1,9 @@
 <?php
 
-// Polyfill vs native php_stats timings for stats_ols and stats_logistic.
+// Polyfill vs native phit timings for Phit\fit_ols and Phit\fit_logistic.
 //
 // Run with the extension and JIT enabled, for example:
-//   php85 -d extension=.ext/libphp_stats.dylib -d opcache.enable_cli=1 \
+//   php85 -d extension=.ext/libphit.dylib -d opcache.enable_cli=1 \
 //         -d opcache.jit=tracing -d opcache.jit_buffer_size=64M benchmarks/run.php
 // Options: --sizes=10000,100000 --p=10 --repeat=5 --seed=5 --json=benchmarks/results.json
 //
@@ -15,8 +15,8 @@ declare(strict_types=1);
 
 require __DIR__.'/../vendor/autoload.php';
 
-use PhpStats\Polyfill\Logistic;
-use PhpStats\Polyfill\Ols;
+use Phit\Polyfill\Logistic;
+use Phit\Polyfill\Ols;
 
 $options = getopt('', ['sizes::', 'p::', 'repeat::', 'seed::', 'json::']);
 $sizes = array_map(intval(...), explode(',', $options['sizes'] ?? '10000,100000'));
@@ -24,7 +24,7 @@ $p = (int) ($options['p'] ?? 10);
 $repeat = (int) ($options['repeat'] ?? 5);
 $seed = (int) ($options['seed'] ?? 5);
 $json = $options['json'] ?? null;
-$native = extension_loaded('php_stats');
+$native = extension_loaded('phit');
 $opcache = function_exists('opcache_get_status') ? (opcache_get_status(false) ?: []) : [];
 $jit = (bool) ($opcache['jit']['on'] ?? false);
 
@@ -140,8 +140,8 @@ foreach ($sizes as $n) {
         $binary[] = (mt_rand() / mt_getrandmax()) < 1 / (1 + exp(-$eta)) ? 1 : 0;
     }
     $models = [
-        ['ols', Ols::fit(...), 'stats_ols', $continuous],
-        ['logistic', Logistic::fit(...), 'stats_logistic', $binary],
+        ['ols', Ols::fit(...), 'Phit\fit_ols', $continuous],
+        ['logistic', Logistic::fit(...), 'Phit\fit_logistic', $binary],
     ];
     foreach ($models as [$name, $polyfill, $fn, $y]) {
         $case = ['model' => $name, 'function' => $fn, 'n' => $n, 'p' => $p, 'implementations' => []];

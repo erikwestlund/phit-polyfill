@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-// Polyfill vs native extension for stats_ols/logistic/probit/poisson: same keys,
+// Polyfill vs native extension for Phit\fit_ols/logistic/probit/poisson: same keys,
 // values within tolerance, same exception codes and the same warning text.
-// Runs only when php_stats is loaded. Set PARITY_REPORT=path to write the
+// Runs only when phit is loaded. Set PARITY_REPORT=path to write the
 // largest observed differences per model as JSON (used for ACCURACY.md).
 
-const MODEL_FUNCTIONS = ['stats_ols', 'stats_logistic', 'stats_probit', 'stats_poisson'];
+const MODEL_FUNCTIONS = ['Phit\fit_ols', 'Phit\fit_logistic', 'Phit\fit_probit', 'Phit\fit_poisson'];
 
 beforeEach(function () {
-    if (! extension_loaded('php_stats')) {
-        $this->markTestSkipped('php_stats extension not loaded');
+    if (! extension_loaded('phit')) {
+        $this->markTestSkipped('phit extension not loaded');
     }
 });
 
@@ -91,7 +91,7 @@ function recordParity(string $fn, string $group, float $difference): void
  */
 function assertModelParity(string $fn, array $arguments, float $tolerance, string $group): void
 {
-    if ($fn !== 'stats_ols') {
+    if ($fn !== 'Phit\fit_ols') {
         // Iterative fits stop once the full step is below 1e-8 relative (1e-11 for
         // probit), so two implementations agree to about that, not to rounding;
         // slow boundary fits and extreme tails amplify it a little.
@@ -112,7 +112,7 @@ function assertModelParity(string $fn, array $arguments, float $tolerance, strin
             restore_error_handler();
         }
     };
-    $polyfill = $call(\PhpStats\Polyfill\Polyfill::implementation($fn));
+    $polyfill = $call(\Phit\Polyfill\Polyfill::implementation($fn));
     $native = $call($fn);
     if (isset($native['code']) || isset($polyfill['code'])) {
         expect($polyfill['code'] ?? 'result')->toBe($native['code'] ?? 'result', "$fn [$group]: ".($native['message'] ?? $polyfill['message'] ?? ''));
@@ -201,10 +201,10 @@ function linearPredictor(array $x, array $beta): array
 function randomOutcome(string $fn, array $eta): array
 {
     return array_map(fn (float $e) => match ($fn) {
-        'stats_ols' => $e + gaussian(),
-        'stats_logistic' => (float) (uniform() < 1.0 / (1.0 + exp(-$e))),
-        'stats_probit' => (float) (gaussian() < $e),
-        'stats_poisson' => (float) poissonDraw(exp($e)),
+        'Phit\fit_ols' => $e + gaussian(),
+        'Phit\fit_logistic' => (float) (uniform() < 1.0 / (1.0 + exp(-$e))),
+        'Phit\fit_probit' => (float) (gaussian() < $e),
+        'Phit\fit_poisson' => (float) poissonDraw(exp($e)),
     }, $eta);
 }
 
@@ -233,7 +233,7 @@ afterAll(function () {
 });
 
 it('agrees with the extension on the reference fixtures', function () {
-    $files = ['stats_ols' => 'ols-r.json', 'stats_logistic' => 'logistic-r.json', 'stats_probit' => 'probit-r.json', 'stats_poisson' => 'poisson-r.json'];
+    $files = ['Phit\fit_ols' => 'ols-r.json', 'Phit\fit_logistic' => 'logistic-r.json', 'Phit\fit_probit' => 'probit-r.json', 'Phit\fit_poisson' => 'poisson-r.json'];
     foreach ($files as $fn => $file) {
         foreach (loadFixture($file)['cases'] as $case) {
             // A perfect fit's t statistics are rounding noise divided by rounding noise.
@@ -246,7 +246,7 @@ it('agrees with the extension on the reference fixtures', function () {
         }
     }
     foreach ([...loadFixture('r-compatibility.json')['cases'], ...loadFixture('stress-r.json')['cases']] as $case) {
-        assertModelParity('stats_'.$case['model'], [$case['x'], $case['y'], 'drop', $case['weights'], $case['offset'], false], 1e-8, 'fixtures');
+        assertModelParity('Phit\fit_'.$case['model'], [$case['x'], $case['y'], 'drop', $case['weights'], $case['offset'], false], 1e-8, 'fixtures');
     }
 });
 
@@ -284,7 +284,7 @@ it('agrees on badly scaled predictors and outcomes', function (string $fn) {
         $x = randomDesign(150, 3, 0.0, $scale);
         $beta = [0.1, 0.4 / $scale, -0.3 / $scale, 0.2 / $scale];
         $y = randomOutcome($fn, linearPredictor($x, $beta));
-        if ($fn === 'stats_ols') {
+        if ($fn === 'Phit\fit_ols') {
             $y = array_map(fn ($v) => $v * $scale, $y);
         }
         assertModelParity($fn, [$x, $y], 1e-9, 'scaling');
@@ -314,24 +314,24 @@ it('agrees on separation and near-separation', function (string $fn) {
     $trials = array_fill(0, 20, 1000.0);
     $y = array_map(fn ($i) => $i < 10 ? 1 / 1000 : 999 / 1000, range(0, 19));
     assertModelParity($fn, [$grouped, $y, 'drop', $trials], 1e-8, 'separation');
-})->with(['stats_logistic', 'stats_probit']);
+})->with(['Phit\fit_logistic', 'Phit\fit_probit']);
 
 it('agrees on huge counts, extreme offsets and sparse counts in Poisson', function () {
     mt_srand(17);
     $x = randomDesign(120, 2);
     foreach ([1e3, 1e6, 1e9, 1e12] as $level) {
         $y = array_map(fn ($row) => (float) round($level * exp(0.1 * $row[0] - 0.05 * $row[1]) + sqrt($level) * gaussian()), $x);
-        assertModelParity('stats_poisson', [$x, $y], 1e-8, 'counts');
+        assertModelParity('Phit\fit_poisson', [$x, $y], 1e-8, 'counts');
     }
     foreach ([-700.0, -100.0, 30.0, 300.0] as $shift) {
         $offset = array_map(fn () => $shift + gaussian(), $x);
         $y = array_map(fn ($row) => (float) poissonDraw(2.0 * exp(0.3 * $row[0])), $x);
-        assertModelParity('stats_poisson', [$x, $y, 'drop', null, $offset], 1e-8, 'counts');
+        assertModelParity('Phit\fit_poisson', [$x, $y, 'drop', null, $offset], 1e-8, 'counts');
     }
     $sparse = array_fill(0, 500, 0.0);
     $sparse[17] = 1.0;
     $sparse[402] = 2.0;
-    assertModelParity('stats_poisson', [array_map(fn () => [gaussian()], $sparse), $sparse], 1e-8, 'counts');
+    assertModelParity('Phit\fit_poisson', [array_map(fn () => [gaussian()], $sparse), $sparse], 1e-8, 'counts');
 });
 
 it('agrees on extreme offsets for binary models', function (string $fn) {
@@ -342,10 +342,10 @@ it('agrees on extreme offsets for binary models', function (string $fn) {
         $y = array_map(fn ($i) => (float) ($i % 2), array_keys($x));
         assertModelParity($fn, [$x, $y, 'drop', null, $offset], 1e-8, 'offsets');
     }
-})->with(['stats_logistic', 'stats_probit']);
+})->with(['Phit\fit_logistic', 'Phit\fit_probit']);
 
 it('raises the same exception codes on invalid input', function (string $fn) {
-    $binary = in_array($fn, ['stats_logistic', 'stats_probit'], true);
+    $binary = in_array($fn, ['Phit\fit_logistic', 'Phit\fit_probit'], true);
     $cases = [
         [[], []], [[[]], [1]], [[[1], [1, 2]], [1, 2]], [[[1], [2]], [1]],
         [[[1], [2], [3]], ['a', 1, 0]], [[[1], [2], [3]], [true, 1, 0]], [[[1], [2], [3]], [1, INF, 0]],
@@ -378,33 +378,33 @@ it('raises the same exception codes on invalid input', function (string $fn) {
 it('agrees with the extension on huge weights and counts', function (string $fn) {
     // Review finding: column norms above about 1e77 overflowed the Jacobi rotation test.
     $x = [[1.0], [2.0], [3.0], [4.5], [5.0], [6.0]];
-    $y = $fn === 'stats_poisson' ? [1, 2, 1, 4, 3, 6] : [0, 1, 0, 1, 1, 0];
+    $y = $fn === 'Phit\fit_poisson' ? [1, 2, 1, 4, 3, 6] : [0, 1, 0, 1, 1, 0];
     foreach ([1e100, 1e160, 1e200] as $w) {
         assertModelParity($fn, [$x, $y, 'drop', array_fill(0, 6, $w)], 1e-9, 'scaling');
         assertModelParity($fn, [$x, $y, 'drop', [$w, 1, 1, 1, 1, 1]], 1e-9, 'scaling');
     }
-    if ($fn === 'stats_poisson') {
+    if ($fn === 'Phit\fit_poisson') {
         foreach ([1e100, 1e160] as $scale) {
             // Likelihoods near 1e160 are flat to rounding at the optimum, so the
             // stopping iteration is noise; the 'counts' group checks estimates only.
             assertModelParity($fn, [$x, array_map(fn ($v) => $v * $scale, $y)], 1e-9, 'counts');
         }
     }
-})->with(['stats_ols', 'stats_poisson']);
+})->with(['Phit\fit_ols', 'Phit\fit_poisson']);
 
 it('agrees on widely spread per-row offsets', function (string $fn) {
     // Review finding: with offsets spread over about -50 to 55 the IRLS steps are
     // dominated by rounding, so agreement needs the extension's exact QR
-    // arithmetic (php-stats 91ee538: Householder QR, triangular solves).
+    // arithmetic (phit 91ee538: Householder QR, triangular solves).
     mt_srand(23 + crc32($fn));
     for ($trial = 0; $trial < 40; $trial++) {
         $n = mt_rand(3, 35);
         $x = array_fill(0, $n, []);
         $offset = array_map(fn () => -50.0 + 105.0 * uniform(), range(1, $n));
-        $y = $fn === 'stats_poisson'
+        $y = $fn === 'Phit\fit_poisson'
             ? array_map(fn () => (float) mt_rand(0, 3), range(1, $n))
             : array_map(fn () => (float) mt_rand(0, 1), range(1, $n));
         $weights = $trial % 3 === 0 ? array_map(fn () => (float) mt_rand(1, 4), range(1, $n)) : null;
         assertModelParity($fn, [$x, $y, 'drop', $weights, $offset], 1e-9, 'offsets');
     }
-})->with(['stats_logistic', 'stats_poisson']);
+})->with(['Phit\fit_logistic', 'Phit\fit_poisson']);

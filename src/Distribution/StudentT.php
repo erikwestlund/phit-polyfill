@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Distribution;
+namespace Phit\Polyfill\Distribution;
 
 /** Student's t distribution with df degrees of freedom (location 0, scale 1). */
 final class StudentT
@@ -15,91 +15,91 @@ final class StudentT
         return new self(Support::positive('df', $df));
     }
 
-    /** stats_t_pdf */
+    /** Phit\dist_t_pdf */
     public static function pdf(float $x, float $df): float
     {
         return Support::point($x, self::create($df)->pdfAt(...));
     }
 
-    /** stats_t_pdf_array */
+    /** Phit\dist_t_pdf_array */
     public static function pdfArray(array $values, float $df): array
     {
         return Support::points($values, self::create($df)->pdfAt(...));
     }
 
-    /** stats_t_logpdf */
+    /** Phit\dist_t_logpdf */
     public static function logpdf(float $x, float $df): float
     {
         return Support::point($x, self::create($df)->logpdfAt(...));
     }
 
-    /** stats_t_logpdf_array */
+    /** Phit\dist_t_logpdf_array */
     public static function logpdfArray(array $values, float $df): array
     {
         return Support::points($values, self::create($df)->logpdfAt(...));
     }
 
-    /** stats_t_cdf */
+    /** Phit\dist_t_cdf */
     public static function cdf(float $x, float $df): float
     {
         return Support::point($x, self::create($df)->cdfAt(...));
     }
 
-    /** stats_t_cdf_array */
+    /** Phit\dist_t_cdf_array */
     public static function cdfArray(array $values, float $df): array
     {
         return Support::points($values, self::create($df)->cdfAt(...));
     }
 
-    /** stats_t_logcdf */
+    /** Phit\dist_t_logcdf */
     public static function logcdf(float $x, float $df): float
     {
         return Support::point($x, self::create($df)->logcdfAt(...));
     }
 
-    /** stats_t_logcdf_array */
+    /** Phit\dist_t_logcdf_array */
     public static function logcdfArray(array $values, float $df): array
     {
         return Support::points($values, self::create($df)->logcdfAt(...));
     }
 
-    /** stats_t_sf */
+    /** Phit\dist_t_sf */
     public static function sf(float $x, float $df): float
     {
         return Support::point($x, self::create($df)->sfAt(...));
     }
 
-    /** stats_t_sf_array */
+    /** Phit\dist_t_sf_array */
     public static function sfArray(array $values, float $df): array
     {
         return Support::points($values, self::create($df)->sfAt(...));
     }
 
-    /** stats_t_logsf */
+    /** Phit\dist_t_logsf */
     public static function logsf(float $x, float $df): float
     {
         return Support::point($x, self::create($df)->logsfAt(...));
     }
 
-    /** stats_t_logsf_array */
+    /** Phit\dist_t_logsf_array */
     public static function logsfArray(array $values, float $df): array
     {
         return Support::points($values, self::create($df)->logsfAt(...));
     }
 
-    /** stats_t_quantile */
+    /** Phit\dist_t_quantile */
     public static function quantile(float $p, float $df): float
     {
         return Support::probability($p, self::create($df)->quantileAt(...));
     }
 
-    /** stats_t_quantile_array */
+    /** Phit\dist_t_quantile_array */
     public static function quantileArray(array $probabilities, float $df): array
     {
         return Support::probabilities($probabilities, self::create($df)->quantileAt(...));
     }
 
-    /** stats_t_rng */
+    /** Phit\dist_t_rng */
     public static function rng(int $n, int $seed, float $df): array
     {
         return Support::sample($n, $seed, self::create($df)->quantileAt(...));

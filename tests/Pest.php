@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use PhpStats\Polyfill\Polyfill;
+use Phit\Polyfill\Polyfill;
 
 /*
  * The ported suites call the polyfill implementation directly through pf(),
@@ -22,7 +22,7 @@ function loadFixture(string $name): array
     );
 }
 
-/** Call the polyfill implementation of a stats_* function (named arguments allowed). */
+/** Call the polyfill implementation of a Phit\ function (named arguments allowed). */
 function pf(string $fn, mixed ...$arguments): mixed
 {
     return Polyfill::implementation($fn)(...$arguments);

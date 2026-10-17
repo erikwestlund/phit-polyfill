@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Internal;
+namespace Phit\Polyfill\Internal;
 
 /**
  * Least squares through Householder QR of the n×p design, as the extension
- * does since php-stats 91ee538. The singular values of the small p×p factor R
+ * does since phit 91ee538. The singular values of the small p×p factor R
  * (computed by a one-sided Jacobi sweep) are those of the design and drive the
  * extension's rank rule s <= EPS * max(n, p) * s_max. Solutions and (R'R)^-1
  * come from R by back-substitution, never from singular vectors or X'X.

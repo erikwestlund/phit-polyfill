@@ -15,7 +15,7 @@ declare(strict_types=1);
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
-use PhpStats\Polyfill\Polyfill;
+use Phit\Polyfill\Polyfill;
 
 $root = dirname(__DIR__).'/tests/fixtures/';
 
@@ -97,12 +97,12 @@ $quiet = function (callable $f): mixed {
 };
 
 // Regression models against R (glm/lm) fixtures.
-$models = ['stats_ols' => 'ols-r.json', 'stats_logistic' => 'logistic-r.json', 'stats_probit' => 'probit-r.json', 'stats_poisson' => 'poisson-r.json'];
+$models = ['Phit\fit_ols' => 'ols-r.json', 'Phit\fit_logistic' => 'logistic-r.json', 'Phit\fit_probit' => 'probit-r.json', 'Phit\fit_poisson' => 'poisson-r.json'];
 foreach ($models as $fn => $file) {
     foreach (fixture($file)['cases'] as $case) {
         $result = $quiet(fn () => Polyfill::implementation($fn)($case['x'], $case['y'], 'drop', null, null, false));
         foreach ($case['expected'] as $key => $expected) {
-            if ($fn === 'stats_ols' && in_array($case['name'], ['perfect', 'zero'], true)
+            if ($fn === 'Phit\fit_ols' && in_array($case['name'], ['perfect', 'zero'], true)
                 && in_array($key, ['t_statistics', 'p_values', 'log_likelihood', 'r_squared', 'adj_r_squared', 'conf_int'], true)) {
                 continue;
             }
@@ -112,7 +112,7 @@ foreach ($models as $fn => $file) {
 }
 foreach (['r-compatibility.json', 'stress-r.json'] as $file) {
     foreach (fixture($file)['cases'] as $case) {
-        $fn = 'stats_'.$case['model'];
+        $fn = 'Phit\fit_'.$case['model'];
         $result = $quiet(fn () => Polyfill::implementation($fn)($case['x'], $case['y'], 'drop', $case['weights'], $case['offset'], false));
         foreach ($case['expected'] as $key => $expected) {
             $actualKey = $key === 'statistics' ? ($case['model'] === 'ols' ? 't_statistics' : 'z_statistics') : $key;
@@ -135,7 +135,7 @@ foreach (['r-compatibility.json', 'stress-r.json'] as $file) {
 $formulas = fixture('formula-r.json');
 foreach ($formulas['cases'] as $case) {
     $data = $formulas['datasets'][$case['dataset']];
-    $fn = 'stats_'.$case['function'];
+    $fn = $case['function'] === 'model_matrix' ? 'Phit\model_matrix' : 'Phit\fit_'.$case['function'];
     $result = $quiet(fn () => match ($case['function']) {
         'model_matrix' => Polyfill::implementation($fn)($case['formula'], $data),
         'lm' => Polyfill::implementation($fn)($case['formula'], $data, weights: $case['weights']),
@@ -155,24 +155,24 @@ foreach ($formulas['cases'] as $case) {
 // Descriptive statistics against R.
 $d = fixture('descriptive-r.json');
 foreach ($d['descriptive'] as $c) {
-    foreach (['mean' => 'stats_mean', 'variance' => 'stats_var', 'sd' => 'stats_sd', 'median' => 'stats_median'] as $key => $fn) {
+    foreach (['mean' => 'Phit\stat_mean', 'variance' => 'Phit\stat_var', 'sd' => 'Phit\stat_sd', 'median' => 'Phit\stat_median'] as $key => $fn) {
         $record($fn, 'R (descriptive-r.json)', errors(Polyfill::implementation($fn)($c['values']), $c[$key], 0.0, 1e-12), $c['name']);
     }
-    $record('stats_var', 'R (descriptive-r.json)', errors(Polyfill::implementation('stats_var')($c['values'], 'population'), $c['population_variance'], 0.0, 1e-12), $c['name']);
-    $record('stats_quantile_array', 'R (descriptive-r.json)', errors(Polyfill::implementation('stats_quantile_array')($c['values'], $c['quantile_probabilities']), $c['quantiles'], 0.0, 1e-12), $c['name']);
+    $record('Phit\stat_var', 'R (descriptive-r.json)', errors(Polyfill::implementation('Phit\stat_var')($c['values'], 'population'), $c['population_variance'], 0.0, 1e-12), $c['name']);
+    $record('Phit\stat_quantile_array', 'R (descriptive-r.json)', errors(Polyfill::implementation('Phit\stat_quantile_array')($c['values'], $c['quantile_probabilities']), $c['quantiles'], 0.0, 1e-12), $c['name']);
     foreach ($c['quantile_probabilities'] as $j => $q) {
-        $record('stats_quantile', 'R (descriptive-r.json)', errors(Polyfill::implementation('stats_quantile')($c['values'], $q), $c['quantiles'][$j], 0.0, 1e-12), $c['name']);
+        $record('Phit\stat_quantile', 'R (descriptive-r.json)', errors(Polyfill::implementation('Phit\stat_quantile')($c['values'], $q), $c['quantiles'][$j], 0.0, 1e-12), $c['name']);
     }
 }
 foreach ($d['pairs'] as $c) {
-    $record('stats_cov', 'R (descriptive-r.json)', errors(Polyfill::implementation('stats_cov')($c['x'], $c['y']), $c['covariance'], 0.0, 1e-12), $c['name']);
-    $record('stats_cov', 'R (descriptive-r.json)', errors(Polyfill::implementation('stats_cov')($c['x'], $c['y'], 'population'), $c['population_covariance'], 0.0, 1e-12), $c['name']);
-    $record('stats_cor', 'R (descriptive-r.json)', errors(Polyfill::implementation('stats_cor')($c['x'], $c['y']), $c['correlation'], 0.0, 1e-12), $c['name']);
+    $record('Phit\stat_cov', 'R (descriptive-r.json)', errors(Polyfill::implementation('Phit\stat_cov')($c['x'], $c['y']), $c['covariance'], 0.0, 1e-12), $c['name']);
+    $record('Phit\stat_cov', 'R (descriptive-r.json)', errors(Polyfill::implementation('Phit\stat_cov')($c['x'], $c['y'], 'population'), $c['population_covariance'], 0.0, 1e-12), $c['name']);
+    $record('Phit\stat_cor', 'R (descriptive-r.json)', errors(Polyfill::implementation('Phit\stat_cor')($c['x'], $c['y']), $c['correlation'], 0.0, 1e-12), $c['name']);
 }
 foreach ($d['weighted'] ?? [] as $c) {
-    $record('stats_weighted_mean', 'R (descriptive-r.json)', errors(Polyfill::implementation('stats_weighted_mean')($c['values'], $c['weights']), $c['mean'], 0.0, 1e-12), $c['name']);
+    $record('Phit\stat_weighted_mean', 'R (descriptive-r.json)', errors(Polyfill::implementation('Phit\stat_weighted_mean')($c['values'], $c['weights']), $c['mean'], 0.0, 1e-12), $c['name']);
     foreach (['frequency', 'reliability', 'population'] as $type) {
-        $record('stats_weighted_var', 'R (descriptive-r.json)', errors(Polyfill::implementation('stats_weighted_var')($c['values'], $c['weights'], $type), $c[$type], 0.0, 1e-12), $c['name']);
+        $record('Phit\stat_weighted_var', 'R (descriptive-r.json)', errors(Polyfill::implementation('Phit\stat_weighted_var')($c['values'], $c['weights'], $type), $c[$type], 0.0, 1e-12), $c['name']);
     }
 }
 

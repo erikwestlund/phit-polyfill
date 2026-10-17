@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Internal\Family;
+namespace Phit\Polyfill\Internal\Family;
 
-use PhpStats\Polyfill\Distribution\Support;
-use PhpStats\Polyfill\ErrorCode;
-use PhpStats\Polyfill\Internal\Glm;
-use PhpStats\Polyfill\Internal\Statrs;
+use Phit\Polyfill\Distribution\Support;
+use Phit\Polyfill\ErrorCode;
+use Phit\Polyfill\Internal\Glm;
+use Phit\Polyfill\Internal\Statrs;
 
 /**
  * Shared Bernoulli / grouped-binomial pieces of the logistic and probit fits.

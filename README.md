@@ -1,40 +1,43 @@
-# php-stats-polyfill
+# phit-polyfill
 
-A pure-PHP polyfill for the [php_stats](https://github.com/erikwestlund/php-stats)
-native extension. It defines the extension's `stats_*` functions only when the
-extension is not loaded, with the same names, parameter names, order and
-defaults, result keys, warnings, and exception codes. Code written against
-php_stats therefore runs unchanged on hosts where the extension cannot be
+A pure-PHP polyfill for the [phit](https://github.com/phpstats/phit)
+native extension. It defines the extension's functions in the `Phit` namespace
+only when the extension is not loaded, with the same names, parameter names,
+order and defaults, result keys, warnings, and exception codes. Code written
+against phit therefore runs unchanged on hosts where the extension cannot be
 installed. When the extension is loaded, it is used and the polyfill does
 nothing.
 
-The package is part of the [phpstats](https://phpstats.org) family, alongside
+The package is part of the [phpstats](https://github.com/phpstats) family, alongside
 phibble, phplyr, phpolars, and cmdstanphp. It follows the pattern of
 `symfony/polyfill-mbstring`.
 
 ## Versions
 
-Each polyfill release reproduces one php-stats commit, which is pinned in
+Each polyfill release reproduces one phit commit, which is pinned in
 `tests/fixtures/REFERENCE`. The reference fixtures are copied from it.
 
-| Polyfill | php-stats | Notes |
+| Polyfill | phit | Notes |
 |---|---|---|
-| 0.1.0 | [`8e6a61e`](https://github.com/erikwestlund/php-stats/commit/8e6a61ee10f0f0986fd51624bfca8912f99fe933) | php-stats has no tagged release yet |
+| 0.1.0 | [`1bf73bd`](https://github.com/phpstats/phit/commit/1bf73bd3bdf66f825039713ac58157d0f9d6ddf9) | phit has no tagged release yet |
 
 See [CHANGELOG.md](CHANGELOG.md) for what each release contains.
 
 ## Installation
 
 ```bash
-composer require erikwestlund/php-stats-polyfill
+composer require phpstats/phit-polyfill
 ```
 
 PHP 8.3 or later is required. Composer loads `bootstrap.php` automatically. For
-each function the polyfill implements, it declares the global function only if
-`function_exists()` reports that it is missing.
+each function the polyfill implements, it declares the function in the `Phit`
+namespace only if `function_exists()` reports that it is missing. Import a
+function with `use function Phit\fit_ols;` or call it as `Phit\fit_ols()`.
 
 ```php
-$fit = stats_ols(
+use function Phit\fit_ols;
+
+$fit = fit_ols(
     x: [[1.2, 0.4], [2.3, 1.1], [3.1, 0.9], [4.8, 2.2], [5.0, 1.7]],
     y: [2.1, 4.2, 5.8, 8.1, 10.2],
 );
@@ -44,29 +47,29 @@ $fit['p_values'];
 ```
 
 To check at runtime whether a function is available without the extension,
-use `PhpStats\Polyfill\Polyfill`:
+use `Phit\Polyfill\Polyfill`:
 
 ```php
-use PhpStats\Polyfill\Polyfill;
+use Phit\Polyfill\Polyfill;
 
-Polyfill::supports('stats_logistic');  // true
-Polyfill::supports('stats_read_csv');  // false: needs the extension
-Polyfill::nativeLoaded();              // whether php_stats is loaded
+Polyfill::supports('Phit\fit_logistic');  // true
+Polyfill::supports('Phit\read_csv');      // false: needs the extension
+Polyfill::nativeLoaded();                 // whether phit is loaded
 ```
 
 ## Coverage
 
 | Area | Functions | Polyfill |
 |---|---|---|
-| Descriptive statistics | `stats_mean`, `stats_var`, `stats_sd`, `stats_median`, `stats_quantile`, `stats_quantile_array`, `stats_cov`, `stats_cor`, `stats_weighted_mean`, `stats_weighted_var` | Provided |
-| Regression | `stats_ols`, `stats_logistic`, `stats_probit`, `stats_poisson`, with weights, offsets, the automatic intercept, and both missing-value policies | Provided |
-| Formula interface | `stats_model_matrix`, `stats_lm`, `stats_glm`, `stats_predict` | Provided |
+| Descriptive statistics | `Phit\stat_mean`, `Phit\stat_var`, `Phit\stat_sd`, `Phit\stat_median`, `Phit\stat_quantile`, `Phit\stat_quantile_array`, `Phit\stat_cov`, `Phit\stat_cor`, `Phit\stat_weighted_mean`, `Phit\stat_weighted_var` | Provided |
+| Regression | `Phit\fit_ols`, `Phit\fit_logistic`, `Phit\fit_probit`, `Phit\fit_poisson`, with weights, offsets, the automatic intercept, and both missing-value policies | Provided |
+| Formula interface | `Phit\model_matrix`, `Phit\fit_lm`, `Phit\fit_glm`, `Phit\predict` | Provided |
 | Distributions | 13 families × 14 functions; see [Distributions](#distributions) | Provided |
-| Mixed models | `stats_lmm`, `stats_lmm_fit`, `stats_logistic_mixed`, `stats_lmer`, `stats_glmer` | Provided (slower than the extension; see [ACCURACY.md](ACCURACY.md#speed)) |
+| Mixed models | `Phit\fit_mixed_intercept`, `Phit\fit_mixed`, `Phit\fit_logistic_mixed`, `Phit\fit_lmer`, `Phit\fit_glmer` | Provided (slower than the extension; see [ACCURACY.md](ACCURACY.md#speed)) |
 | Random numbers | 13 seeded `*_rng` functions, one per distribution family | Provided |
-| Posterior draws | `stats_draw_moments`, `stats_draw_covariance_map`, `stats_draw_affine` | Provided |
-| CSV reading | `stats_read_csv` (phibble's PHP reader is the fallback) | Extension only |
-| Other | `stats_hello` | Provided |
+| Posterior draws | `Phit\draws_moments`, `Phit\draws_covariance_map`, `Phit\draws_affine` | Provided |
+| CSV reading | `Phit\read_csv` (phibble's PHP reader is the fallback) | Extension only |
+| Other | `Phit\hello` | Provided |
 
 Functions marked "Extension only" stay undefined without the extension, so
 `function_exists()` reports them correctly.
@@ -78,35 +81,35 @@ operations and their `_array` variants:
 
 | Family | Prefix | Parameters | Operations |
 |---|---|---|---|
-| Normal | `stats_normal_` | mean, sd | pdf, logpdf, cdf, logcdf, sf, logsf, quantile |
-| Student's t | `stats_t_` | df | same |
-| Chi-square | `stats_chisquare_` | df | same |
-| F | `stats_f_` | df1, df2 | same |
-| Exponential | `stats_exponential_` | rate | same |
-| Logistic | `stats_logistic_` | location, scale | same |
-| Log-normal | `stats_lognormal_` | meanlog, sdlog | same |
-| Gamma | `stats_gamma_` | shape, scale | same |
-| Beta | `stats_beta_` | alpha, beta | same |
-| Binomial | `stats_binomial_` | size, prob | pmf, logpmf, cdf, logcdf, sf, logsf, quantile |
-| Poisson | `stats_poisson_` | lambda | same |
-| Negative binomial | `stats_nbinom_` | size, prob | same |
-| Negative binomial by mean | `stats_nbinom_mu_` | size, mu | same |
+| Normal | `dist_normal_` | mean, sd | pdf, logpdf, cdf, logcdf, sf, logsf, quantile |
+| Student's t | `dist_t_` | df | same |
+| Chi-square | `dist_chisquare_` | df | same |
+| F | `dist_f_` | df1, df2 | same |
+| Exponential | `dist_exponential_` | rate | same |
+| Logistic | `dist_logistic_` | location, scale | same |
+| Log-normal | `dist_lognormal_` | meanlog, sdlog | same |
+| Gamma | `dist_gamma_` | shape, scale | same |
+| Beta | `dist_beta_` | alpha, beta | same |
+| Binomial | `dist_binomial_` | size, prob | pmf, logpmf, cdf, logcdf, sf, logsf, quantile |
+| Poisson | `dist_poisson_` | lambda | same |
+| Negative binomial | `dist_nbinom_` | size, prob | same |
+| Negative binomial by mean | `dist_nbinom_mu_` | size, mu | same |
 
-For example, `stats_t_sf(2.5, df: 12)` and
-`stats_normal_quantile_array([0.025, 0.975])`.
+For example, `Phit\dist_t_sf(2.5, df: 12)` and
+`Phit\dist_normal_quantile_array([0.025, 0.975])`.
 
-Each family also has a seeded sampler, such as `stats_normal_rng(1000, seed: 42)`.
-The polyfill uses the extension's generator (ChaCha20 seeded as in rand_core,
+Each family also has a seeded sampler, such as
+`Phit\dist_normal_rng(1000, seed: 42)`. The polyfill uses the extension's generator (ChaCha20 seeded as in rand_core,
 with inverse-CDF sampling), so a seed gives the same draws, bit for bit, with
 or without the extension.
 
 ### Formula interface
 
-`stats_model_matrix`, `stats_lm`, and `stats_glm` accept an R-style formula
-over named columns. They port the extension's parser, term expansion, and
+`Phit\model_matrix`, `Phit\fit_lm`, and `Phit\fit_glm` accept an R-style
+formula over named columns. They port the extension's parser, term expansion, and
 coding, so column names, term order, contrasts, and missing-value handling
 match the extension. Where the extension differs from R, the polyfill follows
-the extension (see the php-stats formula documentation).
+the extension (see the phit formula documentation).
 
 ```php
 $data = [
@@ -115,17 +118,17 @@ $data = [
     'district' => ['north', 'south', 'north', 'east', 'east', 'south'],
 ];
 
-$fit = stats_lm('rent ~ log(area) + district', $data);
+$fit = Phit\fit_lm('rent ~ log(area) + district', $data);
 $fit['named'];    // coefficients keyed by column name
 
-$design = stats_model_matrix('~ area * district', $data);
+$design = Phit\model_matrix('~ area * district', $data);
 $design['columns'];
 
-$logit = stats_glm('y ~ x + offset(log(t))', $other, family: 'binomial');
+$logit = Phit\fit_glm('y ~ x + offset(log(t))', $other, family: 'binomial');
 
 // Predictions for new data, as R's predict(): fitted factor levels and poly()
 // bases are reused, and rows with a missing predictor predict null.
-$new = stats_predict($fit, ['area' => [60.0, 80.0], 'district' => ['east', 'north']],
+$new = Phit\predict($fit, ['area' => [60.0, 80.0], 'district' => ['east', 'north']],
     interval: 'prediction');
 ```
 
@@ -134,24 +137,24 @@ Supported syntax includes `+ - : * / %in% ^`, `0`/`1`/`-1`, `.`, `offset()`,
 `abs`, and others), `poly()`, `factor()`, `ordered()`, and `cbind()` responses
 for grouped binomial data. Families are gaussian, binomial (logit or probit),
 and poisson. Formulas with random-effect bars such as `(1 | g)` are accepted
-by `stats_model_matrix`, which returns the random-effect design, and are fitted
-by `stats_lmer` and `stats_glmer`. `stats_lm` and `stats_glm` reject them with
-code 1007. `stats_predict` works with all four fit functions.
+by `Phit\model_matrix`, which returns the random-effect design, and are fitted
+by `Phit\fit_lmer` and `Phit\fit_glmer`. `Phit\fit_lm` and `Phit\fit_glm` reject
+them with code 1007. `Phit\predict` works with all four fit functions.
 
 ## How it works
 
 The implementations are ports of the extension's Rust code, not independent
 reimplementations, so results agree to rounding in most cases.
 
-- **Least squares.** `stats_ols` scales the design columns to unit norm and
+- **Least squares.** `Phit\fit_ols` scales the design columns to unit norm and
   factors the design by Householder QR, using the same operation order as the
   extension's linear-algebra library. The singular values of the small R
   factor (computed by a Jacobi sweep) equal the design's, so the extension's
   rank rule (s ≤ ε·max(n, p)·s_max) makes the same rank decisions.
   Coefficients and covariances come from R by back-substitution. Weighted fits
   factor rows in decreasing-weight order, as the extension does.
-- **Generalized linear models.** `stats_logistic` and `stats_poisson` use
-  damped Newton IRLS and `stats_probit` uses Fisher scoring. Each iteration
+- **Generalized linear models.** `Phit\fit_logistic` and `Phit\fit_poisson` use
+  damped Newton IRLS and `Phit\fit_probit` uses Fisher scoring. Each iteration
   solves a weighted least-squares step with the same QR, halves the step
   until the likelihood does not decrease, and stops only after a small full
   step. The separation certificate, boundary handling, starting values for
@@ -232,10 +235,10 @@ plus an intercept. Times are the median of five runs with the tracing JIT on
 
 | Model | n | Polyfill | Extension | Ratio |
 |---|---:|---:|---:|---:|
-| `stats_ols` | 10,000 | 7.3 ms | 2.6 ms | 2.8× |
-| `stats_ols` | 100,000 | 78 ms | 27 ms | 2.9× |
-| `stats_logistic` | 10,000 | 46 ms | 6.6 ms | 6.9× |
-| `stats_logistic` | 100,000 | 456 ms | 69 ms | 6.7× |
+| `Phit\fit_ols` | 10,000 | 7.3 ms | 2.6 ms | 2.8× |
+| `Phit\fit_ols` | 100,000 | 78 ms | 27 ms | 2.9× |
+| `Phit\fit_logistic` | 10,000 | 46 ms | 6.6 ms | 6.9× |
+| `Phit\fit_logistic` | 100,000 | 456 ms | 69 ms | 6.7× |
 
 The logistic fit includes the null model that every intercept model fits for
 `null_deviance`. Without the JIT the polyfill is about three times slower:
@@ -253,7 +256,7 @@ times, the plain-PHP baseline for OLS, and the agreement check. Reproduce it
 with:
 
 ```bash
-php -d extension=/path/to/libphp_stats.so -d opcache.enable_cli=1 \
+php -d extension=/path/to/libphit.so -d opcache.enable_cli=1 \
     -d opcache.jit=tracing -d opcache.jit_buffer_size=64M \
     benchmarks/run.php --sizes=10000,100000 --repeat=5 --seed=5 \
     --json=benchmarks/results.json
@@ -264,14 +267,14 @@ php -d extension=/path/to/libphp_stats.so -d opcache.enable_cli=1 \
 ```bash
 composer install
 composer test        # polyfill only
-composer test:ext    # with the extension loaded from .ext/libphp_stats.dylib
+composer test:ext    # with the extension loaded from .ext/libphit.dylib
 ```
 
 The composer scripts use Herd's `php85`. Run `vendor/bin/pest` with any PHP 8.3 or
 later binary otherwise.
 
 - `bin/fetch-fixtures [checkout]` copies the reference fixtures from the
-  php-stats commit pinned in `tests/fixtures/REFERENCE`. The copies are
+  phit commit pinned in `tests/fixtures/REFERENCE`. The copies are
   committed and never edited by hand.
 - `bin/generate-bootstrap` regenerates `bootstrap.php` and
   `src/FunctionMap.php` from the extension's API contract

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Internal;
+namespace Phit\Polyfill\Internal;
 
 /**
  * Dense matrix kernels of nalgebra 0.35.0 for dynamically sized f64 matrices,

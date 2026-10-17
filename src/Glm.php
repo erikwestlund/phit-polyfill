@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill;
+namespace Phit\Polyfill;
 
-use PhpStats\Polyfill\Distribution\Support;
-use PhpStats\Polyfill\Formula\Design;
-use PhpStats\Polyfill\Formula\Frontend;
-use PhpStats\Polyfill\Internal\Family\LogisticFamily;
-use PhpStats\Polyfill\Internal\Family\PoissonFamily;
-use PhpStats\Polyfill\Internal\Family\ProbitFamily;
+use Phit\Polyfill\Distribution\Support;
+use Phit\Polyfill\Formula\Design;
+use Phit\Polyfill\Formula\Frontend;
+use Phit\Polyfill\Internal\Family\LogisticFamily;
+use Phit\Polyfill\Internal\Family\PoissonFamily;
+use Phit\Polyfill\Internal\Family\ProbitFamily;
 
 /**
- * Generalized linear model from a formula over the existing GLM cores (stats_glm).
+ * Generalized linear model from a formula over the existing GLM cores (Phit\fit_glm).
  */
 final class Glm
 {
@@ -43,12 +43,12 @@ final class Glm
             ),
         };
         [$design, $w] = Frontend::prepare($formula, $data, $missing, $weights, true);
-        Frontend::rejectRandom($design, 'stats_glm');
+        Frontend::rejectRandom($design, 'Phit\fit_glm');
         $x = $design->x;
         $n = count($x);
         $offset = $design->offset ?? array_fill(0, $n, 0.0);
         if ($link === 'identity') {
-            $y = Frontend::numericResponse($design, 'stats_glm');
+            $y = Frontend::numericResponse($design, 'Phit\fit_glm');
             $output = Ols::fitWithData($x, $y, $w, $offset);
             $p = count($output['coefficients']);
             // R's glm null deviance: intercept-plus-offset fit, else the offset alone.
@@ -81,7 +81,7 @@ final class Glm
             $core = $link === 'logit' ? new LogisticFamily : new ProbitFamily;
             $output = $core->fitData($x, $y, $w, $offset);
         } else {
-            $y = Frontend::numericResponse($design, 'stats_glm');
+            $y = Frontend::numericResponse($design, 'Phit\fit_glm');
             foreach ($y as $v) {
                 if ($v < 0.0 || fmod($v, 1.0) != 0.0) {
                     throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'Poisson y must contain nonnegative integer counts');
@@ -98,7 +98,7 @@ final class Glm
             default => 'newton_irls',
         };
 
-        return Frontend::finish($output, $design, 'stats_glm', $solver);
+        return Frontend::finish($output, $design, 'Phit\fit_glm', $solver);
     }
 
     /**
@@ -108,12 +108,12 @@ final class Glm
      * @param  list<float>  $weights
      * @return list<float>
      */
-    /** @internal shared with stats_glmer */
+    /** @internal shared with Phit\fit_glmer */
     public static function binomialResponse(Design $design, array &$weights): array
     {
         $response = $design->response;
         if ($response === null) {
-            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, "stats_glm needs a response: 'y ~ ...'");
+            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, "Phit\\fit_glm needs a response: 'y ~ ...'");
         }
         $y = [];
         if ($response[0] === 'numeric') {

@@ -29,7 +29,7 @@ it('does not negate comparisons in the source', function () {
 });
 
 it('keeps NaN out of range checks under opcache', function () {
-    expect(thrownCode(fn () => pf('stats_binomial_cdf', 1.0, 10, NAN)))->not->toBeNull()
-        ->and(thrownCode(fn () => pf('stats_nbinom_cdf', 1.0, 2.0, NAN)))->not->toBeNull()
-        ->and(pf('stats_beta_logpdf', 1.5, 2.0, 3.0))->toBe(-INF);
+    expect(thrownCode(fn () => pf('Phit\dist_binomial_cdf', 1.0, 10, NAN)))->not->toBeNull()
+        ->and(thrownCode(fn () => pf('Phit\dist_nbinom_cdf', 1.0, 2.0, NAN)))->not->toBeNull()
+        ->and(pf('Phit\dist_beta_logpdf', 1.5, 2.0, 3.0))->toBe(-INF);
 });

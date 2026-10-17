@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use PhpStats\Polyfill\Polyfill;
+use Phit\Polyfill\Polyfill;
 
-// The global functions the polyfill defines must have the extension's exact
+// The Phit functions the polyfill defines must have the extension's exact
 // signatures (tests/fixtures/php-api.json), so code runs unchanged on either.
 
 $api = loadFixture('php-api.json');
@@ -13,7 +13,7 @@ it('declares every polyfilled function with the extension signature', function (
     foreach (Polyfill::functions() as $fn) {
         expect($api)->toHaveKey($fn);
         $spec = $api[$fn];
-        $reflection = extension_loaded('php_stats')
+        $reflection = extension_loaded('phit')
             ? new ReflectionMethod(...Polyfill::implementation($fn))
             : new ReflectionFunction($fn);
         $parameters = $reflection->getParameters();
@@ -31,11 +31,11 @@ it('declares every polyfilled function with the extension signature', function (
     }
 });
 
-it('defines the global functions only when the extension is absent', function () {
+it('defines the Phit functions only when the extension is absent', function () {
     foreach (Polyfill::functions() as $fn) {
         expect(function_exists($fn))->toBeTrue($fn);
         $function = new ReflectionFunction($fn);
-        expect($function->isInternal())->toBe(extension_loaded('php_stats'), $fn);
+        expect($function->isInternal())->toBe(extension_loaded('phit'), $fn);
     }
 });
 
@@ -43,21 +43,27 @@ it('leaves extension-only functions undefined', function () use ($api) {
     $extensionOnly = array_diff(array_keys($api), Polyfill::functions());
     foreach ($extensionOnly as $fn) {
         expect(Polyfill::supports($fn))->toBeFalse($fn);
-        if (! extension_loaded('php_stats')) {
+        if (! extension_loaded('phit')) {
             expect(function_exists($fn))->toBeFalse($fn);
         }
     }
-    foreach (['stats_read_csv'] as $fn) {
+    foreach (['Phit\read_csv'] as $fn) {
         expect(Polyfill::supports($fn))->toBeFalse($fn);
     }
 });
 
-it('routes the global functions to the polyfill implementation', function () {
-    if (extension_loaded('php_stats')) {
-        $this->markTestSkipped('the extension provides the global functions');
+it('defines no global stats_* aliases', function () {
+    $global = array_filter(get_defined_functions()['user'], fn ($fn) => str_starts_with($fn, 'stats_'));
+    expect($global)->toBe([])
+        ->and(array_filter(Polyfill::functions(), fn ($fn) => ! str_starts_with($fn, 'Phit\\')))->toBe([]);
+});
+
+it('routes the Phit functions to the polyfill implementation', function () {
+    if (extension_loaded('phit')) {
+        $this->markTestSkipped('the extension provides the Phit functions');
     }
     $x = [[1.0], [2.0], [3.0], [4.0], [5.0]];
     $y = [2.1, 4.2, 5.8, 8.1, 10.2];
-    expect(stats_ols($x, $y))->toBe(Polyfill::implementation('stats_ols')($x, $y))
-        ->and(stats_mean([1, 2, 3]))->toBe(2.0);
+    expect(\Phit\fit_ols($x, $y))->toBe(Polyfill::implementation('Phit\fit_ols')($x, $y))
+        ->and(\Phit\stat_mean([1, 2, 3]))->toBe(2.0);
 });

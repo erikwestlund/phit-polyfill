@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Internal;
+namespace Phit\Polyfill\Internal;
 
 /**
  * The extension's sampling generator: rand_chacha 0.9's ChaCha20Rng seeded by

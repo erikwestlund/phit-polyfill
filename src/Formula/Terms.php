@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Formula;
+namespace Phit\Polyfill\Formula;
 
 /**
  * R terms.formula semantics, ported from stats-core formula::terms: variables
@@ -220,7 +220,7 @@ final class Terms
                 $result = $base;
                 $acc = $base;
                 // Interactions cannot exceed the number of distinct variables, so
-                // higher powers add nothing. Capping as the extension does (php-stats
+                // higher powers add nothing. Capping as the extension does (phit
                 // 91ee538) also avoids casting a huge power to int.
                 $variables = [];
                 foreach ($base as $term) {

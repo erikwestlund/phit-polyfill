@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Formula;
+namespace Phit\Polyfill\Formula;
 
-use PhpStats\Polyfill\ErrorCode;
+use Phit\Polyfill\ErrorCode;
 
 /**
  * R's model.frame()/model.matrix() for a formula over named columns, ported

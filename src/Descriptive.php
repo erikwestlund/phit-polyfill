@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill;
+namespace Phit\Polyfill;
 
 /**
- * Descriptive statistics, ported from the php_stats extension (stats-core
+ * Descriptive statistics, ported from the phit extension (stats-core
  * descriptive.rs plus the PHP glue). null and NAN are missing values;
  * missing: 'raise' rejects them, 'drop' removes them (pairwise for two arrays).
  * Infinite values are always errors. Sums are Neumaier-compensated and second

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PhpStats\Polyfill\Distribution;
+namespace Phit\Polyfill\Distribution;
 
-use PhpStats\Polyfill\ErrorCode;
-use PhpStats\Polyfill\Internal\ChaCha20;
+use Phit\Polyfill\ErrorCode;
+use Phit\Polyfill\Internal\ChaCha20;
 
 /**
  * Input/result policy shared by the scalar and batch distribution functions
@@ -107,7 +107,7 @@ final class Support
         return self::result($f($p));
     }
 
-    /** Largest n for one stats_*_rng call (stats-core MAX_RNG_DRAWS). */
+    /** Largest n for one Phit\dist_*_rng call (stats-core MAX_RNG_DRAWS). */
     public const int MAX_RNG_DRAWS = 1_000_000;
 
     /**

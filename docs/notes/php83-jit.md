@@ -28,8 +28,8 @@ process passed under the tracing JIT on macOS and hid them.
   without the JIT on all three platforms. Assigning `$shift` from a cast
   (`(int) ! $upper`) removed every difference.
 
-- **Tracing JIT, wrong beta CDF.** After `stats_beta_quantile` has run on
-  beta(1e5, 1e5), `stats_beta_cdf(0.5, 1e5, 1e5)` returns 0.4999999999988
+- **Tracing JIT, wrong beta CDF.** After `Phit\dist_beta_quantile` has run on
+  beta(1e5, 1e5), `Phit\dist_beta_cdf(0.5, 1e5, 1e5)` returns 0.4999999999988
   instead of 0.49999999999999994. `DistributionsStressTest` fails under every
   hot-counter setting tried. A root trace that starts where `rlog1()` returns
   inside `Cdflib::betaAsym` and inlines `errorFcScaled()` is involved, but
