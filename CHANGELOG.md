@@ -12,7 +12,7 @@ from it.
 
 Reproduces php-stats commit
 [`8e6a61e`](https://github.com/erikwestlund/php-stats/commit/8e6a61ee10f0f0986fd51624bfca8912f99fe933).
-php-stats has no tagged release yet.
+php-stats has no tagged release yet. Requires PHP 8.3 or later.
 
 ### Added
 
@@ -57,9 +57,10 @@ php-stats has no tagged release yet.
 - `bin/fetch-fixtures`, `bin/generate-bootstrap`, `bin/accuracy-report`, and
   `benchmarks/run.php` with recorded results in `benchmarks/results.json`.
 - ACCURACY.md with the largest observed errors per function and reference.
-- CI runs the suite without OPcache, with the optimizer alone, with the
-  tracing JIT, and with `opcache.jit=function` on Linux and macOS, and fails
-  if PHP reports a value it cannot restore at a JIT entry point.
+- CI runs the suite on PHP 8.3, 8.4, and 8.5 without OPcache, with the
+  optimizer alone, with the tracing JIT, and with `opcache.jit=function` on
+  Linux and macOS, and fails if PHP reports a value it cannot restore at a
+  JIT entry point.
 
 ### Extension-only
 
@@ -71,8 +72,10 @@ php-stats has no tagged release yet.
   raise `E_WARNING`. The text is identical.
 - Scalar arguments of the wrong type follow PHP's rules for userland
   functions.
-- On PHP 8.5, a function JIT with hot-counter triggers
+- On PHP 8.4 and 8.5, a function JIT with hot-counter triggers
   (`opcache.jit=1235`) can miscompile the polyfill (php-src #24214). Use the
   tracing JIT, `opcache.jit=function`, or no JIT.
+- On PHP 8.3, the tracing JIT computes wrong values and the function JIT with
+  hot-counter triggers crashes. Use OPcache without the JIT.
 
 [0.1.0]: https://github.com/erikwestlund/php-stats-polyfill/releases/tag/v0.1.0

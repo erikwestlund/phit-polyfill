@@ -29,7 +29,7 @@ See [CHANGELOG.md](CHANGELOG.md) for what each release contains.
 composer require erikwestlund/php-stats-polyfill
 ```
 
-PHP 8.5 or later is required. Composer loads `bootstrap.php` automatically. For
+PHP 8.3 or later is required. Composer loads `bootstrap.php` automatically. For
 each function the polyfill implements, it declares the global function only if
 `function_exists()` reports that it is missing.
 
@@ -210,11 +210,15 @@ In summary:
 - Scalar arguments of the wrong type follow PHP's userland rules (coercion in
   non-strict files, otherwise `TypeError`). The extension raises an
   `\Exception` instead.
-- On PHP 8.5, use OPcache without the JIT, the tracing JIT
+- On PHP 8.4 and 8.5, use OPcache without the JIT, the tracing JIT
   (`opcache.jit=tracing`), or `opcache.jit=function`. A function JIT with
   hot-counter triggers, such as `opcache.jit=1235`, can miscompile code that
   it enters partway through a loop (php-src #24214) and has produced wrong
   results here. See [docs/notes/function-jit.md](docs/notes/function-jit.md).
+- On PHP 8.3, use OPcache without the JIT, which is PHP 8.3's default. Its
+  tracing JIT computes wrong beta probabilities, and its function JIT with
+  hot-counter triggers crashes. See
+  [docs/notes/php83-jit.md](docs/notes/php83-jit.md).
 - Matrix products above 5×5 follow the extension's aarch64 build, which uses
   fused multiply-adds. On an x86-64 CPU without FMA the extension's products
   can differ in the last bit.
@@ -263,8 +267,8 @@ composer test        # polyfill only
 composer test:ext    # with the extension loaded from .ext/libphp_stats.dylib
 ```
 
-The composer scripts use Herd's `php85`. Run `vendor/bin/pest` with any PHP 8.5
-binary otherwise.
+The composer scripts use Herd's `php85`. Run `vendor/bin/pest` with any PHP 8.3 or
+later binary otherwise.
 
 - `bin/fetch-fixtures [checkout]` copies the reference fixtures from the
   php-stats commit pinned in `tests/fixtures/REFERENCE`. The copies are

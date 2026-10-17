@@ -6,7 +6,7 @@
     "keywords": ["statistics", "polyfill", "regression", "distributions", "phpstats"],
     "homepage": "https://phpstats.org",
     "require": {
-        "php": "^8.5"
+        "php": "^8.3"
     },
     "require-dev": {
         "pestphp/pest": "^4.0"

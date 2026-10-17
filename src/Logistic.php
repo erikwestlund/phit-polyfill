@@ -19,6 +19,6 @@ final class Logistic
         ?array $offset = null,
         bool $intercept = true,
     ): array {
-        return new LogisticFamily()->run($x, $y, $missing, $weights, $offset, $intercept, 'binary', 'stats_logistic');
+        return (new LogisticFamily())->run($x, $y, $missing, $weights, $offset, $intercept, 'binary', 'stats_logistic');
     }
 }

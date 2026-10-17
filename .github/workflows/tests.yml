@@ -7,26 +7,29 @@ on:
 
 jobs:
   pest:
-    name: PHP ${{ matrix.php }}, ${{ matrix.mode }}
+    name: PHP ${{ matrix.php }}, ${{ matrix.mode }}${{ matrix.os == 'macos-latest' && ', macOS' || '' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
-    # PHP 8.5's function JIT with hot-counter triggers (opcache.jit=1235) can
+    # The function JIT with hot-counter triggers (opcache.jit=1235) can
     # miscompile code it enters through an on-stack-replacement entry
-    # (php-src #24214). The job is informational; see docs/notes/function-jit.md.
-    continue-on-error: ${{ matrix.mode == 'function-jit' }}
+    # (php-src #24214), so that job is informational on every version; see
+    # docs/notes/function-jit.md. PHP 8.3's tracing JIT also computes wrong
+    # values, so its tracing job is informational too; see
+    # docs/notes/php83-jit.md.
+    continue-on-error: ${{ matrix.mode == 'function-jit' || (matrix.php == '8.3' && matrix.mode == 'jit') }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        php: ['8.5']
+        php: ['8.3', '8.4', '8.5']
         mode: [no-opcache, opcache, jit, function-jit, function-jit-load]
         include:
-          - os: macos-latest
-            php: '8.5'
-            mode: opcache
-          - os: macos-latest
-            php: '8.5'
-            mode: function-jit-load
+          - {os: macos-latest, php: '8.3', mode: opcache}
+          - {os: macos-latest, php: '8.3', mode: function-jit-load}
+          - {os: macos-latest, php: '8.4', mode: opcache}
+          - {os: macos-latest, php: '8.4', mode: function-jit-load}
+          - {os: macos-latest, php: '8.5', mode: opcache}
+          - {os: macos-latest, php: '8.5', mode: function-jit-load}
     steps:
       - uses: actions/checkout@v4
 

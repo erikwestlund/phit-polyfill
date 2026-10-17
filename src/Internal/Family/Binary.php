@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpStats\Polyfill\Internal\Family;
 
+use PhpStats\Polyfill\Distribution\Support;
 use PhpStats\Polyfill\ErrorCode;
 use PhpStats\Polyfill\Internal\Glm;
 use PhpStats\Polyfill\Internal\Statrs;
@@ -28,14 +29,14 @@ abstract class Binary extends Glm
         self::checkWeights($weights, true);
         foreach ($y as $i => $value) {
             $events = $weights[$i] * $value;
-            if (abs($events - round($events)) > 1e-8) {
+            if (abs($events - Support::round($events)) > 1e-8) {
                 throw self::error(ErrorCode::INVALID_INPUT, 'binary/grouped-binomial outcomes require integer trial counts and successes');
             }
         }
         // Count-rounding tolerance is representation tolerance, not fractional events.
         $allZero = $allOne = true;
         foreach ($y as $i => $value) {
-            $value = round($value * $weights[$i]) / $weights[$i];
+            $value = Support::round($value * $weights[$i]) / $weights[$i];
             $y[$i] = $value;
             $allZero = $allZero && $value == 0.0;
             $allOne = $allOne && $value == 1.0;

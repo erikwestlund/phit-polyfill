@@ -19,6 +19,6 @@ final class Poisson
         ?array $offset = null,
         bool $intercept = true,
     ): array {
-        return new PoissonFamily()->run($x, $y, $missing, $weights, $offset, $intercept, 'count', 'stats_poisson');
+        return (new PoissonFamily())->run($x, $y, $missing, $weights, $offset, $intercept, 'count', 'stats_poisson');
     }
 }

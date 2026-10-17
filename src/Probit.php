@@ -19,6 +19,6 @@ final class Probit
         ?array $offset = null,
         bool $intercept = true,
     ): array {
-        return new ProbitFamily()->run($x, $y, $missing, $weights, $offset, $intercept, 'binary', 'stats_probit');
+        return (new ProbitFamily())->run($x, $y, $missing, $weights, $offset, $intercept, 'binary', 'stats_probit');
     }
 }

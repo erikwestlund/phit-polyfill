@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpStats\Polyfill\Internal;
 
+use PhpStats\Polyfill\Distribution\Support;
 use PhpStats\Polyfill\ErrorCode;
 use PhpStats\Polyfill\Internal\Family\LogisticFamily;
 
@@ -76,7 +77,7 @@ final class LogisticRandomIntercept
         [$weights, $offset] = self::observations($n, $options['weights'], $options['offset']);
         foreach ($y as $i => $v) {
             $events = $v * $weights[$i];
-            if ($weights[$i] > Limits::MAX_TRIALS || abs($events - self::round($events)) > 1e-8) {
+            if ($weights[$i] > Limits::MAX_TRIALS || abs($events - Support::round($events)) > 1e-8) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'require integer trials <= 1000000 and integer success counts');
             }
         }
@@ -84,7 +85,7 @@ final class LogisticRandomIntercept
         $allZero = true;
         $allOne = true;
         foreach ($y as $i => $v) {
-            $y[$i] = self::round($v * $weights[$i]) / $weights[$i];
+            $y[$i] = Support::round($v * $weights[$i]) / $weights[$i];
             $allZero = $allZero && $y[$i] == 0.0;
             $allOne = $allOne && $y[$i] == 1.0;
         }
@@ -356,12 +357,6 @@ final class LogisticRandomIntercept
         }
 
         return [$weights, $offset];
-    }
-
-    /** Rust's f64::round: halves away from zero. */
-    private static function round(float $v): float
-    {
-        return round($v, 0, PHP_ROUND_HALF_UP);
     }
 
     private static function sigmoid(float $v): float

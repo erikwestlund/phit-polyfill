@@ -18,7 +18,7 @@ same with the JIT disabled, in function mode, and in tracing mode.
 ## Environment
 
 - PHP 8.5.10 (cli, NTS, clang 15.0.0, built 2026-09-24), from Laravel Herd.
-- PHP 8.4.25 from the same distribution behaves the same way.
+- PHP 8.3.33 and 8.4.25 from the same distribution behave the same way.
 - macOS 27.0 on arm64 (Apple M5 Ultra).
 - No `php.ini` is loaded. Herd's binary defaults are `opcache.enable_cli=On`,
   `opcache.optimization_level=0x7FFEBFFF`, `opcache.jit=disable`,
@@ -54,7 +54,7 @@ run immediately after it is written does not show the problem.
 | `-d opcache.optimization_level=0x7FFEBFEF` (all but pass 5) | all `true` |
 | `-d opcache.jit=function` or `tracing`, `-d opcache.jit_buffer_size=64M` | same as defaults |
 | tracing JIT with `opcache.optimization_level=0x7FFEBFEF` | all `true` |
-| PHP 8.4.25, `-d opcache.enable_cli=1` | same as PHP 8.5 defaults |
+| PHP 8.3.33 or 8.4.25, `-d opcache.enable_cli=1` | same as PHP 8.5 defaults |
 
 Equality is not affected: `!($x == 0.0)` stays `true`, presumably because the
 rewrite to `!=` is also correct for NaN.
@@ -104,5 +104,5 @@ seconds of editing a file used the unoptimized code.
   with the tracing JIT. Source files must be at least two seconds old for the
   OPcache runs to exercise the optimizer.
 
-A separate function-JIT problem found while setting up CI is described in
-[function-jit.md](function-jit.md).
+Separate JIT problems found while setting up CI are described in
+[function-jit.md](function-jit.md) and [php83-jit.md](php83-jit.md).

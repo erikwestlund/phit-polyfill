@@ -320,7 +320,10 @@ final class Svd
             $column[$j] = 1.0;
             $res[$j] = $column;
         }
-        $shift = $upper ? 0 : 1;
+        // PHP 8.3's tracing JIT can read a variable assigned from
+        // `$upper ? 0 : 1` as undefined inside the loop, so the shift is a cast
+        // (docs/notes/php83-jit.md).
+        $shift = (int) ! $upper;
         for ($i = $dim - $shift - 1; $i >= 0; $i--) {
             $first = $i + $shift;
             $axis = array_slice($uv[$i], $first);
@@ -345,7 +348,7 @@ final class Svd
             }
             $res[$j] = $column;
         }
-        $shift = $upper ? 1 : 0;
+        $shift = (int) $upper;
         for ($i = $dim - $shift - 1; $i >= 0; $i--) {
             $first = $i + $shift;
             $axis = [];

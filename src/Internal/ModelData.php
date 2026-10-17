@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpStats\Polyfill\Internal;
 
+use PhpStats\Polyfill\Distribution\Support;
 use PhpStats\Polyfill\ErrorCode;
 
 /**
@@ -203,7 +204,7 @@ final class ModelData
             foreach ($outcomes as $i => $value) {
                 if ($value !== null && $w[$i] !== null) {
                     $events = $value * $w[$i];
-                    if (abs($events - round($events)) > 1e-8) {
+                    if (abs($events - Support::round($events)) > 1e-8) {
                         throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'binary/grouped-binomial outcomes require integer trial counts and successes');
                     }
                 }

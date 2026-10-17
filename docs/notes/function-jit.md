@@ -6,9 +6,16 @@ emulation). The upstream issue is
 [php-src #24214](https://github.com/php/php-src/issues/24214), opened
 2026-10-09 and still open. Nothing from this project has been added to it.
 
+PHP 8.4.25 (Herd, macOS arm64) has the same bug. With the code from before the
+fixes below, `opcache.jit=1235` sent the NelderMead test closure into the same
+endless loop in three of four hot-counter settings and printed a `live var`
+line each time. The fixed code passes on PHP 8.4 under every JIT setting.
+PHP 8.3 has a different JIT with different problems; see
+[php83-jit.md](php83-jit.md).
+
 ## Recommendation
 
-On PHP 8.5, run the polyfill without the JIT, with the tracing JIT
+On PHP 8.4 and 8.5, run the polyfill without the JIT, with the tracing JIT
 (`opcache.jit=tracing`), or with PHP's `function` mode (`opcache.jit=function`,
 which is `1205`). Avoid a function JIT with hot-counter triggers, such as
 `opcache.jit=1235`, the value that setup-php's php.ini sets. Under that setting

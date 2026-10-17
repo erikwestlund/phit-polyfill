@@ -57,7 +57,7 @@ final class Data
                 if (! method_exists($data, $method)) {
                     continue;
                 }
-                $result = new \ReflectionMethod($data, $method)->invoke($data);
+                $result = (new \ReflectionMethod($data, $method))->invoke($data);
                 if (! is_array($result)) {
                     throw self::invalid("$method() must return an array of columns");
                 }

@@ -183,10 +183,14 @@ final class Support
         return $value;
     }
 
-    /** Rust f64::round: half away from zero, exact for every double. */
+    /**
+     * Rust f64::round: half away from zero, exact for every double. PHP 8.3's
+     * round() pre-rounds to 15 significant digits, so 0.49999999999999994
+     * rounds to 1.0 there.
+     */
     public static function round(float $v): float
     {
-        if (! is_finite($v)) {
+        if (! is_finite($v) || $v == 0.0) {
             return $v;
         }
         $f = floor(abs($v));

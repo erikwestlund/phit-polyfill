@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpStats\Polyfill;
 
+use PhpStats\Polyfill\Distribution\Support;
 use PhpStats\Polyfill\Formula\Design;
 use PhpStats\Polyfill\Formula\Frontend;
 use PhpStats\Polyfill\Internal\Family\LogisticFamily;
@@ -86,7 +87,7 @@ final class Glm
                     throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'Poisson y must contain nonnegative integer counts');
                 }
             }
-            $output = new PoissonFamily()->fitData($x, $y, $w, $offset);
+            $output = (new PoissonFamily())->fitData($x, $y, $w, $offset);
         }
         $output['family'] = $family;
         $output['link'] = $link;
@@ -143,7 +144,7 @@ final class Glm
         }
         foreach ($y as $i => $v) {
             $events = $v * $weights[$i];
-            if (abs($events - round($events)) > 1e-8) {
+            if (abs($events - Support::round($events)) > 1e-8) {
                 throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'binary/grouped-binomial outcomes require integer trial counts and successes');
             }
         }
