@@ -1,0 +1,70 @@
+---
+title: "phit-polyfill"
+---
+
+phit-polyfill is a pure-PHP implementation of the
+[phit](https://github.com/phpstats/phit) native extension. It defines phit's
+functions in the `Phit` namespace when the extension is not loaded. Names,
+parameter names, defaults, result keys, warnings, and exception codes are the
+same as the extension's. Code written against phit therefore runs unchanged on
+hosts where the extension cannot be installed, such as shared hosting or a
+managed platform without custom extensions. When the extension is loaded, the
+polyfill defines nothing and phit is used.
+
+The implementations are ports of phit's Rust code. On every input in the test
+suites, the polyfill returns the same bits as the extension.
+
+## Installation
+
+```bash
+composer require phpstats/phit-polyfill
+```
+
+PHP 8.3 or later is required. Composer loads the polyfill's `bootstrap.php`
+automatically. For each function the polyfill implements, the bootstrap
+declares it in the `Phit` namespace only if `function_exists()` reports that it
+is missing and the `phit` extension is not loaded.
+
+## Usage
+
+Import functions with `use function`, or call them by their qualified names.
+
+```php
+use function Phit\fit_ols;
+
+$fit = fit_ols(
+    x: [[1.2, 0.4], [2.3, 1.1], [3.1, 0.9], [4.8, 2.2], [5.0, 1.7]],
+    y: [2.1, 4.2, 5.8, 8.1, 10.2],
+);
+
+$fit['coefficients'];  // intercept first, as with the extension
+$fit['p_values'];
+```
+
+The same code runs with the extension. Install phit where you can, because it
+is faster, and keep the polyfill as a Composer dependency for the hosts where
+you cannot.
+
+## Checking what is available
+
+`Phit\Polyfill\Polyfill` reports which functions the polyfill implements and
+whether the extension is loaded.
+
+```php
+use Phit\Polyfill\Polyfill;
+
+Polyfill::supports('Phit\fit_logistic');  // true
+Polyfill::supports('Phit\read_csv');      // false: needs the extension
+Polyfill::nativeLoaded();                 // whether phit is loaded
+```
+
+`Polyfill::implementation('Phit\fit_ols')` returns the polyfill's callable
+even when the extension is loaded. The parity tests and the benchmarks use it
+to run both implementations in one process.
+
+## Versions
+
+Each polyfill release reproduces one phit commit, pinned in
+`tests/fixtures/REFERENCE`. Version 0.1.0 reproduces phit
+[`1bf73bd`](https://github.com/phpstats/phit/commit/1bf73bd3bdf66f825039713ac58157d0f9d6ddf9).
+Neither package has a tagged release yet.

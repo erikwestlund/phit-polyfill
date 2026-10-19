@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>PHP versions and the JIT</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">PHP versions and the JIT</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#recommended-settings"
+id="toc-recommended-settings">Recommended settings</a></li>
+<li><a href="#php-8.4-and-8.5" id="toc-php-8.4-and-8.5">PHP 8.4 and
+8.5</a></li>
+<li><a href="#php-8.3" id="toc-php-8.3">PHP 8.3</a></li>
+<li><a href="#optimizer-folding-with-nan"
+id="toc-optimizer-folding-with-nan">Optimizer folding with NaN</a></li>
+</ul>
+</nav>
+<p>The polyfill supports PHP 8.3, 8.4, and 8.5. CI runs the test suite
+on each version on Linux in five modes: without OPcache, with OPcache
+and no JIT, with the tracing JIT, with <code>opcache.jit=1205</code>,
+and with <code>opcache.jit=1235</code>. On macOS it runs the OPcache and
+<code>opcache.jit=1205</code> modes. The PHP versions and JIT modes
+verification lists the result of every combination with the phit
+extension loaded.</p>
+<section id="recommended-settings" class="level2">
+<h2>Recommended settings</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>PHP</th>
+<th>Recommended</th>
+<th>Avoid</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>8.3</td>
+<td>OPcache without the JIT (PHP 8.3’s default)</td>
+<td>the tracing JIT; <code>opcache.jit=1215</code> and
+<code>1235</code></td>
+</tr>
+<tr>
+<td>8.4</td>
+<td>OPcache without the JIT, the tracing JIT, or
+<code>opcache.jit=function</code></td>
+<td>function JIT with hot-counter triggers, such as
+<code>opcache.jit=1235</code></td>
+</tr>
+<tr>
+<td>8.5</td>
+<td>OPcache without the JIT, the tracing JIT, or
+<code>opcache.jit=function</code></td>
+<td>function JIT with hot-counter triggers, such as
+<code>opcache.jit=1235</code></td>
+</tr>
+</tbody>
+</table>
+<p>The settings to avoid are PHP bugs, and they can affect any PHP code,
+not only this package. They are recorded here because the polyfill’s
+numerical loops trigger them.</p>
+</section>
+<section id="php-8.4-and-8.5" class="level2">
+<h2>PHP 8.4 and 8.5</h2>
+<p>A function JIT with hot-counter triggers compiles a function while it
+is running and enters the compiled code partway through a loop. In that
+case PHP can lose the value of a variable that is live across the loop
+entry (php-src #24214). The polyfill avoids the patterns that triggered
+the bug in its own code, and its full suite passes under
+<code>opcache.jit=1235</code> on both versions. Because the bug is in
+PHP, other code paths may still meet it, so the tracing JIT or
+<code>opcache.jit=function</code> is the safer choice.</p>
+</section>
+<section id="php-8.3" class="level2">
+<h2>PHP 8.3</h2>
+<p>PHP 8.3 uses an older JIT backend, and that release line receives
+security fixes only. With the tracing JIT, one beta-distribution case in
+the stress suite returns a value that differs from the extension’s in
+the 12th digit after certain functions have been compiled. With
+<code>opcache.jit=1215</code> or <code>1235</code>, the PHP process
+crashes in the test suite. OPcache without the JIT and
+<code>opcache.jit=function</code> (1205) pass every test, and PHP 8.3
+disables the JIT by default.</p>
+<p>PHP 8.3’s <code>round()</code> first rounds its argument to 15
+significant digits, so <code>round(0.49999999999999994)</code> is 1.0
+there. The polyfill uses its own exact rounding, which matches Rust and
+PHP 8.4.</p>
+</section>
+<section id="optimizer-folding-with-nan" class="level2">
+<h2>Optimizer folding with NaN</h2>
+<p>OPcache’s optimizer rewrites <code>!($x &gt; 0)</code> as
+<code>$x &lt;= 0</code>, which differs when <code>$x</code> is NaN. The
+polyfill writes such conditions so that NaN takes the same branch as in
+the extension, with or without OPcache, on all three versions.</p>
+</section>
+</body>
+</html>

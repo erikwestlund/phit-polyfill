@@ -57,6 +57,12 @@ phit has no tagged release yet. Requires PHP 8.3 or later.
 - `bin/fetch-fixtures`, `bin/generate-bootstrap`, `bin/accuracy-report`, and
   `benchmarks/run.php` with recorded results in `benchmarks/results.json`.
 - ACCURACY.md with the largest observed errors per function and reference.
+- Content for the package site under `site/`: the manifest, Quarto docs
+  rendered to HTML, two vignettes, benchmarks against the extension per model
+  and distribution family, and verification files. The parity suites record
+  every comparison when `PARITY_LOG` is set, and `bin/site-matrix`,
+  `bin/site-data`, `bin/render-site-docs`, and `benchmarks/site.php` produce
+  the files.
 - CI runs the suite on PHP 8.3, 8.4, and 8.5 without OPcache, with the
   optimizer alone, with the tracing JIT, and with `opcache.jit=function` on
   Linux and macOS, and fails if PHP reports a value it cannot restore at a

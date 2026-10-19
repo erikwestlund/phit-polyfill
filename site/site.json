@@ -1,0 +1,77 @@
+{
+  "package": "phit-polyfill",
+  "title": "phit-polyfill",
+  "tagline": "phit's models and distributions in pure PHP, identical bit for bit to the extension on every tested input.",
+  "summary": "phit-polyfill defines phit's functions in the Phit namespace when the native extension is not loaded. It ports phit's Rust code to PHP, so regression and mixed-model fits, distribution functions, samplers, and descriptive statistics return the same bits as the extension on every tested input, with the same parameter names, result keys, warnings, and exception codes. Code written against phit runs unchanged on hosts where the extension cannot be installed. Where the extension is installed, the polyfill defines nothing and phit is used.",
+  "install": [
+    "composer require phpstats/phit-polyfill"
+  ],
+  "requires": [
+    "PHP 8.3 or later",
+    "No extensions; the phit extension is used instead when it is loaded"
+  ],
+  "repository": "https://github.com/phpstats/phit-polyfill",
+  "example": {
+    "chain": "use function Phit\\fit_logistic;\n\n// Hours of study and passing an exam, for eight students.\n$fit = fit_logistic(\n    x: [[2.0], [3.5], [1.0], [4.0], [2.5], [5.0], [1.5], [3.0]],\n    y: [0, 1, 0, 1, 1, 1, 0, 0],\n);\n\nforeach (['(Intercept)', 'hours'] as $j => $term) {\n    printf(\"%-12s %8.4f  (SE %.4f, p = %.3f)\\n\", $term, $fit['coefficients'][$j], $fit['std_errors'][$j], $fit['p_values'][$j]);\n}\necho function_exists('Phit\\fit_logistic') && ! extension_loaded('phit') ? \"fitted by phit-polyfill\\n\" : \"fitted by the phit extension\\n\";\n",
+    "pipe": "use function Phit\\fit_logistic;\n\n// Hours of study and passing an exam, for eight students.\n$fit = fit_logistic(\n    x: [[2.0], [3.5], [1.0], [4.0], [2.5], [5.0], [1.5], [3.0]],\n    y: [0, 1, 0, 1, 1, 1, 0, 0],\n);\n\necho ['(Intercept)', 'hours']\n    |> (fn (array $terms) => array_map(\n        fn (string $term, int $j) => sprintf(\"%-12s %8.4f  (SE %.4f, p = %.3f)\\n\", $term, $fit['coefficients'][$j], $fit['std_errors'][$j], $fit['p_values'][$j]),\n        $terms, array_keys($terms)))\n    |> implode(...);\necho function_exists('Phit\\fit_logistic') && ! extension_loaded('phit') ? \"fitted by phit-polyfill\\n\" : \"fitted by the phit extension\\n\";\n",
+    "output": "(Intercept)   -6.9573  (SE 4.8899, p = 0.155)\nhours          2.5259  (SE 1.7375, p = 0.146)\nfitted by phit-polyfill\n"
+  },
+  "docs": {
+    "root": "site/docs",
+    "format": "quarto",
+    "nav": [
+      {
+        "title": "Overview",
+        "path": "index.qmd"
+      },
+      {
+        "title": "Functions",
+        "path": "functions.qmd"
+      },
+      {
+        "title": "How it works",
+        "path": "how-it-works.qmd"
+      },
+      {
+        "title": "PHP versions and the JIT",
+        "path": "php-versions.qmd"
+      },
+      {
+        "title": "Development",
+        "path": "development.qmd"
+      }
+    ]
+  },
+  "benchmarks": [
+    "site/benchmarks/models.json",
+    "site/benchmarks/distributions.json"
+  ],
+  "verifications": [
+    "site/verifications/native-parity.json",
+    "site/verifications/randomized-parity.json",
+    "site/verifications/references.json",
+    "site/verifications/php-jit-matrix.json"
+  ],
+  "vignettes": [
+    {
+      "slug": "same-code-both-ways",
+      "title": "The same code with and without the extension",
+      "summary": "Fit a regression with the phit extension and with the polyfill in one process, and compare every number in the two results bit for bit.",
+      "uses": [
+        "phit",
+        "phit-polyfill"
+      ],
+      "script": "site/vignettes/same-code-both-ways.php"
+    },
+    {
+      "slug": "choosing-the-polyfill",
+      "title": "When to choose the polyfill",
+      "summary": "Time a workload with the extension and with the polyfill against a per-request budget, and see how a library can require the polyfill and suggest the extension.",
+      "uses": [
+        "phit",
+        "phit-polyfill"
+      ],
+      "script": "site/vignettes/choosing-the-polyfill.php"
+    }
+  ]
+}

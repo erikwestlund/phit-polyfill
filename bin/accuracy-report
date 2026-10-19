@@ -2,7 +2,8 @@
 <?php
 
 // Measure the polyfill against every reference fixture and print Markdown
-// tables of the largest observed errors (used for ACCURACY.md).
+// tables of the largest observed errors (used for ACCURACY.md). With
+// --json=path it also writes the rows as JSON for bin/site-data.
 //
 //   php85 bin/accuracy-report > build/accuracy-models.md
 //
@@ -34,7 +35,8 @@ function flatten(mixed $value): array
 }
 
 /**
- * [relative error, fraction of tolerance used] for one result entry, judged
+ * [relative error, fraction of tolerance used, absolute error where |b| <= 1]
+ * for one result entry, judged
  * with the reference suite's tolerance |a - b| <= abs + rel * |b|. The relative
  * error skips entries below the absolute tolerance (and below 1e-3 of the
  * largest value in the entry), where both sides are rounding noise.
@@ -44,7 +46,7 @@ function errors(mixed $actual, mixed $expected, float $abs, float $rel): array
     $a = flatten($actual);
     $b = flatten($expected);
     if (count($a) !== count($b)) {
-        return [INF, INF];
+        return [INF, INF, INF];
     }
     $largest = 0.0;
     foreach ($b as $v) {
@@ -54,6 +56,7 @@ function errors(mixed $actual, mixed $expected, float $abs, float $rel): array
     }
     $relative = 0.0;
     $used = 0.0;
+    $absolute = 0.0;
     foreach ($b as $i => $v) {
         if (! is_int($v) && ! is_float($v)) {
             continue;
@@ -64,23 +67,28 @@ function errors(mixed $actual, mixed $expected, float $abs, float $rel): array
             $same = $x === $y || (is_nan($x) && is_nan($y));
             $relative = max($relative, $same ? 0.0 : INF);
             $used = max($used, $same ? 0.0 : INF);
+            $absolute = max($absolute, $same ? 0.0 : INF);
 
             continue;
         }
         $difference = abs($x - $y);
+        // The absolute error is reported where |expected| <= 1; above that the
+        // relative error is the meaningful scale.
+        $absolute = abs($y) <= 1.0 ? max($absolute, $difference) : $absolute;
         $used = max($used, $difference == 0.0 ? 0.0 : $difference / ($abs + $rel * abs($y)));
         if (abs($y) > $abs && abs($y) >= 1e-3 * $largest) {
             $relative = max($relative, $difference / abs($y));
         }
     }
 
-    return [$relative, $used];
+    return [$relative, $used, $absolute];
 }
 
 $rows = [];
 $record = function (string $fn, string $reference, array $error, string $domain) use (&$rows): void {
     $key = "$fn|$reference";
-    $rows[$key] ??= ['fn' => $fn, 'reference' => $reference, 'error' => 0.0, 'used' => 0.0, 'cases' => 0, 'domain' => []];
+    $rows[$key] ??= ['fn' => $fn, 'reference' => $reference, 'error' => 0.0, 'used' => 0.0, 'absolute' => 0.0, 'cases' => 0, 'domain' => []];
+    $rows[$key]['absolute'] = max($rows[$key]['absolute'], $error[2] ?? $error[0]);
     $rows[$key]['error'] = max($rows[$key]['error'], $error[0]);
     $rows[$key]['used'] = max($rows[$key]['used'], $error[1]);
     $rows[$key]['cases']++;
@@ -144,7 +152,7 @@ foreach ($formulas['cases'] as $case) {
     [$abs, $rel] = $case['function'] === 'model_matrix' && ! str_contains($case['formula'], 'poly(area_m2, 2)') ? [1e-12, 1e-12] : [1e-9, 1e-7];
     foreach ($case['expected'] as $key => $expected) {
         if (in_array($key, ['columns', 'terms', 'retained_rows'], true)) {
-            $record($fn, 'R (formula-r.json)', [$result[$key] === $expected ? 0.0 : INF, $result[$key] === $expected ? 0.0 : INF], $case['dataset']);
+            $record($fn, 'R (formula-r.json)', array_fill(0, 3, $result[$key] === $expected ? 0.0 : INF), $case['dataset']);
 
             continue;
         }
@@ -183,4 +191,19 @@ foreach ($rows as $row) {
     $domain = array_keys($row['domain']);
     $shown = implode(', ', array_slice($domain, 0, 4)).(count($domain) > 4 ? sprintf(', and %d more', count($domain) - 4) : '');
     printf("| `%s` | %s | %d | %.1e | %.0f%% | %s |\n", $row['fn'], $row['reference'], $row['cases'], $row['error'], 100 * $row['used'], $shown);
+}
+
+$json = getopt('', ['json:'])['json'] ?? null;
+if ($json !== null) {
+    $finite = fn (float $v) => is_finite($v) ? $v : 'inf';
+    $out = array_map(fn ($row) => [
+        'function' => $row['fn'],
+        'reference' => $row['reference'],
+        'comparisons' => $row['cases'],
+        'max_abs_error' => $finite($row['absolute']),
+        'max_rel_error' => $finite($row['error']),
+        'tolerance_used' => $finite($row['used']),
+        'domain' => array_keys($row['domain']),
+    ], array_values($rows));
+    file_put_contents($json, json_encode($out, JSON_PRETTY_PRINT | JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_SLASHES)."\n");
 }

@@ -42,6 +42,7 @@ it('agrees with the extension on extreme parameters', function (string $family, 
                 $arguments = [$x, ...$params];
                 $polyfill = extremeOutcome(Polyfill::implementation($fn), $arguments);
                 $native = extremeOutcome($fn, $arguments);
+                parityLog('distributions-extreme', $fn, $polyfill, $native, is_string($polyfill) || is_string($native));
                 $same = $polyfill === $native || (is_float($polyfill) && is_float($native) && is_nan($polyfill) && is_nan($native));
                 expect($same)->toBeTrue(sprintf('%s(%s): polyfill %s, extension %s', $fn, implode(', ', array_map(fn ($v) => var_export($v, true), $arguments)), var_export($polyfill, true), var_export($native, true)));
                 $checked++;

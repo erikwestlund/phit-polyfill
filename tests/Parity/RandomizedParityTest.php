@@ -46,6 +46,7 @@ if (! function_exists('randomParityOutcome')) {
     {
         $native = randomParityOutcome(fn () => $fn(...$arguments));
         $polyfill = randomParityOutcome(fn () => Polyfill::implementation($fn)(...$arguments));
+        parityLog('randomized', $fn, $polyfill, $native, $native[0] === 'error' || $polyfill[0] === 'error');
         if (serialize($native) !== serialize($polyfill)) {
             $show = fn (mixed $v) => substr(json_encode($v, JSON_PARTIAL_OUTPUT_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION), 0, 400);
             throw new \RuntimeException("$fn differs at ".randomParityFirstDifference($native, $polyfill)."\nfor ".$show($arguments));

@@ -114,6 +114,7 @@ function assertModelParity(string $fn, array $arguments, float $tolerance, strin
     };
     $polyfill = $call(\Phit\Polyfill\Polyfill::implementation($fn));
     $native = $call($fn);
+    parityLog('models', $fn, $polyfill, $native, isset($native['code']) || isset($polyfill['code']));
     if (isset($native['code']) || isset($polyfill['code'])) {
         expect($polyfill['code'] ?? 'result')->toBe($native['code'] ?? 'result', "$fn [$group]: ".($native['message'] ?? $polyfill['message'] ?? ''));
         recordParity($fn, 'errors', 0.0);

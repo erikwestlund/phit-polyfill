@@ -281,6 +281,13 @@ later binary otherwise.
   (`tests/fixtures/php-api.json`). A function is declared only when its
   implementation exists.
 - `bin/accuracy-report` prints the tables in ACCURACY.md.
+- `site/` holds the content of the package site: `site.json`, the docs
+  (`site/docs/*.qmd`, rendered next to each source by `bin/render-site-docs`),
+  the vignettes, and the benchmark and verification files.
+  `benchmarks/site.php` writes the benchmarks. `bin/site-data` writes the
+  verifications from a parity log (`PARITY_LOG=… vendor/bin/pest tests/Parity`)
+  and the records of `bin/site-matrix`, which runs the suite under each
+  OPcache and JIT mode.
 - `tests/Unit` holds the ports of the extension's suites. They call the
   polyfill directly, so they test it whether or not the extension is loaded.
   `tests/Parity` runs only with the extension and compares the two.

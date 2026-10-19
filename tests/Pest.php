@@ -74,6 +74,65 @@ function close(mixed $actual, mixed $expected, float $abs = 1e-9, float $rel = 1
     return abs($actual - $expected) <= $abs + $rel * abs($expected);
 }
 
+/**
+ * Record one polyfill-versus-extension comparison when PARITY_LOG names a file.
+ * Each suite|function pair keeps the number of calls, numeric values and
+ * exceptions compared, the largest absolute and relative differences, and
+ * whether every result was identical bit for bit. bin/site-data reads the file.
+ */
+function parityLog(string $suite, string $fn, mixed $polyfill, mixed $native, bool $threw = false): void
+{
+    static $log = null;
+    $path = getenv('PARITY_LOG');
+    if (! $path) {
+        return;
+    }
+    if ($log === null) {
+        $log = [];
+        register_shutdown_function(function () use (&$log, $path): void {
+            // JSON has no infinity; a non-finite difference is written as "inf".
+            array_walk_recursive($log, function (&$v) {
+                $v = is_float($v) && ! is_finite($v) ? 'inf' : $v;
+            });
+            file_put_contents($path, json_encode(array_values($log), JSON_PRETTY_PRINT | JSON_PRESERVE_ZERO_FRACTION)."\n");
+        });
+    }
+    $entry = &$log["$suite|$fn"];
+    $entry ??= ['suite' => $suite, 'function' => $fn, 'calls' => 0, 'values' => 0, 'exceptions' => 0,
+        'max_abs_error' => 0.0, 'max_rel_error' => 0.0, 'identical' => true];
+    $entry['calls']++;
+    if ($threw) {
+        $entry['exceptions']++;
+        $entry['identical'] = $entry['identical'] && serialize($polyfill) === serialize($native);
+
+        return;
+    }
+    $entry['identical'] = $entry['identical'] && serialize($polyfill) === serialize($native);
+    $leaves = function (mixed $value): array {
+        $out = [];
+        is_array($value) ? array_walk_recursive($value, function ($v) use (&$out) { $out[] = $v; }) : $out[] = $value;
+
+        return $out;
+    };
+    $a = $leaves($polyfill);
+    $b = $leaves($native);
+    foreach ($b as $i => $y) {
+        if (! is_float($y) && ! is_int($y)) {
+            continue;
+        }
+        $entry['values']++;
+        $x = $a[$i] ?? NAN;
+        if ((is_float($x) && is_nan($x) && is_nan((float) $y)) || $x === $y) {
+            continue;
+        }
+        $difference = abs((float) $x - (float) $y);
+        $entry['max_abs_error'] = max($entry['max_abs_error'], is_nan($difference) ? INF : $difference);
+        if ((float) $y != 0.0) {
+            $entry['max_rel_error'] = max($entry['max_rel_error'], is_nan($difference) ? INF : $difference / abs((float) $y));
+        }
+    }
+}
+
 /** Collect PHP warnings raised while $callback runs. */
 function warnings(callable $callback, mixed &$result = null): array
 {

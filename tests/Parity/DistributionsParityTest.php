@@ -53,6 +53,7 @@ if (! function_exists('distParityOutcome')) {
     {
         [$pf, $pfError] = distParityOutcome(fn () => pf($fn, ...$args));
         [$nat, $natError] = distParityOutcome(fn () => native($fn, ...$args));
+        parityLog('distributions', $fn, $pfError ?? $pf, $natError ?? $nat, $pfError !== null || $natError !== null);
         $label = fn () => $fn.' '.json_encode($args, JSON_PARTIAL_OUTPUT_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION)
             .' pf='.var_export($pfError ?? $pf, true).' native='.var_export($natError ?? $nat, true);
         if ($pfError !== $natError) {

@@ -29,6 +29,7 @@ function parityCompare(string $fn, array $args): void
     } catch (\Throwable $e) {
         $natCode = $e instanceof \Exception ? $e->getCode() : get_class($e);
     }
+    parityLog('descriptive', $fn, $pfCode ?? $pf, $natCode ?? $nat, $pfCode !== null || $natCode !== null);
     $label = fn () => $fn.' '.json_encode($args, JSON_PARTIAL_OUTPUT_ON_ERROR).' pf='
         .json_encode($pf, JSON_PARTIAL_OUTPUT_ON_ERROR).' native='.json_encode($nat, JSON_PARTIAL_OUTPUT_ON_ERROR);
     if ($pfCode !== $natCode) {

@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Functions</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Functions</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#distributions"
+id="toc-distributions">Distributions</a></li>
+<li><a href="#formula-interface" id="toc-formula-interface">Formula
+interface</a></li>
+<li><a href="#exceptions" id="toc-exceptions">Exceptions</a></li>
+</ul>
+</nav>
+<p>The polyfill implements 222 of phit’s 223 functions.
+<code>Phit\read_csv</code> needs the extension. phibble’s PHP CSV reader
+is the fallback for it. Functions the polyfill does not implement stay
+undefined without the extension, so <code>function_exists()</code>
+reports them correctly.</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Area</th>
+<th>Functions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Descriptive statistics</td>
+<td><code>stat_mean</code>, <code>stat_var</code>, <code>stat_sd</code>,
+<code>stat_median</code>, <code>stat_quantile</code>,
+<code>stat_quantile_array</code>, <code>stat_cov</code>,
+<code>stat_cor</code>, <code>stat_weighted_mean</code>,
+<code>stat_weighted_var</code></td>
+</tr>
+<tr>
+<td>Regression</td>
+<td><code>fit_ols</code>, <code>fit_logistic</code>,
+<code>fit_probit</code>, <code>fit_poisson</code>, with weights,
+offsets, the automatic intercept, and both missing-value policies</td>
+</tr>
+<tr>
+<td>Formula interface</td>
+<td><code>model_matrix</code>, <code>fit_lm</code>,
+<code>fit_glm</code>, <code>predict</code></td>
+</tr>
+<tr>
+<td>Mixed models</td>
+<td><code>fit_mixed_intercept</code>, <code>fit_mixed</code>,
+<code>fit_logistic_mixed</code>, <code>fit_lmer</code>,
+<code>fit_glmer</code></td>
+</tr>
+<tr>
+<td>Distributions</td>
+<td>13 families with 14 functions each, listed below</td>
+</tr>
+<tr>
+<td>Random numbers</td>
+<td><code>dist_&lt;family&gt;_rng</code> for each of the 13
+families</td>
+</tr>
+<tr>
+<td>Posterior draws</td>
+<td><code>draws_moments</code>, <code>draws_covariance_map</code>,
+<code>draws_affine</code></td>
+</tr>
+<tr>
+<td>Other</td>
+<td><code>hello</code></td>
+</tr>
+</tbody>
+</table>
+<p>All names are in the <code>Phit</code> namespace, for example
+<code>Phit\fit_ols</code>.</p>
+<section id="distributions" class="level2">
+<h2>Distributions</h2>
+<p>Each family has a density or mass function and its logarithm,
+<code>cdf</code>, <code>logcdf</code>, <code>sf</code>,
+<code>logsf</code>, and <code>quantile</code>, each with an
+<code>_array</code> variant, and a seeded sampler.</p>
+<table>
+<thead>
+<tr>
+<th>Family</th>
+<th>Prefix</th>
+<th>Parameters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Normal</td>
+<td><code>dist_normal_</code></td>
+<td>mean, sd</td>
+</tr>
+<tr>
+<td>Student’s t</td>
+<td><code>dist_t_</code></td>
+<td>df</td>
+</tr>
+<tr>
+<td>Chi-square</td>
+<td><code>dist_chisquare_</code></td>
+<td>df</td>
+</tr>
+<tr>
+<td>F</td>
+<td><code>dist_f_</code></td>
+<td>df1, df2</td>
+</tr>
+<tr>
+<td>Exponential</td>
+<td><code>dist_exponential_</code></td>
+<td>rate</td>
+</tr>
+<tr>
+<td>Logistic</td>
+<td><code>dist_logistic_</code></td>
+<td>location, scale</td>
+</tr>
+<tr>
+<td>Log-normal</td>
+<td><code>dist_lognormal_</code></td>
+<td>meanlog, sdlog</td>
+</tr>
+<tr>
+<td>Gamma</td>
+<td><code>dist_gamma_</code></td>
+<td>shape, scale</td>
+</tr>
+<tr>
+<td>Beta</td>
+<td><code>dist_beta_</code></td>
+<td>alpha, beta</td>
+</tr>
+<tr>
+<td>Binomial</td>
+<td><code>dist_binomial_</code></td>
+<td>size, prob</td>
+</tr>
+<tr>
+<td>Poisson</td>
+<td><code>dist_poisson_</code></td>
+<td>lambda</td>
+</tr>
+<tr>
+<td>Negative binomial</td>
+<td><code>dist_nbinom_</code></td>
+<td>size, prob</td>
+</tr>
+<tr>
+<td>Negative binomial by mean</td>
+<td><code>dist_nbinom_mu_</code></td>
+<td>size, mu</td>
+</tr>
+</tbody>
+</table>
+<p>The continuous families use <code>pdf</code> and <code>logpdf</code>;
+the discrete families use <code>pmf</code> and <code>logpmf</code>.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode php"><code class="sourceCode php"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> <span class="kw">function</span> Phit\{dist_t_sf<span class="ot">,</span> dist_normal_quantile_array<span class="ot">,</span> dist_normal_rng}<span class="ot">;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>dist_t_sf(<span class="fl">2.5</span><span class="ot">,</span> df<span class="ot">:</span> <span class="dv">12</span>)<span class="ot">;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>dist_normal_quantile_array([<span class="fl">0.025</span><span class="ot">,</span> <span class="fl">0.975</span>])<span class="ot">;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>dist_normal_rng(<span class="dv">1000</span><span class="ot">,</span> seed<span class="ot">:</span> <span class="dv">42</span>)<span class="ot">;</span></span></code></pre></div>
+<p>The samplers use the extension’s generator: ChaCha20 seeded as in
+rand_core, with inverse-CDF sampling. A seed gives the same draws, bit
+for bit, with or without the extension.</p>
+</section>
+<section id="formula-interface" class="level2">
+<h2>Formula interface</h2>
+<p><code>model_matrix</code>, <code>fit_lm</code>, and
+<code>fit_glm</code> accept an R-style formula over named columns. They
+port the extension’s parser, term expansion, and coding, so column
+names, term order, contrasts, and missing-value handling match the
+extension. Where the extension differs from R, the polyfill follows the
+extension.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode php"><code class="sourceCode php"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> <span class="kw">function</span> Phit\{fit_lm<span class="ot">,</span> fit_glm<span class="ot">,</span> model_matrix<span class="ot">,</span> predict}<span class="ot">;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="va">$data</span> <span class="op">=</span> [</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;rent&#39;</span> =&gt; [<span class="fl">1879.25</span><span class="ot">,</span> <span class="fl">1805.03</span><span class="ot">,</span> <span class="fl">2022.29</span><span class="ot">,</span> <span class="fl">1267.85</span><span class="ot">,</span> <span class="fl">1509.24</span><span class="ot">,</span> <span class="fl">2240.10</span>]<span class="ot">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;area&#39;</span> =&gt; [<span class="fl">74.4</span><span class="ot">,</span> <span class="fl">57.4</span><span class="ot">,</span> <span class="fl">66.4</span><span class="ot">,</span> <span class="fl">49.1</span><span class="ot">,</span> <span class="fl">45.7</span><span class="ot">,</span> <span class="fl">92.4</span>]<span class="ot">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;district&#39;</span> =&gt; [<span class="st">&#39;north&#39;</span><span class="ot">,</span> <span class="st">&#39;south&#39;</span><span class="ot">,</span> <span class="st">&#39;north&#39;</span><span class="ot">,</span> <span class="st">&#39;east&#39;</span><span class="ot">,</span> <span class="st">&#39;east&#39;</span><span class="ot">,</span> <span class="st">&#39;south&#39;</span>]<span class="ot">,</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>]<span class="ot">;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="va">$fit</span> <span class="op">=</span> fit_lm(<span class="st">&#39;rent ~ log(area) + district&#39;</span><span class="ot">,</span> <span class="va">$data</span>)<span class="ot">;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="va">$fit</span>[<span class="st">&#39;named&#39;</span>]<span class="ot">;</span>    <span class="co">// coefficients keyed by column name</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="va">$design</span> <span class="op">=</span> model_matrix(<span class="st">&#39;~ area * district&#39;</span><span class="ot">,</span> <span class="va">$data</span>)<span class="ot">;</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="va">$design</span>[<span class="st">&#39;columns&#39;</span>]<span class="ot">;</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="va">$new</span> <span class="op">=</span> predict(<span class="va">$fit</span><span class="ot">,</span> [<span class="st">&#39;area&#39;</span> =&gt; [<span class="fl">60.0</span><span class="ot">,</span> <span class="fl">80.0</span>]<span class="ot">,</span> <span class="st">&#39;district&#39;</span> =&gt; [<span class="st">&#39;east&#39;</span><span class="ot">,</span> <span class="st">&#39;north&#39;</span>]]<span class="ot">,</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    interval<span class="ot">:</span> <span class="st">&#39;prediction&#39;</span>)<span class="ot">;</span></span></code></pre></div>
+<p>Supported syntax includes <code>+ - : * / %in% ^</code>,
+<code>0</code>/<code>1</code>/<code>-1</code>, <code>.</code>,
+<code>offset()</code>, <code>I()</code>, the common transforms
+(<code>log</code>, <code>log2</code>, <code>log10</code>,
+<code>log1p</code>, <code>exp</code>, <code>sqrt</code>,
+<code>abs</code>, and others), <code>poly()</code>,
+<code>factor()</code>, <code>ordered()</code>, and <code>cbind()</code>
+responses for grouped binomial data. Families are gaussian, binomial
+(logit or probit), and poisson. Random-effect bars such as
+<code>(1 | g)</code> are accepted by <code>model_matrix</code>, which
+returns the random-effect design, and are fitted by
+<code>fit_lmer</code> and <code>fit_glmer</code>. <code>fit_lm</code>
+and <code>fit_glm</code> reject them with code 1007.</p>
+</section>
+<section id="exceptions" class="level2">
+<h2>Exceptions</h2>
+<p>Exceptions are plain <code>\Exception</code> instances whose code
+identifies the category, as in the extension. Messages name the
+qualified function, for example
+<code>Phit\fit_logistic dropped 2 of 80 observations</code>.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">1001</td>
+<td>Invalid input</td>
+</tr>
+<tr>
+<td style="text-align: right;">1002</td>
+<td>Dimension mismatch</td>
+</tr>
+<tr>
+<td style="text-align: right;">1003</td>
+<td>Non-finite value or overflow</td>
+</tr>
+<tr>
+<td style="text-align: right;">1004</td>
+<td>Rank deficiency</td>
+</tr>
+<tr>
+<td style="text-align: right;">1005</td>
+<td>Factorization failure</td>
+</tr>
+<tr>
+<td style="text-align: right;">1006</td>
+<td>Non-convergence (including separation)</td>
+</tr>
+<tr>
+<td style="text-align: right;">1007</td>
+<td>Unsupported input size</td>
+</tr>
+<tr>
+<td style="text-align: right;">1008</td>
+<td>Internal error</td>
+</tr>
+</tbody>
+</table>
+</section>
+</body>
+</html>

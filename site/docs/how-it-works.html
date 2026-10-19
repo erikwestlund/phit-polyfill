@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>How it works</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <script defer=""
+  src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"
+  type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">How it works</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#least-squares" id="toc-least-squares">Least
+squares</a></li>
+<li><a href="#generalized-linear-models"
+id="toc-generalized-linear-models">Generalized linear models</a></li>
+<li><a href="#mixed-models" id="toc-mixed-models">Mixed models</a></li>
+<li><a href="#distributions"
+id="toc-distributions">Distributions</a></li>
+<li><a href="#rounding-and-fused-multiply-add"
+id="toc-rounding-and-fused-multiply-add">Rounding and fused
+multiply-add</a></li>
+<li><a href="#validation" id="toc-validation">Validation</a></li>
+<li><a href="#known-differences" id="toc-known-differences">Known
+differences</a></li>
+</ul>
+</nav>
+<p>The polyfill ports phit’s Rust code to PHP. It does not reimplement
+the methods independently. Each port keeps the extension’s algorithm,
+constants, branch order, and floating-point operation order, so the two
+return the same bits.</p>
+<section id="least-squares" class="level2">
+<h2>Least squares</h2>
+<p><code>fit_ols</code> scales the design columns to unit norm and
+factors the design by Householder QR, with the operation order of the
+extension’s linear-algebra library (nalgebra). The singular values of
+the small <span class="math inline">\(R\)</span> factor, computed by a
+Jacobi sweep, equal the design’s. The extension’s rank rule, <span
+class="math inline">\(s \le \varepsilon \cdot \max(n, p) \cdot
+s_{\max}\)</span>, therefore makes the same rank decisions. Coefficients
+and covariances come from <span class="math inline">\(R\)</span> by
+back-substitution. Weighted fits factor rows in decreasing-weight order,
+as the extension does.</p>
+</section>
+<section id="generalized-linear-models" class="level2">
+<h2>Generalized linear models</h2>
+<p><code>fit_logistic</code> and <code>fit_poisson</code> use damped
+Newton IRLS, and <code>fit_probit</code> uses Fisher scoring. Each
+iteration solves a weighted least-squares step with the same QR, halves
+the step until the likelihood does not decrease, and stops only after a
+small full step. The separation certificate, boundary handling, starting
+values for extreme offsets, and exception codes match the extension.</p>
+</section>
+<section id="mixed-models" class="level2">
+<h2>Mixed models</h2>
+<p><code>fit_mixed_intercept</code> profiles the variance ratio as the
+extension does. <code>fit_mixed</code> and <code>fit_lmer</code> port
+the extension’s general linear mixed model, including its BOBYQA and
+Nelder–Mead optimizers. <code>fit_logistic_mixed</code> and
+<code>fit_glmer</code> port the likelihood (the Laplace approximation,
+or adaptive Gauss–Hermite quadrature with 2 to 61 points) and the BOBYQA
+search. The optimizers are ported from the same crate versions, so they
+take the same steps.</p>
+</section>
+<section id="distributions" class="level2">
+<h2>Distributions</h2>
+<p>The extension’s distribution layer is ported together with the parts
+of cdflib that it calls. These are TOMS 708 (incomplete beta), TOMS 654
+(incomplete gamma), Cody’s normal CDF, and the
+<code>dinvnr</code>/<code>dt1</code> quantile starts. Log-scale tails,
+Loader’s saddle-point densities, and the safeguarded quantile search are
+ported as well. The statrs routines that the estimators call (erfc,
+<span class="math inline">\(\ln \Gamma\)</span>, the regularized
+incomplete beta, and the inverse error function) are ported from the
+same crate version.</p>
+</section>
+<section id="rounding-and-fused-multiply-add" class="level2">
+<h2>Rounding and fused multiply-add</h2>
+<p>PHP has no fused multiply-add. The extension’s matrix products on
+aarch64 accumulate with one, so the polyfill emulates a correctly
+rounded fused multiply-add (Boldo and Melquiond’s algorithm, from
+Dekker’s exact product and Knuth’s TwoSum). The emulation is exact
+unless a product or sum overflows or an error term is subnormal. Those
+operands use the unfused expression. Rust’s <code>f64::round</code>
+rounds half away from zero exactly, while PHP 8.3’s <code>round()</code>
+first rounds to 15 significant digits. The polyfill therefore rounds
+through its own exact function.</p>
+</section>
+<section id="validation" class="level2">
+<h2>Validation</h2>
+<p>Inputs are validated in the extension’s order, so an input that is
+invalid in several ways raises the same exception code.</p>
+</section>
+<section id="known-differences" class="level2">
+<h2>Known differences</h2>
+<ul>
+<li>The listwise-deletion warning is raised with
+<code>E_USER_WARNING</code>, because PHP code cannot raise
+<code>E_WARNING</code>. The text is identical.</li>
+<li>Scalar arguments of the wrong type follow PHP’s userland rules:
+coercion in non-strict files, otherwise <code>TypeError</code>. The
+extension raises an <code>\Exception</code> instead.</li>
+<li>Matrix products above 5×5 follow the extension’s aarch64 build,
+which uses fused multiply-adds. On an x86-64 CPU without FMA, the
+extension’s own products can differ in the last bit.</li>
+</ul>
+</section>
+</body>
+</html>

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Render site/docs/*.qmd to standalone HTML next to each source, for the
+# package site. The pages have no executable cells, so pandoc renders them
+# directly: MathJax for math and pandoc's own code highlighting, with no
+# per-page asset folders.
+set -euo pipefail
+cd "$(dirname "$0")/../site/docs"
+for source in *.qmd; do
+    quarto pandoc "$source" --from markdown --to html5 --standalone --mathjax \
+        --syntax-highlighting=pygments --section-divs --toc \
+        --output "${source%.qmd}.html"
+    echo "rendered ${source%.qmd}.html"
+done

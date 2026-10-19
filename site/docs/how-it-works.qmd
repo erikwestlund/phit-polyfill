@@ -1,0 +1,74 @@
+---
+title: "How it works"
+---
+
+The polyfill ports phit's Rust code to PHP. It does not reimplement the
+methods independently. Each port keeps the extension's algorithm, constants,
+branch order, and floating-point operation order, so the two return the same
+bits.
+
+## Least squares
+
+`fit_ols` scales the design columns to unit norm and factors the design by
+Householder QR, with the operation order of the extension's linear-algebra
+library (nalgebra). The singular values of the small $R$ factor, computed by
+a Jacobi sweep, equal the design's. The extension's rank rule,
+$s \le \varepsilon \cdot \max(n, p) \cdot s_{\max}$, therefore makes the same
+rank decisions. Coefficients and covariances come from $R$ by
+back-substitution. Weighted fits factor rows in decreasing-weight order, as
+the extension does.
+
+## Generalized linear models
+
+`fit_logistic` and `fit_poisson` use damped Newton IRLS, and `fit_probit` uses
+Fisher scoring. Each iteration solves a weighted least-squares step with the
+same QR, halves the step until the likelihood does not decrease, and stops
+only after a small full step. The separation certificate, boundary handling,
+starting values for extreme offsets, and exception codes match the extension.
+
+## Mixed models
+
+`fit_mixed_intercept` profiles the variance ratio as the extension does.
+`fit_mixed` and `fit_lmer` port the extension's general linear mixed model,
+including its BOBYQA and Nelder–Mead optimizers. `fit_logistic_mixed` and
+`fit_glmer` port the likelihood (the Laplace approximation, or adaptive
+Gauss–Hermite quadrature with 2 to 61 points) and the BOBYQA search.
+The optimizers are ported from the same crate versions, so they take the same
+steps.
+
+## Distributions
+
+The extension's distribution layer is ported together with the parts of
+cdflib that it calls. These are TOMS 708 (incomplete beta), TOMS 654
+(incomplete gamma), Cody's normal CDF, and the `dinvnr`/`dt1` quantile starts.
+Log-scale tails, Loader's saddle-point densities, and the safeguarded quantile
+search are ported as well. The statrs routines that the estimators call (erfc,
+$\ln \Gamma$, the regularized incomplete beta, and the inverse error
+function) are ported from the same crate version.
+
+## Rounding and fused multiply-add
+
+PHP has no fused multiply-add. The extension's matrix products on aarch64
+accumulate with one, so the polyfill emulates a correctly rounded fused
+multiply-add (Boldo and Melquiond's algorithm, from Dekker's exact product and
+Knuth's TwoSum). The emulation is exact unless a product or sum overflows or an
+error term is subnormal. Those operands use the unfused expression. Rust's
+`f64::round` rounds half away from zero exactly, while PHP 8.3's `round()`
+first rounds to 15 significant digits. The polyfill therefore rounds through
+its own exact function.
+
+## Validation
+
+Inputs are validated in the extension's order, so an input that is invalid in
+several ways raises the same exception code.
+
+## Known differences
+
+- The listwise-deletion warning is raised with `E_USER_WARNING`, because PHP
+  code cannot raise `E_WARNING`. The text is identical.
+- Scalar arguments of the wrong type follow PHP's userland rules: coercion in
+  non-strict files, otherwise `TypeError`. The extension raises an
+  `\Exception` instead.
+- Matrix products above 5×5 follow the extension's aarch64 build, which uses
+  fused multiply-adds. On an x86-64 CPU without FMA, the extension's own
+  products can differ in the last bit.

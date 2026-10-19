@@ -1,0 +1,110 @@
+---
+title: "Functions"
+---
+
+The polyfill implements 222 of phit's 223 functions. `Phit\read_csv` needs the
+extension. phibble's PHP CSV reader is the fallback for it. Functions the
+polyfill does not implement stay undefined without the extension, so
+`function_exists()` reports them correctly.
+
+| Area | Functions |
+|---|---|
+| Descriptive statistics | `stat_mean`, `stat_var`, `stat_sd`, `stat_median`, `stat_quantile`, `stat_quantile_array`, `stat_cov`, `stat_cor`, `stat_weighted_mean`, `stat_weighted_var` |
+| Regression | `fit_ols`, `fit_logistic`, `fit_probit`, `fit_poisson`, with weights, offsets, the automatic intercept, and both missing-value policies |
+| Formula interface | `model_matrix`, `fit_lm`, `fit_glm`, `predict` |
+| Mixed models | `fit_mixed_intercept`, `fit_mixed`, `fit_logistic_mixed`, `fit_lmer`, `fit_glmer` |
+| Distributions | 13 families with 14 functions each, listed below |
+| Random numbers | `dist_<family>_rng` for each of the 13 families |
+| Posterior draws | `draws_moments`, `draws_covariance_map`, `draws_affine` |
+| Other | `hello` |
+
+All names are in the `Phit` namespace, for example `Phit\fit_ols`.
+
+## Distributions
+
+Each family has a density or mass function and its logarithm, `cdf`,
+`logcdf`, `sf`, `logsf`, and `quantile`, each with an `_array` variant, and a
+seeded sampler.
+
+| Family | Prefix | Parameters |
+|---|---|---|
+| Normal | `dist_normal_` | mean, sd |
+| Student's t | `dist_t_` | df |
+| Chi-square | `dist_chisquare_` | df |
+| F | `dist_f_` | df1, df2 |
+| Exponential | `dist_exponential_` | rate |
+| Logistic | `dist_logistic_` | location, scale |
+| Log-normal | `dist_lognormal_` | meanlog, sdlog |
+| Gamma | `dist_gamma_` | shape, scale |
+| Beta | `dist_beta_` | alpha, beta |
+| Binomial | `dist_binomial_` | size, prob |
+| Poisson | `dist_poisson_` | lambda |
+| Negative binomial | `dist_nbinom_` | size, prob |
+| Negative binomial by mean | `dist_nbinom_mu_` | size, mu |
+
+The continuous families use `pdf` and `logpdf`; the discrete families use
+`pmf` and `logpmf`.
+
+```php
+use function Phit\{dist_t_sf, dist_normal_quantile_array, dist_normal_rng};
+
+dist_t_sf(2.5, df: 12);
+dist_normal_quantile_array([0.025, 0.975]);
+dist_normal_rng(1000, seed: 42);
+```
+
+The samplers use the extension's generator: ChaCha20 seeded as in rand_core,
+with inverse-CDF sampling. A seed gives the same draws, bit for bit, with or
+without the extension.
+
+## Formula interface
+
+`model_matrix`, `fit_lm`, and `fit_glm` accept an R-style formula over named
+columns. They port the extension's parser, term expansion, and coding, so
+column names, term order, contrasts, and missing-value handling match the
+extension. Where the extension differs from R, the polyfill follows the
+extension.
+
+```php
+use function Phit\{fit_lm, fit_glm, model_matrix, predict};
+
+$data = [
+    'rent' => [1879.25, 1805.03, 2022.29, 1267.85, 1509.24, 2240.10],
+    'area' => [74.4, 57.4, 66.4, 49.1, 45.7, 92.4],
+    'district' => ['north', 'south', 'north', 'east', 'east', 'south'],
+];
+
+$fit = fit_lm('rent ~ log(area) + district', $data);
+$fit['named'];    // coefficients keyed by column name
+
+$design = model_matrix('~ area * district', $data);
+$design['columns'];
+
+$new = predict($fit, ['area' => [60.0, 80.0], 'district' => ['east', 'north']],
+    interval: 'prediction');
+```
+
+Supported syntax includes `+ - : * / %in% ^`, `0`/`1`/`-1`, `.`, `offset()`,
+`I()`, the common transforms (`log`, `log2`, `log10`, `log1p`, `exp`, `sqrt`,
+`abs`, and others), `poly()`, `factor()`, `ordered()`, and `cbind()` responses
+for grouped binomial data. Families are gaussian, binomial (logit or probit),
+and poisson. Random-effect bars such as `(1 | g)` are accepted by
+`model_matrix`, which returns the random-effect design, and are fitted by
+`fit_lmer` and `fit_glmer`. `fit_lm` and `fit_glm` reject them with code 1007.
+
+## Exceptions
+
+Exceptions are plain `\Exception` instances whose code identifies the
+category, as in the extension. Messages name the qualified function, for
+example `Phit\fit_logistic dropped 2 of 80 observations`.
+
+| Code | Meaning |
+|---:|---|
+| 1001 | Invalid input |
+| 1002 | Dimension mismatch |
+| 1003 | Non-finite value or overflow |
+| 1004 | Rank deficiency |
+| 1005 | Factorization failure |
+| 1006 | Non-convergence (including separation) |
+| 1007 | Unsupported input size |
+| 1008 | Internal error |

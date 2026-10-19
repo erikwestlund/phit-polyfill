@@ -107,6 +107,7 @@ function assertFormulaParity(string $fn, array $arguments, string $group, float 
     $label = "$fn(".json_encode($arguments[0] ?? null).") [$group]";
     $polyfill = formulaOutcome(\Phit\Polyfill\Polyfill::implementation($fn), $arguments);
     $native = formulaOutcome($fn, $arguments);
+    parityLog('formula', $fn, $polyfill, $native, isset($native['code']) || isset($polyfill['code']));
     if (isset($native['code']) || isset($polyfill['code'])) {
         expect($polyfill['code'] ?? 'result')->toBe($native['code'] ?? 'result', "$label: native '".($native['message'] ?? '')."', polyfill '".($polyfill['message'] ?? '')."'");
         // Messages are not part of the contract, but the port keeps them identical.

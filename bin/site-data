@@ -1,0 +1,273 @@
+#!/usr/bin/env php
+<?php
+
+// Write the verification files for the package site (site/verifications/*.json)
+// in the site's verification format.
+//
+//   php bin/site-data --parity=build/parity.json --matrix=build/matrix.jsonl [--out=site/verifications]
+//
+// --parity is the file written by the parity suites when PARITY_LOG is set:
+//   PARITY_LOG=build/parity.json php -d extension=... vendor/bin/pest tests/Parity
+// --matrix holds the records appended by bin/site-matrix, one run per line.
+// The reference comparisons (R, SciPy, and mpmath) are computed here, with the
+// reference suites' own tolerances.
+
+declare(strict_types=1);
+
+require dirname(__DIR__).'/vendor/autoload.php';
+
+use Phit\Polyfill\Polyfill;
+
+$options = getopt('', ['parity:', 'matrix:', 'out::']);
+$root = dirname(__DIR__);
+$out = $options['out'] ?? "$root/site/verifications";
+$parity = json_decode(file_get_contents($options['parity'] ?? throw new InvalidArgumentException('--parity is required')), true, flags: JSON_THROW_ON_ERROR);
+$matrix = array_map(fn ($line) => json_decode($line, true, flags: JSON_THROW_ON_ERROR),
+    file($options['matrix'] ?? throw new InvalidArgumentException('--matrix is required'), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES));
+$reference = parse_ini_file("$root/tests/fixtures/REFERENCE") ?: [];
+$phit = 'phit '.substr($reference['commit'] ?? '', 0, 7);
+@mkdir($out, 0777, true);
+
+$finite = fn (mixed $v) => is_float($v) && ! is_finite($v) ? 'inf' : $v;
+$write = function (string $name, array $document) use ($out): void {
+    file_put_contents("$out/$name.json", json_encode($document, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION)."\n");
+    echo "wrote $out/$name.json\n";
+};
+
+/** Distribution functions are grouped by family; other functions stand alone. */
+$group = function (string $fn): string {
+    $name = substr($fn, strlen('Phit\\'));
+    if (preg_match('/^dist_(.+)_rng$/', $name, $m)) {
+        return "dist_{$m[1]}_rng";
+    }
+    foreach (['nbinom_mu', 'nbinom', 'normal', 't', 'chisquare', 'f', 'exponential', 'logistic', 'lognormal', 'gamma', 'beta', 'binomial', 'poisson'] as $family) {
+        if (str_starts_with($name, "dist_{$family}_")) {
+            return "dist_{$family}_*";
+        }
+    }
+
+    return $name;
+};
+
+$parityCases = function (array $entries, float $tolerance) use ($group, $finite): array {
+    $cases = [];
+    foreach ($entries as $e) {
+        $key = $group($e['function']);
+        $max = fn (mixed $a, mixed $b) => $a === 'inf' || $b === 'inf' ? INF : max((float) $a, (float) $b);
+        $c = &$cases[$key];
+        $c ??= ['name' => $key, 'calls' => 0, 'values' => 0, 'exceptions' => 0, 'abs' => 0.0, 'rel' => 0.0, 'identical' => true];
+        $c['calls'] += $e['calls'];
+        $c['values'] += $e['values'];
+        $c['exceptions'] += $e['exceptions'];
+        $c['abs'] = $max($c['abs'], $e['max_abs_error']);
+        $c['rel'] = $max($c['rel'], $e['max_rel_error']);
+        $c['identical'] = $c['identical'] && $e['identical'];
+        unset($c);
+    }
+    ksort($cases);
+
+    return array_values(array_map(fn ($c) => [
+        'name' => $c['name'],
+        'quantity' => sprintf('%s calls: every returned number%s', number_format($c['calls']),
+            $c['exceptions'] ? sprintf(', plus the exception class, code, and message of %s calls that threw', number_format($c['exceptions'])) : ''),
+        'n_compared' => $c['values'] + $c['exceptions'],
+        'max_abs_error' => $finite($c['abs']),
+        'max_rel_error' => $finite($c['rel']),
+        'passed' => $c['identical'] || $c['rel'] <= $tolerance,
+    ], $cases));
+};
+
+// 1. Fixture, stress, and adversarial parity with the extension.
+$suites = array_filter($parity, fn ($e) => $e['suite'] !== 'randomized');
+$exact = array_filter($suites, fn ($e) => ! in_array($e['suite'], ['models', 'formula'], true));
+$iterative = array_filter($suites, fn ($e) => in_array($e['suite'], ['models', 'formula'], true));
+$write('native-parity', [
+    'title' => 'Parity with native phit',
+    'description' => 'The polyfill and the phit extension run in the same process on the reference fixtures, on stress designs '
+        .'(near-collinear, badly scaled, separated, and extreme offsets), and on adversarial inputs such as NaN, ±INF, '
+        .'empty arrays, and invalid parameters. Every returned number is compared, and calls that throw must throw the same '
+        .'exception code. Identical means equal bit for bit, with NaN equal to NaN. The model and formula suites would '
+        .'accept 1e-7 relative for iterative fits, and a case reports any nonzero difference in max_abs_error and '
+        .'max_rel_error.',
+    'reference' => "$phit, loaded in the same process (tests/Parity)",
+    'tolerance' => 'identical bit for bit; iterative model fits would pass within 1e-7 relative',
+    'cases' => array_merge($parityCases($exact, 0.0), $parityCases($iterative, 1e-7)),
+]);
+
+// 2. Randomized differential tests.
+$randomized = array_filter($parity, fn ($e) => $e['suite'] === 'randomized');
+$write('randomized-parity', [
+    'title' => 'Randomized parity with native phit',
+    'description' => 'Seeded random inputs, including invalid and non-finite values, go to the polyfill and to the phit '
+        .'extension. Results must be identical bit for bit, or both calls must throw the same exception class, code, and '
+        .'message. The inputs cover all 13 seeded samplers, the posterior-draw kernels, the four regression models, '
+        .'descriptive statistics, the five mixed-model functions, and prediction (tests/Parity/RandomizedParityTest.php, '
+        .'PARITY_SEED=20261016, 60 rounds per group).',
+    'reference' => "$phit, loaded in the same process",
+    'tolerance' => 'identical bit for bit',
+    'cases' => $parityCases($randomized, 0.0),
+]);
+
+// 3. R, SciPy, and mpmath references.
+$accuracyJson = tempnam(sys_get_temp_dir(), 'accuracy');
+exec(escapeshellarg(PHP_BINARY).' '.escapeshellarg("$root/bin/accuracy-report").' --json='.escapeshellarg($accuracyJson).' > /dev/null', result_code: $status);
+if ($status !== 0) {
+    throw new RuntimeException('bin/accuracy-report failed');
+}
+$referenceCases = array_map(fn ($row) => [
+    'name' => substr($row['function'], strlen('Phit\\')).' vs '.$row['reference'],
+    'quantity' => 'every reported number on '.count($row['domain']).' case groups: '.implode(', ', $row['domain']),
+    'n_compared' => $row['comparisons'],
+    'max_abs_error' => $row['max_abs_error'],
+    'max_rel_error' => $row['max_rel_error'],
+    'passed' => $row['tolerance_used'] !== 'inf' && $row['tolerance_used'] <= 1.0,
+], json_decode(file_get_contents($accuracyJson), true, flags: JSON_THROW_ON_ERROR));
+unlink($accuracyJson);
+
+$decode = fn (mixed $v): float => is_string($v) ? ['Inf' => INF, '-Inf' => -INF, 'NaN' => NAN][$v] : (float) $v;
+$close = function (float $actual, float $expected, string $operation): bool {
+    if ($actual === $expected || (is_nan($actual) && is_nan($expected))) {
+        return true;
+    }
+    if (! is_finite($actual) || ! is_finite($expected)) {
+        return false;
+    }
+    $tolerance = match (true) {
+        $operation === 'quantile' => 1e-15 + 1e-12 * abs($expected),
+        str_starts_with($operation, 'log') => 1e-12 * max(1.0, abs($expected)),
+        default => 1e-300 + 1e-12 * abs($expected),
+    };
+
+    return abs($actual - $expected) <= $tolerance;
+};
+// Documented differences from R, adjudicated against mpmath (as in tests/Unit/DistributionsTest.php).
+$knownRDifference = function (array $case, float $x, float $expected, float $actual): bool {
+    if (in_array($case['distribution'].'|'.$case['operation'], ['f|pdf', 'f|logpdf'], true) && $x === INF) {
+        return true;
+    }
+    if ($case['operation'] !== 'quantile') {
+        return false;
+    }
+    if ($case['distribution'] === 'f' && $expected === 0.0 && $x > 0 && $actual > 0 && $actual < 1e-15) {
+        return true;
+    }
+    $discrete = in_array($case['distribution'], ['binomial', 'poisson', 'nbinom', 'nbinom_mu'], true);
+    if ($discrete && $x === 1 - 2 ** -52 && $actual > $expected) {
+        return true;
+    }
+
+    return $case['distribution'] === 'binomial' && $case['params']['prob'] == 0 && $x === 1.0;
+};
+$mpmath = json_decode(file_get_contents("$root/tests/fixtures/distributions-mpmath.json"), true, flags: JSON_THROW_ON_ERROR)['cases'];
+foreach (['mpmath' => 'distributions-mpmath.json', 'R' => 'distributions-r.json', 'SciPy' => 'distributions-scipy.json'] as $label => $file) {
+    $tally = [];
+    foreach (json_decode(file_get_contents("$root/tests/fixtures/$file"), true, flags: JSON_THROW_ON_ERROR)['cases'] as $index => $case) {
+        $params = $case['params'];
+        if ($case['distribution'] === 'binomial') {
+            $params['size'] = (int) $params['size'];
+        }
+        $fn = Polyfill::implementation('Phit\dist_'.$case['distribution'].'_'.$case['operation']);
+        $t = &$tally[$case['distribution']];
+        $t ??= ['n' => 0, 'abs' => 0.0, 'rel' => 0.0, 'passed' => true, 'excluded' => 0];
+        foreach ($case['input'] as $i => $raw) {
+            if ($case['expected'][$i] === null) {
+                continue;
+            }
+            $x = $decode($raw);
+            $expected = $decode($case['expected'][$i]);
+            $truth = $mpmath[$index]['expected'][$i];
+            $actual = $fn($x, ...$params);
+            if ($label !== 'mpmath' && ($truth === null || ! $close($expected, $decode($truth), $case['operation'])
+                || ($label === 'R' && $knownRDifference($case, $x, $expected, $actual)))) {
+                // Measured only where the reference agrees with mpmath.
+                $t['excluded']++;
+
+                continue;
+            }
+            $t['n']++;
+            $t['passed'] = $t['passed'] && $close($actual, $expected, $case['operation']);
+            if ($actual === $expected || (is_nan($actual) && is_nan($expected))) {
+                continue;
+            }
+            // Each error is reported on the tolerance's own scale: absolute where
+            // |expected| <= 1 or for log values below 1 in magnitude, relative
+            // elsewhere. Probabilities below 1e-300 and quantiles below 1e-3 are
+            // judged absolutely, as the tolerance's floors do.
+            $difference = abs($actual - $expected);
+            if (is_nan($difference)) {
+                $t['abs'] = INF;
+
+                continue;
+            }
+            $floor = match (true) {
+                $case['operation'] === 'quantile' => 1e-3,
+                str_starts_with($case['operation'], 'log') => 1.0,
+                default => 1e-300,
+            };
+            if (abs($expected) <= 1.0) {
+                $t['abs'] = max($t['abs'], $difference);
+            }
+            if (abs($expected) > $floor) {
+                $t['rel'] = max($t['rel'], $difference / abs($expected));
+            }
+        }
+        unset($t);
+    }
+    foreach ($tally as $family => $t) {
+        $referenceCases[] = [
+            'name' => "dist_{$family}_* vs $label ($file)",
+            'quantity' => 'densities, probabilities, log-probabilities, and quantiles'
+                .($t['excluded'] ? sprintf('; %d points where %s disagrees with mpmath are excluded', $t['excluded'], $label) : ''),
+            'n_compared' => $t['n'],
+            'max_abs_error' => $finite($t['abs']),
+            'max_rel_error' => $finite($t['rel']),
+            'passed' => $t['passed'],
+        ];
+    }
+}
+$write('references', [
+    'title' => 'Agreement with R, SciPy, and mpmath',
+    'description' => 'The polyfill against the reference values that phit itself is validated against: R (lm, glm, '
+        .'model.matrix, and the stats distribution functions), SciPy, and mpmath at high precision. Each comparison uses '
+        .'the tolerance of phit\'s own suite for that fixture. Regression fixtures use |a − b| ≤ abs + rel·|b| with the '
+        .'fixture\'s abs and rel. Distribution values use 1e-12 relative, 1e-12·max(1, |v|) on the log scale, and '
+        .'1e-15 + 1e-12·|v| for quantiles. R and SciPy are measured only where they agree with mpmath. For the '
+        .'distributions, max_abs_error covers expected values with |v| ≤ 1 and max_rel_error covers values above the '
+        .'tolerance\'s floor (1e-300 for probabilities and densities, 1 on the log scale, and 1e-3 for quantiles). For '
+        .'the models and descriptive statistics, max_abs_error also covers expected values with |v| ≤ 1, and '
+        .'max_rel_error skips entries that are rounding noise, such as the residuals of an exact fit.',
+    'reference' => "R, SciPy, and mpmath fixtures from $phit (tests/fixtures)",
+    'tolerance' => "phit's own fixture tolerances",
+    'cases' => $referenceCases,
+]);
+
+// 4. PHP versions and OPcache/JIT modes.
+$modeLabel = [
+    'no-opcache' => 'without OPcache',
+    'opcache' => 'OPcache without the JIT',
+    'tracing-jit' => 'tracing JIT',
+    'function-jit' => 'function JIT (opcache.jit=1205)',
+    'function-jit-hot' => 'function JIT with hot-counter triggers (opcache.jit=1235)',
+];
+usort($matrix, fn ($a, $b) => [$a['php'], $a['platform'], $a['extension'], array_search($a['mode'], array_keys($modeLabel))]
+    <=> [$b['php'], $b['platform'], $b['extension'], array_search($b['mode'], array_keys($modeLabel))]);
+$write('php-jit-matrix', [
+    'title' => 'PHP versions and JIT modes',
+    'description' => 'The full test suite under each supported PHP version and OPcache/JIT mode. With the extension '
+        .'loaded, the suite includes every parity test above. n_compared is the number of assertions. Errors are not '
+        .'measured per run: a run passes when every assertion holds, including the bit-for-bit parity checks. PHP 8.3\'s '
+        .'function JIT with hot-counter triggers crashes the PHP process (a PHP bug, see docs/notes/php83-jit.md), so '
+        .'the polyfill recommends OPcache without the JIT on PHP 8.3.',
+    'reference' => "$phit and the test suite at this commit",
+    'tolerance' => 'every assertion passes',
+    'cases' => array_map(fn ($r) => [
+        'name' => sprintf('PHP %s, %s, %s', $r['php'], $r['platform'], $modeLabel[$r['mode']] ?? $r['mode']),
+        'quantity' => $r['completed']
+            ? sprintf('%s; %d tests passed, %d failed, %d skipped', $r['extension'] ? 'polyfill and parity suites, extension loaded' : 'polyfill suite, extension not loaded', $r['passed'], $r['failed'], $r['skipped'])
+            : sprintf('the PHP process crashed (exit status %d)', $r['exit_status']),
+        'n_compared' => $r['assertions'],
+        'max_abs_error' => null,
+        'max_rel_error' => null,
+        'passed' => $r['completed'] && $r['failed'] === 0 && $r['exit_status'] === 0,
+    ], $matrix),
+]);

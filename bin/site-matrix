@@ -1,0 +1,53 @@
+#!/usr/bin/env php
+<?php
+
+// Run the test suite with this PHP binary under each OPcache and JIT mode and
+// append one JSON record per mode to a file, for bin/site-data's PHP version
+// and JIT matrix.
+//
+//   php bin/site-matrix --out=build/matrix.jsonl [--platform="macOS arm64"] [--extension=/path/libphit.so]
+//
+// Each mode runs in a fresh process. A crash is recorded with its exit status.
+
+declare(strict_types=1);
+
+$options = getopt('', ['out:', 'platform:', 'extension:']);
+$out = $options['out'] ?? throw new InvalidArgumentException('--out is required');
+$platform = $options['platform'] ?? php_uname('s').' '.php_uname('m');
+$extension = $options['extension'] ?? null;
+$root = dirname(__DIR__);
+
+$base = ['-d', 'opcache.enable_cli=1', '-d', 'opcache.file_update_protection=0'];
+$jit = ['-d', 'opcache.jit_buffer_size=64M'];
+$modes = [
+    'no-opcache' => ['-d', 'opcache.enable_cli=0'],
+    'opcache' => [...$base, '-d', 'opcache.jit=disable'],
+    'tracing-jit' => [...$base, '-d', 'opcache.jit=tracing', ...$jit],
+    'function-jit' => [...$base, '-d', 'opcache.jit=1205', ...$jit],
+    'function-jit-hot' => [...$base, '-d', 'opcache.jit=1235', ...$jit],
+];
+
+foreach ($modes as $mode => $flags) {
+    $command = [PHP_BINARY, ...($extension ? ['-d', "extension=$extension"] : []), ...$flags, "$root/vendor/bin/pest", '--colors=never'];
+    $process = proc_open($command, [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes, $root);
+    $output = stream_get_contents($pipes[1]);
+    stream_get_contents($pipes[2]);
+    $status = proc_close($process);
+    $count = fn (string $label) => preg_match('/(\d+) '.$label.'/', $output, $m) ? (int) $m[1] : 0;
+    preg_match('/\((\d+) assertions\)/', $output, $assertions);
+    $record = [
+        'platform' => $platform,
+        'php' => PHP_VERSION,
+        'mode' => $mode,
+        'flags' => implode(' ', $flags),
+        'extension' => $extension !== null,
+        'passed' => $count('passed'),
+        'failed' => $count('failed'),
+        'skipped' => $count('skipped'),
+        'assertions' => (int) ($assertions[1] ?? 0),
+        'exit_status' => $status,
+        'completed' => str_contains($output, 'Tests:'),
+    ];
+    file_put_contents($out, json_encode($record, JSON_UNESCAPED_SLASHES)."\n", FILE_APPEND);
+    printf("%s %s %s: %d passed, %d failed, exit %d\n", $platform, PHP_VERSION, $mode, $record['passed'], $record['failed'], $status);
+}
