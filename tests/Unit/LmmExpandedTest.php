@@ -131,8 +131,8 @@ describe('Phit\fit_mixed inputs', function () {
             ['random' => [['z' => [[1]], 'groups' => [1]]]],
             ['random' => [['z' => array_fill(0, $n, [1]), 'groups' => array_fill(0, $n, true)]]],
             ['random' => [['z' => array_fill(0, $n, [1]), 'groups' => array_fill(0, $n, 1), 'correlated' => 'yes']]],
-            ['optimizer' => 'nloptwrap'], ['objective_tolerance' => NAN], ['missing' => 'raise'], ['tolerance' => NAN],
-            ['start' => [-1]], ['max_evaluations' => -1], ['max_evaluations' => 4],
+            ['optimizer' => 'nloptwrap'], ['objectiveTolerance' => NAN], ['missing' => 'raise'], ['tolerance' => NAN],
+            ['start' => [-1]], ['maxEvaluations' => -1], ['maxEvaluations' => 4],
         ] as $i => $options) {
             $arguments = array_replace(['x' => $c['x'], 'y' => $c['y'], 'random' => $c['terms'], 'weights' => $c['weights'], 'offset' => $c['offset']], $options);
             expect(thrownCode(fn () => pf('Phit\fit_mixed', ...$arguments, intercept: false)))

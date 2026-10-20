@@ -58,7 +58,7 @@ describe('Phit\fit_logistic_mixed against lme4', function () {
         it("matches glmer on {$case['name']}", function () use ($case) {
             $r = pf('Phit\fit_logistic_mixed', $case['x'], $case['y'], $case['groups'],
                 weights: $case['weights'], offset: $case['offset'],
-                quadrature_points: $case['quadrature_points'], intercept: false);
+                quadraturePoints: $case['quadrature_points'], intercept: false);
             foreach ($case['expected'] as $key => $expected) {
                 [$abs, $rel] = in_array($key, ['covariance', 'std_errors', 'z_statistics', 'conf_int', 'p_values'], true)
                     ? [2e-5, 2e-3]
@@ -81,14 +81,14 @@ describe('Phit\fit_logistic_mixed inputs', function () {
     it('deletes the union of missing rows with one warning and keeps alignment', function () {
         $c = logisticMixedOffsetCase();
         $warnings = warnings(fn () => pf('Phit\fit_logistic_mixed', $c['x'], $c['y'], $c['groups'],
-            weights: $c['weights'], offset: $c['offset'], quadrature_points: 9, intercept: false), $r);
+            weights: $c['weights'], offset: $c['offset'], quadraturePoints: 9, intercept: false), $r);
         expect($r['dropped_rows'])->toBe([2, 4, 6, 8, 10])
             ->and($warnings)->toHaveCount(1)
             ->and($warnings[0][0])->toBe(E_USER_WARNING);
 
         $select = fn ($v) => array_values(array_filter($v, fn ($i) => ! in_array($i, [2, 4, 6, 8, 10], true), ARRAY_FILTER_USE_KEY));
         $complete = pf('Phit\fit_logistic_mixed', $select($c['x']), $select($c['y']), $select($c['groups']),
-            weights: $select($c['weights']), offset: $select($c['offset']), quadrature_points: 9, intercept: false);
+            weights: $select($c['weights']), offset: $select($c['offset']), quadraturePoints: 9, intercept: false);
         mixedCompare($r['fitted'], $complete['fitted'], 'retained alignment', 1e-10, 1e-10);
     });
 
@@ -96,8 +96,8 @@ describe('Phit\fit_logistic_mixed inputs', function () {
         $c = logisticMixedOffsetCase();
         $n = count($c['y']);
         foreach ([
-            ['missing' => 'raise'], ['missing' => 'bad'], ['quadrature_points' => 0], ['quadrature_points' => 62],
-            ['max_evaluations' => 4], ['tolerance' => NAN],
+            ['missing' => 'raise'], ['missing' => 'bad'], ['quadraturePoints' => 0], ['quadraturePoints' => 62],
+            ['maxEvaluations' => 4], ['tolerance' => NAN],
             ['groups' => array_fill(0, $n, 1)], ['groups' => array_fill(0, $n, 1.0)], ['weights' => [1]], ['offset' => [0]],
             ['weights' => array_fill(0, $n, 0.5)], ['weights' => array_fill(0, $n, 1000001)], ['y' => array_fill(0, $n, 1)],
         ] as $options) {

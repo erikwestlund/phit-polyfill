@@ -58,7 +58,11 @@ $fixture = loadFixture('predict-r.json');
 foreach ($fixture['cases'] as $case) {
     it("matches R's predict() for {$case['name']}", function () use ($case, $fixture) {
         $fit = predictFit($case, $fixture['datasets'][$case['dataset']]);
-        $result = pf('Phit\predict', $fit, $fixture['newdata'][$case['dataset']], ...$case['options']);
+        $options = [];
+        foreach ($case['options'] as $option => $value) {
+            $options[['se_fit' => 'seFit', 'allow_new_levels' => 'allowNewLevels'][$option] ?? $option] = $value;
+        }
+        $result = pf('Phit\predict', $fit, $fixture['newdata'][$case['dataset']], ...$options);
         foreach ($case['expected'] as $key => $expected) {
             [$abs, $rel] = match (true) {
                 $case['function'] === 'lmer' => [1e-5, 1e-5],
@@ -101,7 +105,7 @@ it("raises R's errors", function () use ($fixture) {
         "unknown column 'wt'" => fn () => pf('Phit\predict', $fit, ['gear_label' => ['four']]),
         'type must be' => fn () => pf('Phit\predict', $fit, ['wt' => [3.0], 'gear_label' => ['four']], type: 'probability'),
         'new levels detected in newdata: school=nowhere' => fn () => pf('Phit\predict', $lmer, ['study_hours' => [3.0], 'school' => ['nowhere']]),
-        'not available for mixed' => fn () => pf('Phit\predict', $lmer, ['study_hours' => [3.0], 'school' => ['nowhere']], se_fit: true),
+        'not available for mixed' => fn () => pf('Phit\predict', $lmer, ['study_hours' => [3.0], 'school' => ['nowhere']], seFit: true),
         'intervals are available for Phit\fit_lm' => fn () => pf('Phit\predict', $glm, $cars, interval: 'confidence'),
         'fit must be a result' => fn () => pf('Phit\predict', ['formula' => 'y ~ x'], $cars),
     ];

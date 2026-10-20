@@ -54,7 +54,7 @@ it('matches the reference draw cases', function () use ($fixture) {
                 drawClose($result, $case['expected'], $name);
                 break;
             case 'covariance_map':
-                $result = pf('Phit\draws_covariance_map', source_covariance: $case['source_covariance'], target_covariance: $case['target_covariance']);
+                $result = pf('Phit\draws_covariance_map', sourceCovariance: $case['source_covariance'], targetCovariance: $case['target_covariance']);
                 drawClose($result, $case['expected'], $name);
                 $a = $result['matrix'];
                 $cov = drawMultiply(drawMultiply($a, $case['source_covariance']), drawTranspose($a));

@@ -68,7 +68,7 @@ final class LogisticRandomIntercept
         }
         $points = $options['quadrature_points'];
         if ($points < 1 || $points > 61) {
-            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'quadrature_points must be 1 (Laplace) or 2..61 (adaptive quadrature)');
+            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'quadraturePoints must be 1 (Laplace) or 2..61 (adaptive quadrature)');
         }
         $tolerance = $options['tolerance'];
         if (is_nan($tolerance) || is_infinite($tolerance) || $tolerance <= 0.0 || $tolerance > 0.1) {

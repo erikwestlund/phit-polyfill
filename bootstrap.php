@@ -1382,9 +1382,9 @@ if (! function_exists('Phit\draws_affine')) {
 }
 
 if (! function_exists('Phit\draws_covariance_map')) {
-    function draws_covariance_map(array $source_covariance, array $target_covariance): array
+    function draws_covariance_map(array $sourceCovariance, array $targetCovariance): array
     {
-        return \Phit\Polyfill\Draws::covarianceMap($source_covariance, $target_covariance);
+        return \Phit\Polyfill\Draws::covarianceMap($sourceCovariance, $targetCovariance);
     }
 }
 
@@ -1403,9 +1403,9 @@ if (! function_exists('Phit\fit_glm')) {
 }
 
 if (! function_exists('Phit\fit_glmer')) {
-    function fit_glmer(string $formula, mixed $data, string $family = 'binomial', string $link = '', string $missing = 'drop', mixed $weights = null, int $quadrature_points = 1, int $max_evaluations = 20000, float $tolerance = 1.0E-7): array
+    function fit_glmer(string $formula, mixed $data, string $family = 'binomial', string $link = '', string $missing = 'drop', mixed $weights = null, int $quadraturePoints = 1, int $maxEvaluations = 20000, float $tolerance = 1.0E-7): array
     {
-        return \Phit\Polyfill\MixedFormula::glmer($formula, $data, $family, $link, $missing, $weights, $quadrature_points, $max_evaluations, $tolerance);
+        return \Phit\Polyfill\MixedFormula::glmer($formula, $data, $family, $link, $missing, $weights, $quadraturePoints, $maxEvaluations, $tolerance);
     }
 }
 
@@ -1417,9 +1417,9 @@ if (! function_exists('Phit\fit_lm')) {
 }
 
 if (! function_exists('Phit\fit_lmer')) {
-    function fit_lmer(string $formula, mixed $data, bool $reml = true, string $missing = 'drop', mixed $weights = null, ?array $start = null, int $max_evaluations = 20000, float $tolerance = 1.0E-7, string $optimizer = 'bobyqa', float $objective_tolerance = 1.0E-12): array
+    function fit_lmer(string $formula, mixed $data, bool $reml = true, string $missing = 'drop', mixed $weights = null, ?array $start = null, int $maxEvaluations = 20000, float $tolerance = 1.0E-7, string $optimizer = 'bobyqa', float $objectiveTolerance = 1.0E-12): array
     {
-        return \Phit\Polyfill\MixedFormula::lmer($formula, $data, $reml, $missing, $weights, $start, $max_evaluations, $tolerance, $optimizer, $objective_tolerance);
+        return \Phit\Polyfill\MixedFormula::lmer($formula, $data, $reml, $missing, $weights, $start, $maxEvaluations, $tolerance, $optimizer, $objectiveTolerance);
     }
 }
 
@@ -1431,16 +1431,16 @@ if (! function_exists('Phit\fit_logistic')) {
 }
 
 if (! function_exists('Phit\fit_logistic_mixed')) {
-    function fit_logistic_mixed(array $x, array $y, array $groups, string $missing = 'drop', ?array $weights = null, ?array $offset = null, int $quadrature_points = 1, int $max_evaluations = 20000, float $tolerance = 1.0E-7, bool $intercept = true): array
+    function fit_logistic_mixed(array $x, array $y, array $groups, string $missing = 'drop', ?array $weights = null, ?array $offset = null, int $quadraturePoints = 1, int $maxEvaluations = 20000, float $tolerance = 1.0E-7, bool $intercept = true): array
     {
-        return \Phit\Polyfill\MixedModels::logisticMixed($x, $y, $groups, $missing, $weights, $offset, $quadrature_points, $max_evaluations, $tolerance, $intercept);
+        return \Phit\Polyfill\MixedModels::logisticMixed($x, $y, $groups, $missing, $weights, $offset, $quadraturePoints, $maxEvaluations, $tolerance, $intercept);
     }
 }
 
 if (! function_exists('Phit\fit_mixed')) {
-    function fit_mixed(array $x, array $y, array $random, string $missing = 'drop', bool $reml = false, ?array $weights = null, ?array $offset = null, ?array $start = null, int $max_evaluations = 20000, float $tolerance = 1.0E-7, string $optimizer = 'bobyqa', float $objective_tolerance = 1.0E-12, bool $intercept = true): array
+    function fit_mixed(array $x, array $y, array $random, string $missing = 'drop', bool $reml = false, ?array $weights = null, ?array $offset = null, ?array $start = null, int $maxEvaluations = 20000, float $tolerance = 1.0E-7, string $optimizer = 'bobyqa', float $objectiveTolerance = 1.0E-12, bool $intercept = true): array
     {
-        return \Phit\Polyfill\MixedModels::lmmFit($x, $y, $random, $missing, $reml, $weights, $offset, $start, $max_evaluations, $tolerance, $optimizer, $objective_tolerance, $intercept);
+        return \Phit\Polyfill\MixedModels::lmmFit($x, $y, $random, $missing, $reml, $weights, $offset, $start, $maxEvaluations, $tolerance, $optimizer, $objectiveTolerance, $intercept);
     }
 }
 
@@ -1487,9 +1487,9 @@ if (! function_exists('Phit\model_matrix')) {
 }
 
 if (! function_exists('Phit\predict')) {
-    function predict(array $fit, mixed $newdata, string $type = 'link', bool $se_fit = false, string $interval = 'none', float $level = 0.95, bool $random = true, bool $allow_new_levels = false): array
+    function predict(array $fit, mixed $newdata, string $type = 'link', bool $seFit = false, string $interval = 'none', float $level = 0.95, bool $random = true, bool $allowNewLevels = false): array
     {
-        return \Phit\Polyfill\Predict::predict($fit, $newdata, $type, $se_fit, $interval, $level, $random, $allow_new_levels);
+        return \Phit\Polyfill\Predict::predict($fit, $newdata, $type, $seFit, $interval, $level, $random, $allowNewLevels);
     }
 }
 

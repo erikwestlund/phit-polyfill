@@ -65,10 +65,10 @@ final class MixedModels
         ?array $weights = null,
         ?array $offset = null,
         ?array $start = null,
-        int $max_evaluations = 20000,
+        int $maxEvaluations = 20000,
         float $tolerance = 1e-7,
         string $optimizer = 'bobyqa',
-        float $objective_tolerance = 1e-12,
+        float $objectiveTolerance = 1e-12,
         bool $intercept = true,
     ): array {
         if ($missing !== 'drop' && $missing !== 'raise') {
@@ -165,8 +165,8 @@ final class MixedModels
             'bobyqa', 'nelder_mead' => $optimizer,
             default => throw ErrorCode::exception(ErrorCode::UNSUPPORTED, "optimizer must be 'bobyqa' or 'nelder_mead'; R wrapper names are not runtime aliases"),
         };
-        if ($max_evaluations < 0) {
-            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'max_evaluations must be positive');
+        if ($maxEvaluations < 0) {
+            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'maxEvaluations must be positive');
         }
         $design = [];
         foreach ($retained as $i) {
@@ -179,11 +179,11 @@ final class MixedModels
             [
                 'reml' => $reml,
                 'optimizer' => $method,
-                'objective_tolerance' => $objective_tolerance,
+                'objective_tolerance' => $objectiveTolerance,
                 'weights' => array_map(fn (int $i) => $w[$i], $retained),
                 'offset' => array_map(fn (int $i) => $o[$i], $retained),
                 'start' => $startValues,
-                'max_evaluations' => $max_evaluations,
+                'max_evaluations' => $maxEvaluations,
                 'tolerance' => $tolerance,
             ],
         );
@@ -247,8 +247,8 @@ final class MixedModels
         string $missing = 'drop',
         ?array $weights = null,
         ?array $offset = null,
-        int $quadrature_points = 1,
-        int $max_evaluations = 20000,
+        int $quadraturePoints = 1,
+        int $maxEvaluations = 20000,
         float $tolerance = 1e-7,
         bool $intercept = true,
     ): array {
@@ -262,17 +262,17 @@ final class MixedModels
         }
         $data = ModelData::prepare($x, $y, $missing, 'binary', $weights, $offset, $intercept, $groups);
         [$indices, $labels] = ModelData::groupIndices($data->groups);
-        if ($quadrature_points < 0) {
-            throw ErrorCode::exception(ErrorCode::UNSUPPORTED, 'quadrature_points must be 1..61');
+        if ($quadraturePoints < 0) {
+            throw ErrorCode::exception(ErrorCode::UNSUPPORTED, 'quadraturePoints must be 1..61');
         }
-        if ($max_evaluations < 0) {
-            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'max_evaluations must be positive');
+        if ($maxEvaluations < 0) {
+            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'maxEvaluations must be positive');
         }
         $r = LogisticRandomIntercept::fit($data->x, $data->y, $indices, [
             'weights' => $data->weights,
             'offset' => $data->offset,
-            'quadrature_points' => $quadrature_points,
-            'max_evaluations' => $max_evaluations,
+            'quadrature_points' => $quadraturePoints,
+            'max_evaluations' => $maxEvaluations,
             'tolerance' => $tolerance,
         ]);
 

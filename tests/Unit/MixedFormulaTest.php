@@ -66,7 +66,7 @@ describe('Phit\fit_lmer and Phit\fit_glmer against lme4', function () {
             $name = $case['name'];
             warnings(fn () => $case['function'] === 'lmer'
                 ? pf('Phit\fit_lmer', $case['formula'], $data, reml: $case['reml'])
-                : pf('Phit\fit_glmer', $case['formula'], $data, quadrature_points: $case['quadrature_points']), $result);
+                : pf('Phit\fit_glmer', $case['formula'], $data, quadraturePoints: $case['quadrature_points']), $result);
             $expected = $case['expected'];
             expect($result['columns'])->toBe($expected['columns'], "$name: columns")
                 ->and($result['n_observations'])->toBe($expected['n_observations'], "$name: observations")

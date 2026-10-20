@@ -255,7 +255,7 @@ it('fits mixed models exactly like the extension', function () {
             randomParityCompare('Phit\fit_mixed', [$x, $y, [['z' => $intercepts, 'groups' => $labels]], 'reml' => mt_rand(0, 1) === 1]);
             randomParityCompare('Phit\fit_mixed', [$x, $y, [['z' => $slopes, 'groups' => $labels, 'correlated' => mt_rand(0, 1) === 1]],
                 'optimizer' => mt_rand(0, 2) === 0 ? 'nelder_mead' : 'bobyqa']);
-            randomParityCompare('Phit\fit_logistic_mixed', [$x, $binary, $labels, 'quadrature_points' => [1, 1, 3, 9][mt_rand(0, 3)]]);
+            randomParityCompare('Phit\fit_logistic_mixed', [$x, $binary, $labels, 'quadraturePoints' => [1, 1, 3, 9][mt_rand(0, 3)]]);
             $data = ['y' => $y, 'b' => $binary, 'g' => array_map('strval', $labels)];
             foreach ($x as $i => $row) {
                 foreach ($row as $j => $v) {
@@ -315,7 +315,7 @@ it('predicts exactly like the extension', function () {
             restore_error_handler();
         }
         foreach ($fits as $fit) {
-            foreach ([[], ['type' => 'response', 'se_fit' => true], ['interval' => 'prediction', 'level' => 0.9], ['random' => false], ['allow_new_levels' => true]] as $options) {
+            foreach ([[], ['type' => 'response', 'seFit' => true], ['interval' => 'prediction', 'level' => 0.9], ['random' => false], ['allowNewLevels' => true]] as $options) {
                 randomParityCompare('Phit\predict', [$fit, $new, ...$options]);
             }
         }

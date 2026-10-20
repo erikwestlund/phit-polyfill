@@ -206,7 +206,7 @@ final class LinearMixed
         }
         $objectiveTolerance = $options['objective_tolerance'];
         if (is_nan($objectiveTolerance) || is_infinite($objectiveTolerance) || $objectiveTolerance <= 0.0) {
-            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'objective_tolerance must be positive finite');
+            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'objectiveTolerance must be positive finite');
         }
         $objective = function (array $t) use ($data): float {
             try {

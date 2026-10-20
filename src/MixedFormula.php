@@ -24,10 +24,10 @@ final class MixedFormula
         string $missing = 'drop',
         mixed $weights = null,
         ?array $start = null,
-        int $max_evaluations = 20000,
+        int $maxEvaluations = 20000,
         float $tolerance = 1e-7,
         string $optimizer = 'bobyqa',
-        float $objective_tolerance = 1e-12,
+        float $objectiveTolerance = 1e-12,
     ): array {
         Frontend::stringArgument($formula, 'formula');
         Frontend::stringArgument($missing, 'missing');
@@ -56,17 +56,17 @@ final class MixedFormula
             $termLabels[] = $labels;
             $terms[] = ['z' => $term['z'], 'groups' => $indices, 'correlated' => $term['correlated']];
         }
-        if ($max_evaluations < 0) {
-            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'max_evaluations must be positive');
+        if ($maxEvaluations < 0) {
+            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'maxEvaluations must be positive');
         }
         $result = LinearMixed::fit($design->x, $y, $terms, [
             'reml' => $reml,
             'optimizer' => $optimizer,
-            'objective_tolerance' => $objective_tolerance,
+            'objective_tolerance' => $objectiveTolerance,
             'offset' => $design->offset ?? array_fill(0, count($y), 0.0),
             'weights' => $w,
             'start' => $startValues,
-            'max_evaluations' => $max_evaluations,
+            'max_evaluations' => $maxEvaluations,
             'tolerance' => $tolerance,
         ]);
         $output = MixedModels::lmmOutput($result, $reml, $termLabels);
@@ -89,8 +89,8 @@ final class MixedFormula
         string $link = '',
         string $missing = 'drop',
         mixed $weights = null,
-        int $quadrature_points = 1,
-        int $max_evaluations = 20000,
+        int $quadraturePoints = 1,
+        int $maxEvaluations = 20000,
         float $tolerance = 1e-7,
     ): array {
         Frontend::stringArgument($formula, 'formula');
@@ -107,17 +107,17 @@ final class MixedFormula
         }
         $y = Glm::binomialResponse($design, $w);
         [$indices, $labels] = ModelData::groupIndices($design->random[0]['groups']);
-        if ($quadrature_points < 0) {
-            throw ErrorCode::exception(ErrorCode::UNSUPPORTED, 'quadrature_points must be positive');
+        if ($quadraturePoints < 0) {
+            throw ErrorCode::exception(ErrorCode::UNSUPPORTED, 'quadraturePoints must be positive');
         }
-        if ($max_evaluations < 0) {
-            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'max_evaluations must be positive');
+        if ($maxEvaluations < 0) {
+            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'maxEvaluations must be positive');
         }
         $r = LogisticRandomIntercept::fit($design->x, $y, $indices, [
             'offset' => $design->offset ?? array_fill(0, count($y), 0.0),
             'weights' => $w,
-            'quadrature_points' => $quadrature_points,
-            'max_evaluations' => $max_evaluations,
+            'quadrature_points' => $quadraturePoints,
+            'max_evaluations' => $maxEvaluations,
             'tolerance' => $tolerance,
         ]);
         $output = MixedModels::logisticMixedOutput($r, $labels);

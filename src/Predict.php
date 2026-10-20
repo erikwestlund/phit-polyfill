@@ -23,11 +23,11 @@ final class Predict
         array $fit,
         mixed $newdata,
         string $type = 'link',
-        bool $se_fit = false,
+        bool $seFit = false,
         string $interval = 'none',
         float $level = 0.95,
         bool $random = true,
-        bool $allow_new_levels = false,
+        bool $allowNewLevels = false,
     ): array {
         Frontend::stringArgument($type, 'type');
         Frontend::stringArgument($interval, 'interval');
@@ -55,14 +55,14 @@ final class Predict
             ($interval === 'confidence' || $interval === 'prediction') && $isLm => $interval === 'prediction',
             $interval === 'confidence' || $interval === 'prediction' => throw ErrorCode::exception(
                 ErrorCode::UNSUPPORTED,
-                'intervals are available for Phit\fit_lm fits; use se_fit for GLMs',
+                'intervals are available for Phit\fit_lm fits; use seFit for GLMs',
             ),
             default => throw ErrorCode::exception(ErrorCode::INVALID_INPUT, "interval must be 'none', 'confidence' or 'prediction'"),
         };
         if (is_nan($level) || $level <= 0.0 || $level >= 1.0) {
             throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'level must be strictly between 0 and 1');
         }
-        $uncertainty = $se_fit || $intervalKind !== null;
+        $uncertainty = $seFit || $intervalKind !== null;
         if ($mixed && $uncertainty) {
             throw ErrorCode::exception(ErrorCode::UNSUPPORTED, 'standard errors and intervals are not available for mixed-model predictions');
         }
@@ -125,7 +125,7 @@ final class Predict
                             }
                         }
                         $value += $sum;
-                    } elseif ($allow_new_levels === false) {
+                    } elseif ($allowNewLevels === false) {
                         $label = "{$term['group']}=$key";
                         if (! in_array($label, $newLevels, true)) {
                             $newLevels[] = $label;
@@ -141,7 +141,7 @@ final class Predict
             }
         }
         if ($newLevels !== []) {
-            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'new levels detected in newdata: '.implode(', ', $newLevels).'; pass allow_new_levels: true to predict them at the population level');
+            throw ErrorCode::exception(ErrorCode::INVALID_INPUT, 'new levels detected in newdata: '.implode(', ', $newLevels).'; pass allowNewLevels: true to predict them at the population level');
         }
         $fitted = $eta;
         if ($response) {
@@ -155,7 +155,7 @@ final class Predict
             }
         }
         $out = ['fit' => $fitted];
-        if ($se_fit) {
+        if ($seFit) {
             $out['se_fit'] = $se;
         }
         $df = is_int($fit['df_residual'] ?? null) ? $fit['df_residual'] : null;

@@ -98,10 +98,10 @@ final class Draws
     }
 
     /** Phit\draws_covariance_map */
-    public static function covarianceMap(array $source_covariance, array $target_covariance): array
+    public static function covarianceMap(array $sourceCovariance, array $targetCovariance): array
     {
-        $source = self::covarianceFactor(self::matrix($source_covariance));
-        $target = self::covarianceFactor(self::matrix($target_covariance));
+        $source = self::covarianceFactor(self::matrix($sourceCovariance));
+        $target = self::covarianceFactor(self::matrix($targetCovariance));
         $p = count($source);
         if ($p !== count($target)) {
             throw ErrorCode::exception(ErrorCode::DIMENSION_MISMATCH, 'covariances must have equal dimensions');
