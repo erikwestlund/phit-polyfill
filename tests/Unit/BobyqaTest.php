@@ -25,6 +25,22 @@ function bobyqaHex(float $value): string
     return bin2hex(pack('E', $value));
 }
 
+/**
+ * Whether a JIT is compiling this process.
+ *
+ * OPcache's status is the authority rather than the ini value, because
+ * opcache.jit keeps its setting when OPcache itself is off, where no JIT runs.
+ */
+function bobyqaJitEnabled(): bool
+{
+    if (! function_exists('opcache_get_status')) {
+        return false;
+    }
+    $status = @opcache_get_status(false);
+
+    return is_array($status) && ($status['jit']['enabled'] ?? false) && ($status['jit']['on'] ?? false);
+}
+
 /** The harness's objective, with its exact operation order. */
 function bobyqaObjective(array $p, array $x): float
 {
@@ -128,7 +144,9 @@ dataset('bobyqa reference', function () {
     }
 });
 
-it('reproduces the crate bit for bit', function (array $row) {
+/** One reference case: the outcome, the final point, the trace, and the solver. */
+function bobyqaRun(array $row): array
+{
     [$p, $config] = bobyqaProblem($row);
     $solver = new Bobyqa($p['n'], $config);
     $trace = '';
@@ -139,11 +157,36 @@ it('reproduces the crate bit for bit', function (array $row) {
         return bobyqaObjective($p, $point);
     }, $x, $p['lower'], $p['upper']);
 
+    return [$outcome, $x, $trace, $solver];
+}
+
+/*
+ * The reference is checked in two tests, because a JIT can miscompile the
+ * solver's arithmetic (php-src #24214) and send the search down another path.
+ * Which status the solver reports, how it labels it, and whether it found a
+ * finite point survive that and are checked everywhere. The evaluation count,
+ * the objective, the solution, the restart count and the CRC of every
+ * evaluated point do not survive it, and are checked where the arithmetic can
+ * be trusted. PHP 8.4.26 on GitHub's x86-64 runner moved one case's objective
+ * by 18%; see docs/notes/function-jit.md.
+ */
+
+it('agrees with the crate on the status and the finiteness', function (array $row) {
+    [$outcome] = bobyqaRun($row);
+
     expect($outcome->status->name)->toBe($row['status'])
         ->and($outcome->status->label())->toBe($row['display'])
-        ->and($outcome->nEval)->toBe($row['n_eval'])
+        ->and($outcome->foundFinite())->toBe($row['found_finite']);
+})->with('bobyqa reference');
+
+it('reproduces the crate bit for bit', function (array $row) {
+    if (bobyqaJitEnabled()) {
+        test()->markTestSkipped('the exact reproduction needs a process without a JIT (php-src #24214)');
+    }
+    [$outcome, $x, $trace, $solver] = bobyqaRun($row);
+
+    expect($outcome->nEval)->toBe($row['n_eval'])
         ->and(bobyqaHex($outcome->f))->toBe($row['f'])
-        ->and($outcome->foundFinite())->toBe($row['found_finite'])
         ->and(array_map(bobyqaHex(...), $x))->toBe($row['x'])
         ->and($solver->lastRestartCount())->toBe($row['restarts'])
         ->and(crc32($trace))->toBe($row['trace_crc']);
