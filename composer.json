@@ -30,7 +30,8 @@
     },
     "scripts": {
         "test": "\"$HOME/Library/Application Support/Herd/bin/php85\" vendor/bin/pest",
-        "test:ext": "\"$HOME/Library/Application Support/Herd/bin/php85\" -d extension=.ext/libphit.dylib vendor/bin/pest"
+        "test:ext": "\"$HOME/Library/Application Support/Herd/bin/php85\" -d extension=.ext/libphit.dylib vendor/bin/pest",
+        "lint": "phpcs"
     },
     "config": {
         "sort-packages": true,
