@@ -213,11 +213,12 @@ In summary:
 - Scalar arguments of the wrong type follow PHP's userland rules (coercion in
   non-strict files, otherwise `TypeError`). The extension raises an
   `\Exception` instead.
-- On PHP 8.4 and 8.5, use OPcache without the JIT, the tracing JIT
-  (`opcache.jit=tracing`), or `opcache.jit=function`. A function JIT with
+- On PHP 8.4 and 8.5, use OPcache without the JIT. A function JIT with
   hot-counter triggers, such as `opcache.jit=1235`, can miscompile code that
   it enters partway through a loop (php-src #24214) and has produced wrong
-  results here. See [docs/notes/function-jit.md](docs/notes/function-jit.md).
+  results here, and on PHP 8.4 the tracing JIT moves the bobyqa optimizer to a
+  different minimum, which `Phit\fit_lmer` and `Phit\fit_glmer` use by
+  default. See [docs/notes/function-jit.md](docs/notes/function-jit.md).
 - On PHP 8.3, use OPcache without the JIT, which is PHP 8.3's default. Its
   tracing JIT computes wrong beta probabilities, and its function JIT with
   hot-counter triggers crashes. See

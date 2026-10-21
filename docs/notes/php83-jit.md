@@ -46,10 +46,35 @@ process passed under the tracing JIT on macOS and hid them.
 ## What the polyfill does
 
 - `Svd` assigns `$shift` from a cast, which fixes the SVD case above.
-- CI runs PHP 8.3 without OPcache, with the optimizer alone, and with
-  `opcache.jit=1205` as blocking jobs. The tracing job and the `1235` job run
-  but do not block.
+- The bobyqa reference is split in two tests, and the bit-exact one skips
+  itself wherever a JIT is compiling; see
+  [function-jit.md](function-jit.md). That covers the `BobyqaTest` failure
+  above on every version.
+- CI runs PHP 8.3 without OPcache, with the optimizer alone, with the tracing
+  JIT and with `opcache.jit=1205` as blocking jobs. Only the `1235` job does
+  not block, because of the crash below. The tracing job blocked from
+  2026-10-21: the wrong beta CDF above has never appeared on a runner, so it
+  is strict until it does.
 - The README recommends no JIT on PHP 8.3.
+
+## What CI has actually seen, 2026-10-21
+
+Both runs of commit `a2fc92b` reproduced the `1235` behaviour on the runner,
+which until then had only been recorded locally. One of the twelve bobyqa
+reference cases failed, the rest passed, and the process then died with
+`Segmentation fault (core dumped)`, exit 139, while running a file after
+`BobyqaTest` whose header never printed. The first run crashed earlier, inside
+`BobyqaTest`, before any of it was reported. So both halves of this note hold:
+the function JIT with hot-counter triggers computes wrong values here and also
+crashes, and the crash is why that one job stays informational. The bobyqa
+skip cannot help it, because the test still runs the solver.
+
+PHP 8.4 is no longer free of this either. The same solver miscompiles under the
+*tracing* JIT on PHP 8.4.26 on GitHub's x86-64 runner, materially — one case's
+objective moves by 18% — which is recorded with the build string, the flags and
+the bit patterns in [function-jit.md](function-jit.md). This note's claim that
+"PHP 8.4 and 8.5 are not affected by the problems described here" was written
+about the problems above, and 8.4 now has one of its own.
 
 ## Finding affected code
 
