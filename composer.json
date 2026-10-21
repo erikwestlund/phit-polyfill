@@ -31,7 +31,11 @@
     "scripts": {
         "test": "\"$HOME/Library/Application Support/Herd/bin/php85\" vendor/bin/pest",
         "test:ext": "\"$HOME/Library/Application Support/Herd/bin/php85\" -d extension=.ext/libphit.dylib vendor/bin/pest",
-        "lint": "phpcs"
+        "lint": [
+            "phpcs",
+            "@test:sniffs"
+        ],
+        "test:sniffs": "php tools/phpcs/selftest/run.php"
     },
     "config": {
         "sort-packages": true,
