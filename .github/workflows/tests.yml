@@ -10,13 +10,15 @@ jobs:
     name: PHP ${{ matrix.php }}, ${{ matrix.mode }}${{ matrix.os == 'macos-latest' && ', macOS' || '' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
-    # The function JIT with hot-counter triggers (opcache.jit=1235) can
-    # miscompile code it enters through an on-stack-replacement entry
-    # (php-src #24214), so that job is informational on every version; see
-    # docs/notes/function-jit.md. PHP 8.3's tracing JIT also computes wrong
-    # values, so its tracing job is informational too; see
-    # docs/notes/php83-jit.md.
-    continue-on-error: ${{ matrix.mode == 'function-jit' || (matrix.php == '8.3' && matrix.mode == 'jit') }}
+    # One job is informational, because PHP 8.3's function JIT with
+    # hot-counter triggers (opcache.jit=1235) segfaults partway through the
+    # suite; see docs/notes/php83-jit.md. Nothing else is exempt. The list
+    # used to cover every function-JIT job and 8.3's tracing job, and what
+    # it was really tolerating was the bit-exact bobyqa comparison, which
+    # now skips itself wherever a JIT is compiling (php-src #24214). The
+    # "- live var" check below therefore blocks on 8.4 and 8.5, which is
+    # the point of it.
+    continue-on-error: ${{ matrix.php == '8.3' && matrix.mode == 'function-jit' }}
     strategy:
       fail-fast: false
       matrix:
